@@ -1,0 +1,80 @@
+{
+  "name": "Vacation",
+  "type": "object",
+  "properties": {
+    "employee_id": {
+      "type": "string",
+      "description": "ID do funcion\u00e1rio"
+    },
+    "employee_name": {
+      "type": "string",
+      "description": "Nome do funcion\u00e1rio"
+    },
+    "period_start": {
+      "type": "string",
+      "format": "date",
+      "description": "In\u00edcio do per\u00edodo aquisitivo"
+    },
+    "period_end": {
+      "type": "string",
+      "format": "date",
+      "description": "Fim do per\u00edodo aquisitivo"
+    },
+    "vacation_start": {
+      "type": "string",
+      "format": "date",
+      "description": "In\u00edcio das f\u00e9rias"
+    },
+    "vacation_end": {
+      "type": "string",
+      "format": "date",
+      "description": "Fim das f\u00e9rias"
+    },
+    "days_taken": {
+      "type": "number",
+      "default": 30,
+      "description": "Dias de f\u00e9rias"
+    },
+    "days_sold": {
+      "type": "number",
+      "default": 0,
+      "description": "Dias vendidos (abono)"
+    },
+    "vacation_pay": {
+      "type": "number",
+      "description": "Valor das f\u00e9rias"
+    },
+    "bonus_pay": {
+      "type": "number",
+      "description": "1/3 constitucional"
+    },
+    "sold_days_pay": {
+      "type": "number",
+      "description": "Valor dos dias vendidos"
+    },
+    "total_pay": {
+      "type": "number",
+      "description": "Total a receber"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "scheduled",
+        "in_progress",
+        "completed",
+        "cancelled"
+      ],
+      "default": "scheduled"
+    },
+    "observations": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "employee_id",
+    "period_start",
+    "period_end",
+    "vacation_start",
+    "vacation_end"
+  ]
+}

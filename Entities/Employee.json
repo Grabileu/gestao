@@ -1,0 +1,143 @@
+{
+  "name": "Employee",
+  "type": "object",
+  "properties": {
+    "full_name": {
+      "type": "string",
+      "description": "Nome completo do funcion\u00e1rio"
+    },
+    "email": {
+      "type": "string",
+      "description": "Email do funcion\u00e1rio"
+    },
+    "phone": {
+      "type": "string",
+      "description": "Telefone"
+    },
+    "cpf": {
+      "type": "string",
+      "description": "CPF do funcion\u00e1rio"
+    },
+    "birth_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Data de nascimento"
+    },
+    "hire_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Data de admiss\u00e3o"
+    },
+    "termination_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Data de demiss\u00e3o"
+    },
+    "department_id": {
+      "type": "string",
+      "description": "ID do departamento"
+    },
+    "department_name": {
+      "type": "string",
+      "description": "Nome do departamento"
+    },
+    "position": {
+      "type": "string",
+      "description": "Cargo do funcion\u00e1rio"
+    },
+    "salary": {
+      "type": "number",
+      "description": "Sal\u00e1rio mensal"
+    },
+    "contract_type": {
+      "type": "string",
+      "enum": [
+        "clt",
+        "pj",
+        "temporary",
+        "intern",
+        "casual"
+      ],
+      "default": "clt",
+      "description": "Tipo de contrato (CLT, PJ, Tempor\u00e1rio, Estagi\u00e1rio, Avulso)"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "inactive",
+        "on_leave",
+        "terminated"
+      ],
+      "default": "active",
+      "description": "Status do funcion\u00e1rio"
+    },
+    "is_cashier": {
+      "type": "boolean",
+      "default": false,
+      "description": "\u00c9 operador de caixa"
+    },
+    "cashier_code": {
+      "type": "string",
+      "description": "C\u00f3digo do operador de caixa"
+    },
+    "store_id": {
+      "type": "string",
+      "description": "ID da loja (para operadores)"
+    },
+    "store_name": {
+      "type": "string",
+      "description": "Nome da loja (para operadores)"
+    },
+    "address": {
+      "type": "string",
+      "description": "Endere\u00e7o completo"
+    },
+    "city": {
+      "type": "string",
+      "description": "Cidade"
+    },
+    "state": {
+      "type": "string",
+      "description": "Estado"
+    },
+    "zip_code": {
+      "type": "string",
+      "description": "CEP"
+    },
+    "emergency_contact": {
+      "type": "string",
+      "description": "Contato de emerg\u00eancia"
+    },
+    "emergency_phone": {
+      "type": "string",
+      "description": "Telefone de emerg\u00eancia"
+    },
+    "bank_name": {
+      "type": "string",
+      "description": "Nome do banco"
+    },
+    "bank_agency": {
+      "type": "string",
+      "description": "Ag\u00eancia"
+    },
+    "bank_account": {
+      "type": "string",
+      "description": "N\u00famero da conta"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Observa\u00e7\u00f5es"
+    },
+    "photo_url": {
+      "type": "string",
+      "description": "URL da foto do funcion\u00e1rio"
+    }
+  },
+  "required": [
+    "full_name",
+    "department_id",
+    "position",
+    "hire_date"
+  ]
+}

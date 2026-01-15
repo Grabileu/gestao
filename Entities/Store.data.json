@@ -1,0 +1,10 @@
+[
+  {
+    "id": "store_1",
+    "name": "Loja Centro",
+    "address": "Rua Principal, 123",
+    "city": "Cidade Exemplo",
+    "state": "SP",
+    "status": "active"
+  }
+]

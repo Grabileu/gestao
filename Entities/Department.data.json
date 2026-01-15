@@ -1,0 +1,16 @@
+[
+  {
+    "id": "dept_1",
+    "name": "ADMINISTRAÇÃO",
+    "description": "Departamento administrativo da matriz",
+    "status": "active",
+    "manager": "Carlos Souza"
+  },
+  {
+    "id": "dept_2",
+    "name": "TI",
+    "description": "Tecnologia e suporte",
+    "status": "active",
+    "manager": "Ana Pereira"
+  }
+]

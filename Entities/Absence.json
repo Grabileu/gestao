@@ -1,0 +1,90 @@
+{
+  "name": "Absence",
+  "type": "object",
+  "properties": {
+    "employee_id": {
+      "type": "string",
+      "description": "ID do funcion\u00e1rio"
+    },
+    "employee_name": {
+      "type": "string",
+      "description": "Nome do funcion\u00e1rio"
+    },
+    "date": {
+      "type": "string",
+      "format": "date",
+      "description": "Data da falta/atestado"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "absence",
+        "medical_certificate",
+        "justified"
+      ],
+      "default": "absence",
+      "description": "Tipo: falta, atestado ou justificada"
+    },
+    "hours": {
+      "type": "number",
+      "description": "Horas de aus\u00eancia (parcial)"
+    },
+    "full_day": {
+      "type": "boolean",
+      "default": true,
+      "description": "Dia inteiro ou parcial"
+    },
+    "reason": {
+      "type": "string",
+      "description": "Motivo da falta"
+    },
+    "document_url": {
+      "type": "string",
+      "description": "URL do documento/atestado"
+    },
+    "cid": {
+      "type": "string",
+      "description": "CID do atestado m\u00e9dico"
+    },
+    "doctor_name": {
+      "type": "string",
+      "description": "Nome do m\u00e9dico"
+    },
+    "crm": {
+      "type": "string",
+      "description": "CRM do m\u00e9dico"
+    },
+    "days_off": {
+      "type": "number",
+      "default": 1,
+      "description": "Dias de afastamento"
+    },
+    "discount_salary": {
+      "type": "boolean",
+      "default": true,
+      "description": "Desconta do sal\u00e1rio"
+    },
+    "month_reference": {
+      "type": "string",
+      "description": "M\u00eas de refer\u00eancia (YYYY-MM)"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "approved",
+        "rejected"
+      ],
+      "default": "pending"
+    },
+    "observations": {
+      "type": "string",
+      "description": "Observa\u00e7\u00f5es"
+    }
+  },
+  "required": [
+    "employee_id",
+    "date",
+    "type"
+  ]
+}

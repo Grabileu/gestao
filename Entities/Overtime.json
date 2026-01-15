@@ -1,0 +1,59 @@
+{
+  "name": "Overtime",
+  "type": "object",
+  "properties": {
+    "employee_id": {
+      "type": "string",
+      "description": "ID do funcion\u00e1rio"
+    },
+    "employee_name": {
+      "type": "string",
+      "description": "Nome do funcion\u00e1rio"
+    },
+    "date": {
+      "type": "string",
+      "format": "date",
+      "description": "Data da hora extra"
+    },
+    "hours": {
+      "type": "number",
+      "description": "Quantidade de horas"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "50",
+        "100"
+      ],
+      "default": "50",
+      "description": "Tipo: 50% ou 100%"
+    },
+    "reason": {
+      "type": "string",
+      "description": "Motivo da hora extra"
+    },
+    "month_reference": {
+      "type": "string",
+      "description": "M\u00eas de refer\u00eancia (YYYY-MM)"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "approved",
+        "rejected"
+      ],
+      "default": "pending"
+    },
+    "observations": {
+      "type": "string",
+      "description": "Observa\u00e7\u00f5es"
+    }
+  },
+  "required": [
+    "employee_id",
+    "date",
+    "hours",
+    "type"
+  ]
+}

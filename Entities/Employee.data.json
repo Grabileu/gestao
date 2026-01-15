@@ -1,0 +1,26 @@
+[
+  {
+    "id": "emp_1",
+    "full_name": "Maria Sirliene Ferreira da Silva",
+    "email": "sirliene.supermercado@gmail.com",
+    "department_id": "dept_1",
+    "department_name": "ADMINISTRAÇÃO",
+    "position": "Assistente Administrativo",
+    "salary": 1700,
+    "contract_type": "clt",
+    "status": "active",
+    "hire_date": "2023-12-21"
+  },
+  {
+    "id": "emp_2",
+    "full_name": "Gabriel Umbelino Félix",
+    "email": "gabrielumbelino34@gmail.com",
+    "department_id": "dept_1",
+    "department_name": "ADMINISTRAÇÃO",
+    "position": "Assistente Administrativo",
+    "salary": 1621,
+    "contract_type": "intern",
+    "status": "active",
+    "hire_date": "2022-02-28"
+  }
+]

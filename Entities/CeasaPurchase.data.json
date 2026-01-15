@@ -1,0 +1,4 @@
+[
+  { "id": "pur_1", "supplier_id": "sup_1", "product_id": "prod_1", "quantity": 100, "total_price": 350 },
+  { "id": "pur_2", "supplier_id": "sup_2", "product_id": "prod_2", "quantity": 200, "total_price": 420 }
+]

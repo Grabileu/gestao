@@ -1,0 +1,126 @@
+{
+  "name": "Payroll",
+  "type": "object",
+  "properties": {
+    "employee_id": {
+      "type": "string",
+      "description": "ID do funcion\u00e1rio"
+    },
+    "employee_name": {
+      "type": "string",
+      "description": "Nome do funcion\u00e1rio"
+    },
+    "month_reference": {
+      "type": "string",
+      "description": "M\u00eas de refer\u00eancia (YYYY-MM)"
+    },
+    "base_salary": {
+      "type": "number",
+      "description": "Sal\u00e1rio base"
+    },
+    "work_days": {
+      "type": "number",
+      "description": "Dias trabalhados"
+    },
+    "absences_days": {
+      "type": "number",
+      "default": 0,
+      "description": "Dias de falta"
+    },
+    "absences_discount": {
+      "type": "number",
+      "default": 0,
+      "description": "Desconto de faltas"
+    },
+    "medical_certificates_days": {
+      "type": "number",
+      "default": 0,
+      "description": "Dias de atestado"
+    },
+    "overtime_50_hours": {
+      "type": "number",
+      "default": 0,
+      "description": "Horas extras 50%"
+    },
+    "overtime_50_value": {
+      "type": "number",
+      "default": 0,
+      "description": "Valor horas extras 50%"
+    },
+    "overtime_100_hours": {
+      "type": "number",
+      "default": 0,
+      "description": "Horas extras 100%"
+    },
+    "overtime_100_value": {
+      "type": "number",
+      "default": 0,
+      "description": "Valor horas extras 100%"
+    },
+    "total_overtime": {
+      "type": "number",
+      "default": 0,
+      "description": "Total horas extras"
+    },
+    "inss_value": {
+      "type": "number",
+      "default": 0,
+      "description": "Desconto INSS"
+    },
+    "irrf_value": {
+      "type": "number",
+      "default": 0,
+      "description": "Desconto IRRF"
+    },
+    "vt_discount": {
+      "type": "number",
+      "default": 0,
+      "description": "Desconto VT"
+    },
+    "vr_discount": {
+      "type": "number",
+      "default": 0,
+      "description": "Desconto VR"
+    },
+    "other_discounts": {
+      "type": "number",
+      "default": 0,
+      "description": "Outros descontos"
+    },
+    "other_additions": {
+      "type": "number",
+      "default": 0,
+      "description": "Outros acr\u00e9scimos"
+    },
+    "gross_salary": {
+      "type": "number",
+      "description": "Sal\u00e1rio bruto"
+    },
+    "total_discounts": {
+      "type": "number",
+      "description": "Total de descontos"
+    },
+    "net_salary": {
+      "type": "number",
+      "description": "Sal\u00e1rio l\u00edquido"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "approved",
+        "paid"
+      ],
+      "default": "draft"
+    },
+    "observations": {
+      "type": "string",
+      "description": "Observa\u00e7\u00f5es"
+    }
+  },
+  "required": [
+    "employee_id",
+    "month_reference",
+    "base_salary"
+  ]
+}
