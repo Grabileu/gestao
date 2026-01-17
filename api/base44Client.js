@@ -1,4 +1,4 @@
-const API_BASE = '/api';
+const API_BASE = 'http://localhost:3000/api';
 
 async function safeFetch(url, options) {
   try {
@@ -39,7 +39,6 @@ const routes = {
   Employee: 'employees',
   Store: 'stores',
   Cashier: 'cashiers',
-  // Endpoints não implementados no backend retornam listas vazias
   Department: 'departments',
   HRConfig: 'hr-config',
   Payroll: 'payroll',
@@ -48,6 +47,7 @@ const routes = {
   SystemConfig: 'system-config',
   CeasaSupplier: 'ceasa-suppliers',
   CeasaProduct: 'ceasa-products',
+  Overtime: 'overtime',
 };
 
 const entities = Object.fromEntries(
