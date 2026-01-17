@@ -143,9 +143,9 @@ export default function CashBreakForm({ open, onClose, cashBreak, stores, cashie
               <SelectTrigger className="bg-slate-800 border-slate-600 text-white">
                 <SelectValue placeholder="Selecione o turno" />
               </SelectTrigger>
-              <SelectContent className="bg-slate-800 border-slate-600">
+              <SelectContent side="bottom" className="bg-slate-800 border-slate-600 text-white z-50">
                 {shiftOptions.map(opt => (
-                  <SelectItem key={opt.value} value={opt.value} className="text-white hover:bg-slate-700">
+                  <SelectItem key={opt.value} value={opt.value} className="text-white hover:bg-slate-700 cursor-pointer">
                     {opt.label}
                   </SelectItem>
                 ))}
@@ -159,9 +159,9 @@ export default function CashBreakForm({ open, onClose, cashBreak, stores, cashie
               <SelectTrigger className="bg-slate-800 border-slate-600 text-white">
                 <SelectValue placeholder="Selecione a loja" />
               </SelectTrigger>
-              <SelectContent className="bg-slate-800 border-slate-600">
+              <SelectContent side="bottom" className="bg-slate-800 border-slate-600 text-white z-50">
                 {stores.filter(s => s.status === 'active').map(store => (
-                  <SelectItem key={store.id} value={store.id} className="text-white hover:bg-slate-700">
+                  <SelectItem key={store.id} value={String(store.id)} className="text-white hover:bg-slate-700 cursor-pointer">
                     {store.code} - {store.name}
                   </SelectItem>
                 ))}
@@ -179,9 +179,9 @@ export default function CashBreakForm({ open, onClose, cashBreak, stores, cashie
               <SelectTrigger className="bg-slate-800 border-slate-600 text-white">
                 <SelectValue placeholder={formData.store_id ? "Selecione o operador" : "Selecione uma loja primeiro"} />
               </SelectTrigger>
-              <SelectContent className="bg-slate-800 border-slate-600">
+              <SelectContent side="bottom" className="bg-slate-800 border-slate-600 text-white z-50">
                 {filteredCashiers.map(cashier => (
-                  <SelectItem key={cashier.id} value={cashier.id} className="text-white hover:bg-slate-700">
+                  <SelectItem key={cashier.id} value={String(cashier.id)} className="text-white hover:bg-slate-700 cursor-pointer">
                     {cashier.code ? `${cashier.code} - ` : ''}{cashier.name}
                   </SelectItem>
                 ))}
@@ -195,9 +195,9 @@ export default function CashBreakForm({ open, onClose, cashBreak, stores, cashie
               <SelectTrigger className="bg-slate-800 border-slate-600 text-white">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="bg-slate-800 border-slate-600">
+              <SelectContent side="bottom" className="bg-slate-800 border-slate-600 text-white z-50">
                 {typeOptions.map(opt => (
-                  <SelectItem key={opt.value} value={opt.value} className="text-white hover:bg-slate-700">
+                  <SelectItem key={opt.value} value={opt.value} className="text-white hover:bg-slate-700 cursor-pointer">
                     {opt.label}
                   </SelectItem>
                 ))}
@@ -233,9 +233,9 @@ export default function CashBreakForm({ open, onClose, cashBreak, stores, cashie
               <SelectTrigger className="bg-slate-800 border-slate-600 text-white">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="bg-slate-800 border-slate-600">
+              <SelectContent side="bottom" className="bg-slate-800 border-slate-600 text-white z-50">
                 {statusOptions.map(opt => (
-                  <SelectItem key={opt.value} value={opt.value} className="text-white hover:bg-slate-700">
+                  <SelectItem key={opt.value} value={opt.value} className="text-white hover:bg-slate-700 cursor-pointer">
                     {opt.label}
                   </SelectItem>
                 ))}

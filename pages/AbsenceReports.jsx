@@ -253,11 +253,11 @@ export default function AbsenceReports() {
               <label className="text-xs text-slate-500 mb-1 block">Tipo</label>
               <Select value={filters.type} onValueChange={(v) => setFilters(p => ({ ...p, type: v }))}>
                 <SelectTrigger className="bg-slate-900 border-slate-600 text-white h-9"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos</SelectItem>
-                  <SelectItem value="absence">Faltas</SelectItem>
-                  <SelectItem value="medical_certificate">Atestados</SelectItem>
-                  <SelectItem value="justified">Justificadas</SelectItem>
+                <SelectContent side="bottom" className="bg-slate-800 border-slate-600 text-white z-50">
+                  <SelectItem value="all" className="text-white hover:bg-slate-700 cursor-pointer">Todos</SelectItem>
+                  <SelectItem value="absence" className="text-white hover:bg-slate-700 cursor-pointer">Faltas</SelectItem>
+                  <SelectItem value="medical_certificate" className="text-white hover:bg-slate-700 cursor-pointer">Atestados</SelectItem>
+                  <SelectItem value="justified" className="text-white hover:bg-slate-700 cursor-pointer">Justificadas</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -265,10 +265,10 @@ export default function AbsenceReports() {
               <label className="text-xs text-slate-500 mb-1 block">Funcionário</label>
               <Select value={filters.employee} onValueChange={(v) => setFilters(p => ({ ...p, employee: v }))}>
                 <SelectTrigger className="bg-slate-900 border-slate-600 text-white h-9"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos</SelectItem>
+                <SelectContent side="bottom" className="bg-slate-800 border-slate-600 text-white z-50">
+                  <SelectItem value="all" className="text-white hover:bg-slate-700 cursor-pointer">Todos</SelectItem>
                   {employees.map(emp => (
-                    <SelectItem key={emp.id} value={emp.id}>{emp.full_name}</SelectItem>
+                    <SelectItem key={emp.id} value={String(emp.id)} className="text-white hover:bg-slate-700 cursor-pointer">{emp.full_name}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -277,10 +277,10 @@ export default function AbsenceReports() {
               <label className="text-xs text-slate-500 mb-1 block">Departamento</label>
               <Select value={filters.department} onValueChange={(v) => setFilters(p => ({ ...p, department: v }))}>
                 <SelectTrigger className="bg-slate-900 border-slate-600 text-white h-9"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos</SelectItem>
+                <SelectContent side="bottom" className="bg-slate-800 border-slate-600 text-white z-50">
+                  <SelectItem value="all" className="text-white hover:bg-slate-700 cursor-pointer">Todos</SelectItem>
                   {departments.map(dept => (
-                    <SelectItem key={dept.id} value={dept.id}>{dept.name}</SelectItem>
+                    <SelectItem key={dept.id} value={String(dept.id)} className="text-white hover:bg-slate-700 cursor-pointer">{dept.name}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>

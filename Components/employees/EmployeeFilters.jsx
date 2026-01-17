@@ -26,10 +26,10 @@ export default function EmployeeFilters({ filters, onChange, departments, onClea
         <SelectTrigger className="w-44 bg-slate-800 border-slate-600 text-white">
           <SelectValue placeholder="Departamento" />
         </SelectTrigger>
-        <SelectContent className="bg-slate-800 border-slate-600">
-          <SelectItem value="all" className="text-white hover:bg-slate-700">Todos</SelectItem>
+        <SelectContent side="bottom" className="bg-slate-800 border-slate-600 text-white z-50">
+          <SelectItem value="all" className="text-white hover:bg-slate-700 cursor-pointer">Todos</SelectItem>
           {departments.map(dept => (
-            <SelectItem key={dept.id} value={dept.id} className="text-white hover:bg-slate-700">
+            <SelectItem key={dept.id} value={String(dept.id)} className="text-white hover:bg-slate-700 cursor-pointer">
               {dept.name}
             </SelectItem>
           ))}
@@ -40,12 +40,12 @@ export default function EmployeeFilters({ filters, onChange, departments, onClea
         <SelectTrigger className="w-36 bg-slate-800 border-slate-600 text-white">
           <SelectValue placeholder="Status" />
         </SelectTrigger>
-        <SelectContent className="bg-slate-800 border-slate-600">
-          <SelectItem value="all" className="text-white hover:bg-slate-700">Todos</SelectItem>
-          <SelectItem value="active" className="text-white hover:bg-slate-700">Ativo</SelectItem>
-          <SelectItem value="inactive" className="text-white hover:bg-slate-700">Inativo</SelectItem>
-          <SelectItem value="on_leave" className="text-white hover:bg-slate-700">Afastado</SelectItem>
-          <SelectItem value="terminated" className="text-white hover:bg-slate-700">Desligado</SelectItem>
+        <SelectContent side="bottom" className="bg-slate-800 border-slate-600 text-white z-50">
+          <SelectItem value="all" className="text-white hover:bg-slate-700 cursor-pointer">Todos</SelectItem>
+          <SelectItem value="active" className="text-white hover:bg-slate-700 cursor-pointer">Ativo</SelectItem>
+          <SelectItem value="inactive" className="text-white hover:bg-slate-700 cursor-pointer">Inativo</SelectItem>
+          <SelectItem value="on_leave" className="text-white hover:bg-slate-700 cursor-pointer">Afastado</SelectItem>
+          <SelectItem value="terminated" className="text-white hover:bg-slate-700 cursor-pointer">Desligado</SelectItem>
         </SelectContent>
       </Select>
 
@@ -53,12 +53,12 @@ export default function EmployeeFilters({ filters, onChange, departments, onClea
         <SelectTrigger className="w-36 bg-slate-800 border-slate-600 text-white">
           <SelectValue placeholder="Contrato" />
         </SelectTrigger>
-        <SelectContent className="bg-slate-800 border-slate-600">
-          <SelectItem value="all" className="text-white hover:bg-slate-700">Todos</SelectItem>
-          <SelectItem value="clt" className="text-white hover:bg-slate-700">CLT</SelectItem>
-          <SelectItem value="pj" className="text-white hover:bg-slate-700">PJ</SelectItem>
-          <SelectItem value="temporary" className="text-white hover:bg-slate-700">Temporário</SelectItem>
-          <SelectItem value="intern" className="text-white hover:bg-slate-700">Estagiário</SelectItem>
+        <SelectContent side="bottom" className="bg-slate-800 border-slate-600 text-white z-50">
+          <SelectItem value="all" className="text-white hover:bg-slate-700 cursor-pointer">Todos</SelectItem>
+          <SelectItem value="clt" className="text-white hover:bg-slate-700 cursor-pointer">CLT</SelectItem>
+          <SelectItem value="pj" className="text-white hover:bg-slate-700 cursor-pointer">PJ</SelectItem>
+          <SelectItem value="temporary" className="text-white hover:bg-slate-700 cursor-pointer">Temporário</SelectItem>
+          <SelectItem value="intern" className="text-white hover:bg-slate-700 cursor-pointer">Estagiário</SelectItem>
         </SelectContent>
       </Select>
 

@@ -144,7 +144,7 @@ export default function CeasaPurchases() {
           <h1 className="text-2xl font-bold text-white">Compras CEASA</h1>
           <p className="text-slate-400">Registre as compras realizadas</p>
         </div>
-        <Button onClick={() => setShowForm(true)} className="bg-green-600 hover:bg-green-700">
+        <Button onClick={() => setShowForm(true)} className="bg-blue-600 hover:bg-blue-700">
           <Plus className="h-4 w-4 mr-2" />
           Nova Compra
         </Button>
@@ -189,9 +189,9 @@ export default function CeasaPurchases() {
             <div className="w-[200px]">
               <Select value={filters.supplier} onValueChange={(v) => setFilters(p => ({ ...p, supplier: v }))}>
                 <SelectTrigger className="bg-slate-900 border-slate-600 text-white"><SelectValue placeholder="Fornecedor" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos fornecedores</SelectItem>
-                  {suppliers.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
+                <SelectContent side="bottom" className="bg-slate-800 border-slate-600 text-white z-50">
+                  <SelectItem value="all" className="text-white hover:bg-slate-700 cursor-pointer">Todos fornecedores</SelectItem>
+                  {suppliers.map(s => <SelectItem key={s.id} value={String(s.id)} className="text-white hover:bg-slate-700 cursor-pointer">{s.name}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
@@ -262,8 +262,8 @@ export default function CeasaPurchases() {
                 <Label className="text-slate-300">Fornecedor *</Label>
                 <Select value={form.supplier_id} onValueChange={handleSupplierChange}>
                   <SelectTrigger className="bg-slate-800 border-slate-600 text-white"><SelectValue placeholder="Selecione" /></SelectTrigger>
-                  <SelectContent>
-                    {suppliers.filter(s => s.status === "active").map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
+                  <SelectContent side="bottom" className="bg-slate-800 border-slate-600 text-white z-50">
+                    {suppliers.filter(s => s.status === "active").map(s => <SelectItem key={s.id} value={String(s.id)} className="text-white hover:bg-slate-700 cursor-pointer">{s.name}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
@@ -277,8 +277,8 @@ export default function CeasaPurchases() {
                   <div className="col-span-2">
                     <Select value={newItem.product_id} onValueChange={handleProductChange}>
                       <SelectTrigger className="bg-slate-800 border-slate-600 text-white"><SelectValue placeholder="Produto" /></SelectTrigger>
-                      <SelectContent>
-                        {supplierProducts.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
+                      <SelectContent side="bottom" className="bg-slate-800 border-slate-600 text-white z-50">
+                        {supplierProducts.map(p => <SelectItem key={p.id} value={String(p.id)} className="text-white hover:bg-slate-700 cursor-pointer">{p.name}</SelectItem>)}
                       </SelectContent>
                     </Select>
                   </div>
@@ -289,7 +289,7 @@ export default function CeasaPurchases() {
                     <Input type="number" step="0.01" placeholder="Preço" value={newItem.unit_price} onChange={(e) => setNewItem(p => ({ ...p, unit_price: e.target.value }))} className="bg-slate-800 border-slate-600 text-white" />
                   </div>
                   <div>
-                    <Button type="button" onClick={handleAddItem} className="w-full bg-green-600 hover:bg-green-700">
+                    <Button type="button" onClick={handleAddItem} className="w-full bg-blue-600 hover:bg-blue-700">
                       <Plus className="h-4 w-4" />
                     </Button>
                   </div>
@@ -341,12 +341,12 @@ export default function CeasaPurchases() {
                 <Label className="text-slate-300">Forma de Pagamento</Label>
                 <Select value={form.payment_method} onValueChange={(v) => setForm(p => ({ ...p, payment_method: v }))}>
                   <SelectTrigger className="bg-slate-800 border-slate-600 text-white"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="cash">Dinheiro</SelectItem>
-                    <SelectItem value="pix">PIX</SelectItem>
-                    <SelectItem value="credit">Crédito</SelectItem>
-                    <SelectItem value="debit">Débito</SelectItem>
-                    <SelectItem value="invoice">Boleto</SelectItem>
+                  <SelectContent side="bottom" className="bg-slate-800 border-slate-600 text-white z-50">
+                    <SelectItem value="cash" className="text-white hover:bg-slate-700 cursor-pointer">Dinheiro</SelectItem>
+                    <SelectItem value="pix" className="text-white hover:bg-slate-700 cursor-pointer">PIX</SelectItem>
+                    <SelectItem value="credit" className="text-white hover:bg-slate-700 cursor-pointer">Crédito</SelectItem>
+                    <SelectItem value="debit" className="text-white hover:bg-slate-700 cursor-pointer">Débito</SelectItem>
+                    <SelectItem value="invoice" className="text-white hover:bg-slate-700 cursor-pointer">Boleto</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -364,8 +364,8 @@ export default function CeasaPurchases() {
             </div>
 
             <div className="flex justify-end gap-3">
-              <Button type="button" variant="outline" onClick={() => setShowForm(false)} className="border-slate-600">Cancelar</Button>
-              <Button type="submit" disabled={form.items.length === 0} className="bg-green-600 hover:bg-green-700">Salvar Compra</Button>
+              <Button type="button" variant="outline" onClick={() => setShowForm(false)} className="border-slate-600 text-slate-300 hover:bg-slate-800">Cancelar</Button>
+              <Button type="submit" disabled={form.items.length === 0} className="bg-blue-600 hover:bg-blue-700">Salvar Compra</Button>
             </div>
           </form>
         </DialogContent>
@@ -428,7 +428,7 @@ export default function CeasaPurchases() {
             <AlertDialogDescription className="text-slate-400">Deseja excluir esta compra?</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="border-slate-600">Cancelar</AlertDialogCancel>
+            <AlertDialogCancel className="bg-slate-800 border-slate-600 text-slate-300 hover:bg-slate-700">Cancelar</AlertDialogCancel>
             <AlertDialogAction onClick={() => deleteMutation.mutate(deletePurchase.id)} className="bg-red-600 hover:bg-red-700">Excluir</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

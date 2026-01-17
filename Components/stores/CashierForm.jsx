@@ -93,9 +93,9 @@ export default function CashierForm({ open, onClose, cashier, stores, onSave }) 
                 <SelectTrigger className="bg-slate-800 border-slate-600 text-white">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-slate-800 border-slate-600">
-                  <SelectItem value="active" className="text-white hover:bg-slate-700">Ativo</SelectItem>
-                  <SelectItem value="inactive" className="text-white hover:bg-slate-700">Inativo</SelectItem>
+                <SelectContent side="bottom" className="bg-slate-800 border-slate-600 text-white z-50">
+                  <SelectItem value="active" className="text-white hover:bg-slate-700 cursor-pointer">Ativo</SelectItem>
+                  <SelectItem value="inactive" className="text-white hover:bg-slate-700 cursor-pointer">Inativo</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -107,9 +107,9 @@ export default function CashierForm({ open, onClose, cashier, stores, onSave }) 
               <SelectTrigger className="bg-slate-800 border-slate-600 text-white">
                 <SelectValue placeholder="Selecione a loja" />
               </SelectTrigger>
-              <SelectContent className="bg-slate-800 border-slate-600">
+              <SelectContent side="bottom" className="bg-slate-800 border-slate-600 text-white z-50">
                 {stores.filter(s => s.status === 'active').map(store => (
-                  <SelectItem key={store.id} value={store.id} className="text-white hover:bg-slate-700">
+                  <SelectItem key={store.id} value={String(store.id)} className="text-white hover:bg-slate-700 cursor-pointer">
                     {store.code} - {store.name}
                   </SelectItem>
                 ))}

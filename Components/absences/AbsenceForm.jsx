@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { base44 } from "@/api/base44Client";
+import { AlertCircle } from "lucide-react";
 
 const absenceTypes = [
   { value: "absence", label: "Falta" },
@@ -34,6 +35,7 @@ export default function AbsenceForm({ open, onClose, absence, employees, onSave 
     observations: ""
   });
   const [loading, setLoading] = useState(false);
+  const [validationError, setValidationError] = useState("");
 
   useEffect(() => {
     if (absence) {
@@ -62,10 +64,11 @@ export default function AbsenceForm({ open, onClose, absence, employees, onSave 
         observations: ""
       });
     }
+    setValidationError("");
   }, [absence, open]);
 
   const handleEmployeeChange = (employeeId) => {
-    const employee = employees.find(e => e.id === employeeId);
+    const employee = employees.find(e => String(e.id) === String(employeeId));
     setFormData(prev => ({
       ...prev,
       employee_id: employeeId,
@@ -84,6 +87,18 @@ export default function AbsenceForm({ open, onClose, absence, employees, onSave 
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Validação dos campos obrigatórios
+    if (!formData.employee_id) {
+      setValidationError("Funcionário é obrigatório");
+      return;
+    }
+    if (!formData.date) {
+      setValidationError("Data é obrigatória");
+      return;
+    }
+    
+    setValidationError("");
     setLoading(true);
     
     const dataToSave = {
@@ -105,24 +120,33 @@ export default function AbsenceForm({ open, onClose, absence, employees, onSave 
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl bg-slate-900 border-slate-700">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-slate-900 border-slate-700">
         <DialogHeader>
           <DialogTitle className="text-white">
             {absence ? "Editar Falta/Atestado" : "Nova Falta/Atestado"}
           </DialogTitle>
         </DialogHeader>
         
+        {validationError && (
+          <div className="bg-red-500/10 border border-red-500/50 rounded-lg p-4 flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <p className="text-red-400 font-medium">{validationError}</p>
+            </div>
+          </div>
+        )}
+        
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
               <Label className="text-slate-300">Funcionário *</Label>
-              <Select value={formData.employee_id} onValueChange={handleEmployeeChange}>
+              <Select value={String(formData.employee_id)} onValueChange={handleEmployeeChange}>
                 <SelectTrigger className="bg-slate-800 border-slate-600 text-white">
                   <SelectValue placeholder="Selecione" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent side="bottom" className="bg-slate-800 border-slate-600 text-white z-50">
                   {employees.filter(e => e.status === "active").map(emp => (
-                    <SelectItem key={emp.id} value={emp.id}>{emp.full_name}</SelectItem>
+                    <SelectItem key={emp.id} value={String(emp.id)} className="text-white hover:bg-slate-700 cursor-pointer">{emp.full_name}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -145,9 +169,9 @@ export default function AbsenceForm({ open, onClose, absence, employees, onSave 
                 <SelectTrigger className="bg-slate-800 border-slate-600 text-white">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent side="bottom" className="bg-slate-800 border-slate-600 text-white z-50">
                   {absenceTypes.map(t => (
-                    <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
+                    <SelectItem key={t.value} value={t.value} className="text-white hover:bg-slate-700 cursor-pointer">{t.label}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -249,7 +273,7 @@ export default function AbsenceForm({ open, onClose, absence, employees, onSave 
           </div>
           
           <div className="flex justify-end gap-3 pt-4">
-            <Button type="button" variant="outline" onClick={onClose} className="border-slate-600">
+            <Button type="button" variant="outline" onClick={onClose} className="border-slate-600 text-slate-300 hover:bg-slate-800">
               Cancelar
             </Button>
             <Button type="submit" disabled={loading} className="bg-blue-600 hover:bg-blue-700">

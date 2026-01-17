@@ -113,7 +113,7 @@ export default function CeasaSuppliers() {
           <h1 className="text-2xl font-bold text-white">Fornecedores CEASA</h1>
           <p className="text-slate-400">Gerencie os fornecedores e seus produtos</p>
         </div>
-        <Button onClick={() => setShowForm(true)} className="bg-green-600 hover:bg-green-700">
+        <Button onClick={() => setShowForm(true)} className="bg-blue-600 hover:bg-blue-700">
           <Plus className="h-4 w-4 mr-2" />
           Novo Fornecedor
         </Button>
@@ -218,8 +218,8 @@ export default function CeasaSuppliers() {
               <Textarea value={supplierForm.observations} onChange={(e) => setSupplierForm(p => ({ ...p, observations: e.target.value }))} className="bg-slate-800 border-slate-600 text-white" />
             </div>
             <div className="flex justify-end gap-3">
-              <Button type="button" variant="outline" onClick={() => setShowForm(false)} className="border-slate-600">Cancelar</Button>
-              <Button type="submit" className="bg-green-600 hover:bg-green-700">Salvar</Button>
+              <Button type="button" variant="outline" onClick={() => setShowForm(false)} className="border-slate-600 text-slate-300 hover:bg-slate-800">Cancelar</Button>
+              <Button type="submit" className="bg-blue-600 hover:bg-blue-700">Salvar</Button>
             </div>
           </form>
         </DialogContent>
@@ -232,7 +232,7 @@ export default function CeasaSuppliers() {
             <DialogTitle className="text-white">Produtos - {showProducts?.name}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <Button onClick={() => { setProductForm(p => ({ ...p, supplier_id: showProducts?.id, supplier_name: showProducts?.name })); setShowProductForm(true); }} className="bg-green-600 hover:bg-green-700">
+            <Button onClick={() => { setProductForm(p => ({ ...p, supplier_id: showProducts?.id, supplier_name: showProducts?.name })); setShowProductForm(true); }} className="bg-blue-600 hover:bg-blue-700">
               <Plus className="h-4 w-4 mr-2" /> Adicionar Produto
             </Button>
             <div className="bg-slate-800/50 rounded-lg border border-slate-700 overflow-hidden">
@@ -297,11 +297,11 @@ export default function CeasaSuppliers() {
                 <Label className="text-slate-300">Categoria</Label>
                 <Select value={productForm.category} onValueChange={(v) => setProductForm(p => ({ ...p, category: v }))}>
                   <SelectTrigger className="bg-slate-800 border-slate-600 text-white"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="fruit">Fruta</SelectItem>
-                    <SelectItem value="vegetable">Legume</SelectItem>
-                    <SelectItem value="greens">Verdura</SelectItem>
-                    <SelectItem value="other">Outro</SelectItem>
+                  <SelectContent side="bottom" className="bg-slate-800 border-slate-600 text-white z-50">
+                    <SelectItem value="fruit" className="text-white hover:bg-slate-700 cursor-pointer">Fruta</SelectItem>
+                    <SelectItem value="vegetable" className="text-white hover:bg-slate-700 cursor-pointer">Legume</SelectItem>
+                    <SelectItem value="greens" className="text-white hover:bg-slate-700 cursor-pointer">Verdura</SelectItem>
+                    <SelectItem value="other" className="text-white hover:bg-slate-700 cursor-pointer">Outro</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -309,11 +309,11 @@ export default function CeasaSuppliers() {
                 <Label className="text-slate-300">Tipo de Preço *</Label>
                 <Select value={productForm.price_type} onValueChange={(v) => setProductForm(p => ({ ...p, price_type: v }))}>
                   <SelectTrigger className="bg-slate-800 border-slate-600 text-white"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="per_kg">Por Kg (preço do kg)</SelectItem>
-                    <SelectItem value="per_box">Por Caixa (preço fixo da caixa)</SelectItem>
-                    <SelectItem value="per_unit">Por Unidade</SelectItem>
-                    <SelectItem value="per_dozen">Por Dúzia</SelectItem>
+                  <SelectContent side="bottom" className="bg-slate-800 border-slate-600 text-white z-50">
+                    <SelectItem value="per_kg" className="text-white hover:bg-slate-700 cursor-pointer">Por Kg (preço do kg)</SelectItem>
+                    <SelectItem value="per_box" className="text-white hover:bg-slate-700 cursor-pointer">Por Caixa (preço fixo da caixa)</SelectItem>
+                    <SelectItem value="per_unit" className="text-white hover:bg-slate-700 cursor-pointer">Por Unidade</SelectItem>
+                    <SelectItem value="per_dozen" className="text-white hover:bg-slate-700 cursor-pointer">Por Dúzia</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -339,8 +339,8 @@ export default function CeasaSuppliers() {
               <Input type="number" step="0.01" value={productForm.default_price} onChange={(e) => setProductForm(p => ({ ...p, default_price: e.target.value }))} className="bg-slate-800 border-slate-600 text-white" />
             </div>
             <div className="flex justify-end gap-3">
-              <Button type="button" variant="outline" onClick={() => setShowProductForm(false)} className="border-slate-600">Cancelar</Button>
-              <Button type="submit" className="bg-green-600 hover:bg-green-700">Salvar</Button>
+              <Button type="button" variant="outline" onClick={() => setShowProductForm(false)} className="border-slate-600 text-slate-300 hover:bg-slate-800">Cancelar</Button>
+              <Button type="submit" className="bg-blue-600 hover:bg-blue-700">Salvar</Button>
             </div>
           </form>
         </DialogContent>
@@ -354,7 +354,7 @@ export default function CeasaSuppliers() {
             <AlertDialogDescription className="text-slate-400">Deseja excluir o fornecedor "{deleteSupplier?.name}"?</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="border-slate-600">Cancelar</AlertDialogCancel>
+            <AlertDialogCancel className="bg-slate-800 border-slate-600 text-slate-300 hover:bg-slate-700">Cancelar</AlertDialogCancel>
             <AlertDialogAction onClick={() => deleteMutation.mutate(deleteSupplier.id)} className="bg-red-600 hover:bg-red-700">Excluir</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

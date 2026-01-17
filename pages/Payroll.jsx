@@ -391,7 +391,7 @@ export default function Payroll() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="border-slate-600">Cancelar</AlertDialogCancel>
+            <AlertDialogCancel className="bg-slate-800 border-slate-600 text-slate-300 hover:bg-slate-700">Cancelar</AlertDialogCancel>
             <AlertDialogAction onClick={() => deleteMutation.mutate(deletePayroll.id)} className="bg-red-600 hover:bg-red-700">
               Excluir
             </AlertDialogAction>

@@ -3,9 +3,13 @@ const API_BASE = 'http://localhost:3000/api';
 async function safeFetch(url, options) {
   try {
     const res = await fetch(url, options);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({ error: `HTTP ${res.status}` }));
+      throw new Error(errorData.error || `HTTP ${res.status}`);
+    }
     return await res.json();
   } catch (e) {
+    console.error('Fetch error:', e);
     // Fallback para listas vazias em endpoints não implementados
     if (options?.method === undefined) return [];
     return { error: true, message: e.message };

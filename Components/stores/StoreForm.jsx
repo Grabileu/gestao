@@ -78,9 +78,9 @@ export default function StoreForm({ open, onClose, store, onSave }) {
                 <SelectTrigger className="bg-slate-800 border-slate-600 text-white">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-slate-800 border-slate-600">
-                  <SelectItem value="active" className="text-white hover:bg-slate-700">Ativa</SelectItem>
-                  <SelectItem value="inactive" className="text-white hover:bg-slate-700">Inativa</SelectItem>
+                <SelectContent side="bottom" className="bg-slate-800 border-slate-600 text-white z-50">
+                  <SelectItem value="active" className="text-white hover:bg-slate-700 cursor-pointer">Ativa</SelectItem>
+                  <SelectItem value="inactive" className="text-white hover:bg-slate-700 cursor-pointer">Inativa</SelectItem>
                 </SelectContent>
               </Select>
             </div>

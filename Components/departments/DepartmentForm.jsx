@@ -111,9 +111,9 @@ export default function DepartmentForm({ open, onClose, department, onSave }) {
                 <SelectTrigger className="bg-slate-800 border-slate-600 text-white">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-slate-800 border-slate-600">
-                  <SelectItem value="active" className="text-white hover:bg-slate-700">Ativo</SelectItem>
-                  <SelectItem value="inactive" className="text-white hover:bg-slate-700">Inativo</SelectItem>
+                <SelectContent side="bottom" className="bg-slate-800 border-slate-600 text-white z-50">
+                  <SelectItem value="active" className="text-white hover:bg-slate-700 cursor-pointer">Ativo</SelectItem>
+                  <SelectItem value="inactive" className="text-white hover:bg-slate-700 cursor-pointer">Inativo</SelectItem>
                 </SelectContent>
               </Select>
             </div>

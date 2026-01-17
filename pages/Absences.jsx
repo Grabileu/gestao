@@ -133,11 +133,11 @@ export default function Absences() {
                 <SelectTrigger className="bg-slate-900 border-slate-600 text-white">
                   <SelectValue placeholder="Tipo" />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos os tipos</SelectItem>
-                  <SelectItem value="absence">Falta</SelectItem>
-                  <SelectItem value="medical_certificate">Atestado</SelectItem>
-                  <SelectItem value="justified">Justificada</SelectItem>
+                <SelectContent className="bg-slate-900 border-slate-600 text-white">
+                  <SelectItem value="all" className="text-white hover:bg-slate-800 cursor-pointer">Todos os tipos</SelectItem>
+                  <SelectItem value="absence" className="text-white hover:bg-slate-800 cursor-pointer">Falta</SelectItem>
+                  <SelectItem value="medical_certificate" className="text-white hover:bg-slate-800 cursor-pointer">Atestado</SelectItem>
+                  <SelectItem value="justified" className="text-white hover:bg-slate-800 cursor-pointer">Justificada</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -179,7 +179,7 @@ export default function Absences() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="border-slate-600">Cancelar</AlertDialogCancel>
+            <AlertDialogCancel className="bg-slate-800 border-slate-600 text-slate-300 hover:bg-slate-700">Cancelar</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => deleteMutation.mutate(deleteAbsence.id)}
               className="bg-red-600 hover:bg-red-700"

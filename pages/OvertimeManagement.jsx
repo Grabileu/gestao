@@ -121,10 +121,10 @@ export default function OvertimeManagement() {
                 <SelectTrigger className="bg-slate-900 border-slate-600 text-white">
                   <SelectValue placeholder="Tipo" />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos os tipos</SelectItem>
-                  <SelectItem value="50">50%</SelectItem>
-                  <SelectItem value="100">100%</SelectItem>
+                <SelectContent className="bg-slate-900 border-slate-600 text-white">
+                  <SelectItem value="all" className="text-white hover:bg-slate-800 cursor-pointer">Todos os tipos</SelectItem>
+                  <SelectItem value="50" className="text-white hover:bg-slate-800 cursor-pointer">50%</SelectItem>
+                  <SelectItem value="100" className="text-white hover:bg-slate-800 cursor-pointer">100%</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -166,7 +166,7 @@ export default function OvertimeManagement() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="border-slate-600">Cancelar</AlertDialogCancel>
+            <AlertDialogCancel className="bg-slate-800 border-slate-600 text-slate-300 hover:bg-slate-700">Cancelar</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => deleteMutation.mutate(deleteOvertime.id)}
               className="bg-red-600 hover:bg-red-700"

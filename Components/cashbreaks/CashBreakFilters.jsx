@@ -68,10 +68,10 @@ export default function CashBreakFilters({ filters, onChange, stores, cashiers, 
               <SelectTrigger className="bg-slate-800 border-slate-600 text-white">
                 <SelectValue placeholder="Todas" />
               </SelectTrigger>
-              <SelectContent className="bg-slate-800 border-slate-600">
-                <SelectItem value="all" className="text-white hover:bg-slate-700">Todas</SelectItem>
+              <SelectContent side="bottom" className="bg-slate-800 border-slate-600 text-white z-50">
+                <SelectItem value="all" className="text-white hover:bg-slate-700 cursor-pointer">Todas</SelectItem>
                 {stores.map(store => (
-                  <SelectItem key={store.id} value={store.id} className="text-white hover:bg-slate-700">
+                  <SelectItem key={store.id} value={String(store.id)} className="text-white hover:bg-slate-700 cursor-pointer">
                     {store.code} - {store.name}
                   </SelectItem>
                 ))}
@@ -85,10 +85,10 @@ export default function CashBreakFilters({ filters, onChange, stores, cashiers, 
               <SelectTrigger className="bg-slate-800 border-slate-600 text-white">
                 <SelectValue placeholder="Todos" />
               </SelectTrigger>
-              <SelectContent className="bg-slate-800 border-slate-600">
-                <SelectItem value="all" className="text-white hover:bg-slate-700">Todos</SelectItem>
+              <SelectContent side="bottom" className="bg-slate-800 border-slate-600 text-white z-50">
+                <SelectItem value="all" className="text-white hover:bg-slate-700 cursor-pointer">Todos</SelectItem>
                 {cashiers.map(cashier => (
-                  <SelectItem key={cashier.id} value={cashier.id} className="text-white hover:bg-slate-700">
+                  <SelectItem key={cashier.id} value={String(cashier.id)} className="text-white hover:bg-slate-700 cursor-pointer">
                     {cashier.name}
                   </SelectItem>
                 ))}
@@ -102,10 +102,10 @@ export default function CashBreakFilters({ filters, onChange, stores, cashiers, 
               <SelectTrigger className="bg-slate-800 border-slate-600 text-white">
                 <SelectValue placeholder="Todos" />
               </SelectTrigger>
-              <SelectContent className="bg-slate-800 border-slate-600">
-                <SelectItem value="all" className="text-white hover:bg-slate-700">Todos</SelectItem>
-                <SelectItem value="shortage" className="text-white hover:bg-slate-700">Falta</SelectItem>
-                <SelectItem value="surplus" className="text-white hover:bg-slate-700">Sobra</SelectItem>
+              <SelectContent side="bottom" className="bg-slate-800 border-slate-600 text-white z-50">
+                <SelectItem value="all" className="text-white hover:bg-slate-700 cursor-pointer">Todos</SelectItem>
+                <SelectItem value="shortage" className="text-white hover:bg-slate-700 cursor-pointer">Falta</SelectItem>
+                <SelectItem value="surplus" className="text-white hover:bg-slate-700 cursor-pointer">Sobra</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -116,11 +116,11 @@ export default function CashBreakFilters({ filters, onChange, stores, cashiers, 
               <SelectTrigger className="bg-slate-800 border-slate-600 text-white">
                 <SelectValue placeholder="Todos" />
               </SelectTrigger>
-              <SelectContent className="bg-slate-800 border-slate-600">
-                <SelectItem value="all" className="text-white hover:bg-slate-700">Todos</SelectItem>
-                <SelectItem value="pending" className="text-white hover:bg-slate-700">Pendente</SelectItem>
-                <SelectItem value="paid" className="text-white hover:bg-slate-700">Pago</SelectItem>
-                <SelectItem value="cancelled" className="text-white hover:bg-slate-700">Cancelado</SelectItem>
+              <SelectContent side="bottom" className="bg-slate-800 border-slate-600 text-white z-50">
+                <SelectItem value="all" className="text-white hover:bg-slate-700 cursor-pointer">Todos</SelectItem>
+                <SelectItem value="pending" className="text-white hover:bg-slate-700 cursor-pointer">Pendente</SelectItem>
+                <SelectItem value="paid" className="text-white hover:bg-slate-700 cursor-pointer">Pago</SelectItem>
+                <SelectItem value="cancelled" className="text-white hover:bg-slate-700 cursor-pointer">Cancelado</SelectItem>
               </SelectContent>
             </Select>
           </div>

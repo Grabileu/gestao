@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { base44 } from "@/api/base44Client";
-import { Loader2, User, Briefcase, MapPin, Phone, Building2 } from "lucide-react";
+import { Loader2, User, Briefcase, MapPin, Phone, Building2, AlertCircle } from "lucide-react";
 
 const contractTypes = [
   { value: "clt", label: "CLT" },
@@ -53,6 +53,7 @@ export default function EmployeeForm({ open, onClose, employee, departments, onS
   });
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [validationError, setValidationError] = useState("");
 
   useEffect(() => {
     if (employee) {
@@ -92,6 +93,7 @@ export default function EmployeeForm({ open, onClose, employee, departments, onS
         photo_url: ""
       });
     }
+    setValidationError("");
   }, [employee, open]);
 
   const handleChange = (field, value) => {
@@ -116,6 +118,29 @@ export default function EmployeeForm({ open, onClose, employee, departments, onS
   };
 
   const handleSubmit = async () => {
+    // Validação dos campos obrigatórios
+    if (!formData.full_name.trim()) {
+      setValidationError("Nome Completo é obrigatório");
+      return;
+    }
+    if (!formData.email.trim()) {
+      setValidationError("Email é obrigatório");
+      return;
+    }
+    if (!formData.department_id) {
+      setValidationError("Departamento é obrigatório");
+      return;
+    }
+    if (!formData.position.trim()) {
+      setValidationError("Cargo é obrigatório");
+      return;
+    }
+    if (!formData.hire_date) {
+      setValidationError("Data de Admissão é obrigatória");
+      return;
+    }
+    
+    setValidationError("");
     setSaving(true);
     const data = {
       ...formData,
@@ -140,6 +165,15 @@ export default function EmployeeForm({ open, onClose, employee, departments, onS
             {employee ? "Editar Funcionário" : "Novo Funcionário"}
           </DialogTitle>
         </DialogHeader>
+
+        {validationError && (
+          <div className="bg-red-500/10 border border-red-500/50 rounded-lg p-4 flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <p className="text-red-400 font-medium">{validationError}</p>
+            </div>
+          </div>
+        )}
 
         <Tabs defaultValue="personal" className="w-full">
           <TabsList className="grid w-full grid-cols-4 bg-slate-800">
@@ -266,9 +300,9 @@ export default function EmployeeForm({ open, onClose, employee, departments, onS
                   <SelectTrigger className="bg-slate-800 border-slate-600 text-white">
                     <SelectValue placeholder="Selecione o departamento" />
                   </SelectTrigger>
-                  <SelectContent className="bg-slate-800 border-slate-600">
+                  <SelectContent side="bottom" className="bg-slate-800 border-slate-600 text-white z-50">
                     {departments.map(dept => (
-                      <SelectItem key={dept.id} value={dept.id} className="text-white hover:bg-slate-700">
+                      <SelectItem key={dept.id} value={String(dept.id)} className="text-white hover:bg-slate-700 cursor-pointer">
                         {dept.name}
                       </SelectItem>
                     ))}
@@ -290,9 +324,9 @@ export default function EmployeeForm({ open, onClose, employee, departments, onS
                   <SelectTrigger className="bg-slate-800 border-slate-600 text-white">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="bg-slate-800 border-slate-600">
+                  <SelectContent side="bottom" className="bg-slate-800 border-slate-600 text-white z-50">
                     {contractTypes.map(type => (
-                      <SelectItem key={type.value} value={type.value} className="text-white hover:bg-slate-700">
+                      <SelectItem key={type.value} value={type.value} className="text-white hover:bg-slate-700 cursor-pointer">
                         {type.label}
                       </SelectItem>
                     ))}
@@ -324,9 +358,9 @@ export default function EmployeeForm({ open, onClose, employee, departments, onS
                   <SelectTrigger className="bg-slate-800 border-slate-600 text-white">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="bg-slate-800 border-slate-600">
+                  <SelectContent side="bottom" className="bg-slate-800 border-slate-600 text-white z-50">
                     {statusOptions.map(status => (
-                      <SelectItem key={status.value} value={status.value} className="text-white hover:bg-slate-700">
+                      <SelectItem key={status.value} value={status.value} className="text-white hover:bg-slate-700 cursor-pointer">
                         {status.label}
                       </SelectItem>
                     ))}
