@@ -8,7 +8,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { MoreHorizontal, Pencil, Trash2, Eye } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { api } from "@/api/apiClient";
+import { base44 } from "@/api/base44Client";
 
 const statusColors = {
   active: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
@@ -28,7 +28,8 @@ const contractLabels = {
   clt: "CLT",
   pj: "PJ",
   temporary: "Temporário",
-  intern: "Estagiário"
+  intern: "Estagiário",
+  casual: "Avulso"
 };
 
 export default function EmployeeTable({ employees, onEdit, onView, onRefresh }) {
@@ -37,7 +38,7 @@ export default function EmployeeTable({ employees, onEdit, onView, onRefresh }) 
 
   const handleDelete = async () => {
     setDeleting(true);
-    await api.entities.Employee.delete(deleteId);
+    await base44.entities.Employee.delete(deleteId);
     setDeleteId(null);
     setDeleting(false);
     onRefresh();

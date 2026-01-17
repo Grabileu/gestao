@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { api } from "@/api/apiClient";
+import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -26,12 +26,12 @@ export default function CeasaSuppliers() {
 
   const { data: suppliers = [] } = useQuery({
     queryKey: ["ceasa-suppliers"],
-    queryFn: () => api.entities.CeasaSupplier.list()
+    queryFn: () => base44.entities.CeasaSupplier.list()
   });
 
   const { data: products = [] } = useQuery({
     queryKey: ["ceasa-products"],
-    queryFn: () => api.entities.CeasaProduct.list()
+    queryFn: () => base44.entities.CeasaProduct.list()
   });
 
   const [supplierForm, setSupplierForm] = useState({
@@ -43,7 +43,7 @@ export default function CeasaSuppliers() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id) => api.entities.CeasaSupplier.delete(id),
+    mutationFn: (id) => base44.entities.CeasaSupplier.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["ceasa-suppliers"] });
       setDeleteSupplier(null);
@@ -59,9 +59,9 @@ export default function CeasaSuppliers() {
   const handleSaveSupplier = async (e) => {
     e.preventDefault();
     if (editingSupplier?.id) {
-      await api.entities.CeasaSupplier.update(editingSupplier.id, supplierForm);
+      await base44.entities.CeasaSupplier.update(editingSupplier.id, supplierForm);
     } else {
-      await api.entities.CeasaSupplier.create(supplierForm);
+      await base44.entities.CeasaSupplier.create(supplierForm);
     }
     queryClient.invalidateQueries({ queryKey: ["ceasa-suppliers"] });
     setShowForm(false);
@@ -82,9 +82,9 @@ export default function CeasaSuppliers() {
       box_weight_kg: productForm.price_type === "per_box" ? parseFloat(productForm.box_weight_kg) || 0 : null
     };
     if (editingProduct?.id) {
-      await api.entities.CeasaProduct.update(editingProduct.id, data);
+      await base44.entities.CeasaProduct.update(editingProduct.id, data);
     } else {
-      await api.entities.CeasaProduct.create(data);
+      await base44.entities.CeasaProduct.create(data);
     }
     queryClient.invalidateQueries({ queryKey: ["ceasa-products"] });
     setShowProductForm(false);
@@ -93,7 +93,7 @@ export default function CeasaSuppliers() {
   };
 
   const handleDeleteProduct = async (product) => {
-    await api.entities.CeasaProduct.delete(product.id);
+    await base44.entities.CeasaProduct.delete(product.id);
     queryClient.invalidateQueries({ queryKey: ["ceasa-products"] });
   };
 

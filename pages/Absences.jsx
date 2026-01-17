@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { api } from "@/api/apiClient";
+import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -24,16 +24,16 @@ export default function Absences() {
 
   const { data: absences = [], isLoading } = useQuery({
     queryKey: ["absences"],
-    queryFn: () => api.entities.Absence.list("-date")
+    queryFn: () => base44.entities.Absence.list("-date")
   });
 
   const { data: employees = [] } = useQuery({
     queryKey: ["employees"],
-    queryFn: () => api.entities.Employee.list()
+    queryFn: () => base44.entities.Employee.list()
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id) => api.entities.Absence.delete(id),
+    mutationFn: (id) => base44.entities.Absence.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["absences"] });
       setDeleteAbsence(null);

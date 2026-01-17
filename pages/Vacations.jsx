@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { api } from "@/api/apiClient";
+import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -32,17 +32,17 @@ export default function Vacations() {
 
   const { data: vacations = [] } = useQuery({
     queryKey: ["vacations"],
-    queryFn: () => api.entities.Vacation.list("-created_date")
+    queryFn: () => base44.entities.Vacation.list("-created_date")
   });
 
   const { data: employees = [] } = useQuery({
     queryKey: ["employees"],
-    queryFn: () => api.entities.Employee.list()
+    queryFn: () => base44.entities.Employee.list()
   });
 
   const { data: configs = [] } = useQuery({
     queryKey: ["payroll-config"],
-    queryFn: () => api.entities.PayrollConfig.list()
+    queryFn: () => base44.entities.PayrollConfig.list()
   });
 
   const config = configs[0] || { vacation_days_per_year: 30, vacation_bonus_enabled: true };
@@ -68,7 +68,7 @@ export default function Vacations() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id) => api.entities.Vacation.delete(id),
+    mutationFn: (id) => base44.entities.Vacation.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["vacations"] });
       setDeleteVacation(null);
@@ -133,7 +133,7 @@ export default function Vacations() {
   const handleSave = async (e) => {
     e.preventDefault();
     calculateVacationPay();
-    await api.entities.Vacation.create(form);
+    await base44.entities.Vacation.create(form);
     queryClient.invalidateQueries({ queryKey: ["vacations"] });
     setShowForm(false);
     setForm({

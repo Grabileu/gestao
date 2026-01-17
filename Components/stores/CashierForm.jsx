@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { api } from "@/api/apiClient";
+import { base44 } from "@/api/base44Client";
 import { Loader2 } from "lucide-react";
 
 export default function CashierForm({ open, onClose, cashier, stores, onSave }) {
@@ -48,9 +48,9 @@ export default function CashierForm({ open, onClose, cashier, stores, onSave }) 
     setSaving(true);
     
     if (cashier?.id) {
-      await api.entities.Cashier.update(cashier.id, formData);
+      await base44.entities.Cashier.update(cashier.id, formData);
     } else {
-      await api.entities.Cashier.create(formData);
+      await base44.entities.Cashier.create(formData);
     }
     
     setSaving(false);

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { api } from "@/api/apiClient";
+import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -27,17 +27,17 @@ export default function CeasaPurchases() {
 
   const { data: purchases = [] } = useQuery({
     queryKey: ["ceasa-purchases"],
-    queryFn: () => api.entities.CeasaPurchase.list("-date")
+    queryFn: () => base44.entities.CeasaPurchase.list("-date")
   });
 
   const { data: suppliers = [] } = useQuery({
     queryKey: ["ceasa-suppliers"],
-    queryFn: () => api.entities.CeasaSupplier.list()
+    queryFn: () => base44.entities.CeasaSupplier.list()
   });
 
   const { data: products = [] } = useQuery({
     queryKey: ["ceasa-products"],
-    queryFn: () => api.entities.CeasaProduct.list()
+    queryFn: () => base44.entities.CeasaProduct.list()
   });
 
   const [form, setForm] = useState({
@@ -54,7 +54,7 @@ export default function CeasaPurchases() {
   const [newItem, setNewItem] = useState({ product_id: "", product_name: "", quantity: "", unit_type: "kg", unit_price: "", total_price: 0 });
 
   const deleteMutation = useMutation({
-    mutationFn: (id) => api.entities.CeasaPurchase.delete(id),
+    mutationFn: (id) => base44.entities.CeasaPurchase.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["ceasa-purchases"] });
       setDeletePurchase(null);
@@ -109,7 +109,7 @@ export default function CeasaPurchases() {
     e.preventDefault();
     if (form.items.length === 0) return;
     
-    await api.entities.CeasaPurchase.create(form);
+    await base44.entities.CeasaPurchase.create(form);
     queryClient.invalidateQueries({ queryKey: ["ceasa-purchases"] });
     setShowForm(false);
     setForm({

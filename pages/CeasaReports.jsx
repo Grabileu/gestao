@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { api } from "@/api/apiClient";
+import { base44 } from "@/api/base44Client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -19,12 +19,12 @@ export default function CeasaReports() {
 
   const { data: purchases = [] } = useQuery({
     queryKey: ["ceasa-purchases"],
-    queryFn: () => api.entities.CeasaPurchase.list("-date")
+    queryFn: () => base44.entities.CeasaPurchase.list("-date")
   });
 
   const { data: suppliers = [] } = useQuery({
     queryKey: ["ceasa-suppliers"],
-    queryFn: () => api.entities.CeasaSupplier.list()
+    queryFn: () => base44.entities.CeasaSupplier.list()
   });
 
   const filteredPurchases = purchases.filter(p => {

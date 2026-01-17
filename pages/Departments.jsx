@@ -1,172 +1,199 @@
-import React, { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { api } from "@/api/apiClient";
+import { useState } from "react";
+import { base44 } from "@/api/base44Client";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Pencil, Trash2, Building2, Printer } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { Building2, Plus, MoreVertical, Pencil, Trash2, Users, Wallet, Loader2 } from "lucide-react";
+import DepartmentForm from "@/components/departments/DepartmentForm";
 
 export default function Departments() {
-  const [showForm, setShowForm] = useState(false);
-  const [editingDept, setEditingDept] = useState(null);
-  const [deleteDept, setDeleteDept] = useState(null);
   const queryClient = useQueryClient();
+  const [showForm, setShowForm] = useState(false);
+  const [editingDepartment, setEditingDepartment] = useState(null);
+  const [deleteId, setDeleteId] = useState(null);
+  const [deleting, setDeleting] = useState(false);
 
-  const { data: departments = [] } = useQuery({
-    queryKey: ["departments"],
-    queryFn: () => api.entities.Department.list()
+  const { data: departments = [], isLoading: loadingDepts } = useQuery({
+    queryKey: ['departments'],
+    queryFn: () => base44.entities.Department.list()
   });
 
-  const [form, setForm] = useState({ name: "", description: "", manager: "", budget: "", status: "active" });
-
-  const deleteMutation = useMutation({
-    mutationFn: (id) => api.entities.Department.delete(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["departments"] });
-      setDeleteDept(null);
-    }
+  const { data: employees = [], isLoading: loadingEmps } = useQuery({
+    queryKey: ['employees'],
+    queryFn: () => base44.entities.Employee.list()
   });
 
-  const handleSave = async (e) => {
-    e.preventDefault();
-    const data = { ...form, budget: parseFloat(form.budget) || 0 };
-    if (editingDept?.id) {
-      await api.entities.Department.update(editingDept.id, data);
-    } else {
-      await api.entities.Department.create(data);
-    }
-    queryClient.invalidateQueries({ queryKey: ["departments"] });
-    setShowForm(false);
-    setEditingDept(null);
-    setForm({ name: "", description: "", manager: "", budget: "", status: "active" });
-  };
+  const isLoading = loadingDepts || loadingEmps;
 
-  const handleEdit = (dept) => {
-    setForm({ ...dept, budget: dept.budget?.toString() || "" });
-    setEditingDept(dept);
+  const handleOpenForm = (dept = null) => {
+    setEditingDepartment(dept);
     setShowForm(true);
   };
 
+  const handleCloseForm = () => {
+    setShowForm(false);
+    setEditingDepartment(null);
+  };
+
+  const handleSave = () => {
+    queryClient.invalidateQueries({ queryKey: ['departments'] });
+    handleCloseForm();
+  };
+
+  const handleDelete = async () => {
+    setDeleting(true);
+    await base44.entities.Department.delete(deleteId);
+    setDeleteId(null);
+    setDeleting(false);
+    queryClient.invalidateQueries({ queryKey: ['departments'] });
+  };
+
+  const getDepartmentStats = (deptId) => {
+    const deptEmployees = employees.filter(e => e.department_id === deptId && e.status === 'active');
+    const totalSalary = deptEmployees.reduce((sum, e) => sum + (e.salary || 0), 0);
+    return {
+      count: deptEmployees.length,
+      salary: totalSalary
+    };
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center">
+        <Loader2 className="w-10 h-10 animate-spin text-blue-400" />
+      </div>
+    );
+  }
+
   return (
-    <div className="p-6 space-y-6 print-content">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-bold text-white">Departamentos</h1>
-          <p className="text-slate-400">Gerencie os departamentos da empresa</p>
-        </div>
-        <div className="flex gap-2">
-          <Button onClick={() => window.print()} variant="outline" className="border-slate-600 text-slate-300">
-            <Printer className="h-4 w-4 mr-2" />Imprimir
-          </Button>
-          <Button onClick={() => setShowForm(true)} className="bg-blue-600 hover:bg-blue-700">
-            <Plus className="h-4 w-4 mr-2" />Novo Departamento
-          </Button>
-        </div>
-      </div>
-
-      <Card className="bg-slate-800/50 border-slate-700">
-        <CardContent className="p-4 flex items-center gap-4">
-          <div className="p-3 bg-yellow-500/20 rounded-lg"><Building2 className="h-6 w-6 text-yellow-400" /></div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-6">
+      <div className="max-w-7xl mx-auto space-y-6">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <p className="text-slate-400 text-sm">Total de Departamentos</p>
-            <p className="text-2xl font-bold text-white">{departments.length}</p>
+            <h1 className="text-3xl font-bold text-white">Departamentos</h1>
+            <p className="text-slate-400 mt-1">Gerencie os departamentos da empresa</p>
           </div>
-        </CardContent>
-      </Card>
+          <Button onClick={() => handleOpenForm()} className="bg-blue-600 hover:bg-blue-700">
+            <Plus className="w-4 h-4 mr-2" />
+            Novo Departamento
+          </Button>
+        </div>
 
-      <div className="bg-slate-800/50 rounded-lg border border-slate-700 overflow-hidden">
-        <Table>
-          <TableHeader>
-            <TableRow className="border-slate-700">
-              <TableHead className="text-slate-300">Nome</TableHead>
-              <TableHead className="text-slate-300">Descrição</TableHead>
-              <TableHead className="text-slate-300">Gerente</TableHead>
-              <TableHead className="text-slate-300">Status</TableHead>
-              <TableHead className="text-slate-300 text-right">Ações</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {departments.length === 0 ? (
-              <TableRow><TableCell colSpan={5} className="text-center text-slate-400 py-8">Nenhum departamento</TableCell></TableRow>
-            ) : (
-              departments.map((dept) => (
-                <TableRow key={dept.id} className="border-slate-700">
-                  <TableCell className="text-white font-medium">{dept.name}</TableCell>
-                  <TableCell className="text-slate-300">{dept.description || "-"}</TableCell>
-                  <TableCell className="text-slate-300">{dept.manager || "-"}</TableCell>
-                  <TableCell>
-                    <Badge className={dept.status === "active" ? "bg-green-500/20 text-green-400" : "bg-red-500/20 text-red-400"}>
-                      {dept.status === "active" ? "Ativo" : "Inativo"}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
-                      <Button size="icon" variant="ghost" onClick={() => handleEdit(dept)} className="text-slate-400 hover:text-white"><Pencil className="h-4 w-4" /></Button>
-                      <Button size="icon" variant="ghost" onClick={() => setDeleteDept(dept)} className="text-slate-400 hover:text-red-400"><Trash2 className="h-4 w-4" /></Button>
+        {/* Departments Grid */}
+        {departments.length === 0 ? (
+          <Card className="bg-slate-900/50 border-slate-700/50">
+            <CardContent className="py-16 text-center">
+              <Building2 className="w-16 h-16 mx-auto text-slate-600 mb-4" />
+              <h3 className="text-xl font-semibold text-white mb-2">Nenhum departamento cadastrado</h3>
+              <p className="text-slate-400 mb-6">Comece criando o primeiro departamento da empresa.</p>
+              <Button onClick={() => handleOpenForm()} className="bg-blue-600 hover:bg-blue-700">
+                <Plus className="w-4 h-4 mr-2" />
+                Criar Departamento
+              </Button>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {departments.map((dept) => {
+              const stats = getDepartmentStats(dept.id);
+              return (
+                <Card key={dept.id} className="bg-gradient-to-br from-slate-900 to-slate-800 border-slate-700/50 hover:border-slate-600 transition-colors">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-xl bg-blue-500/20 border border-blue-500/30">
+                          <Building2 className="w-5 h-5 text-blue-400" />
+                        </div>
+                        <div>
+                          <CardTitle className="text-white text-lg">{dept.name}</CardTitle>
+                          <Badge className={dept.status === 'active' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 'bg-slate-500/20 text-slate-400 border-slate-500/30'}>
+                            {dept.status === 'active' ? 'Ativo' : 'Inativo'}
+                          </Badge>
+                        </div>
+                      </div>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="text-slate-400 hover:text-white hover:bg-slate-700">
+                            <MoreVertical className="w-4 h-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="bg-slate-800 border-slate-700">
+                          <DropdownMenuItem onClick={() => handleOpenForm(dept)} className="text-slate-300 hover:bg-slate-700 cursor-pointer">
+                            <Pencil className="w-4 h-4 mr-2" />
+                            Editar
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => setDeleteId(dept.id)} className="text-rose-400 hover:bg-slate-700 cursor-pointer">
+                            <Trash2 className="w-4 h-4 mr-2" />
+                            Excluir
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </div>
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {dept.description && (
+                      <p className="text-slate-400 text-sm line-clamp-2">{dept.description}</p>
+                    )}
+                    
+                    {dept.manager && (
+                      <div className="text-sm">
+                        <span className="text-slate-500">Gerente:</span>
+                        <span className="text-slate-300 ml-2">{dept.manager}</span>
+                      </div>
+                    )}
+
+                    <div className="grid grid-cols-2 gap-4 pt-4 border-t border-slate-700/50">
+                      <div className="flex items-center gap-2">
+                        <Users className="w-4 h-4 text-blue-400" />
+                        <span className="text-white font-semibold">{stats.count}</span>
+                        <span className="text-slate-400 text-sm">funcionários</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Wallet className="w-4 h-4 text-emerald-400" />
+                        <span className="text-white font-semibold text-sm">
+                          R$ {stats.salary.toLocaleString('pt-BR', { maximumFractionDigits: 0 })}
+                        </span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Form Modal */}
+        <DepartmentForm 
+          open={showForm}
+          onClose={handleCloseForm}
+          department={editingDepartment}
+          onSave={handleSave}
+        />
+
+        {/* Delete Dialog */}
+        <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
+          <AlertDialogContent className="bg-slate-900 border-slate-700">
+            <AlertDialogHeader>
+              <AlertDialogTitle className="text-white">Confirmar exclusão</AlertDialogTitle>
+              <AlertDialogDescription className="text-slate-400">
+                Tem certeza que deseja excluir este departamento? Esta ação não pode ser desfeita.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel className="bg-slate-800 border-slate-600 text-slate-300 hover:bg-slate-700">
+                Cancelar
+              </AlertDialogCancel>
+              <AlertDialogAction onClick={handleDelete} disabled={deleting} className="bg-rose-600 hover:bg-rose-700">
+                {deleting ? "Excluindo..." : "Excluir"}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
-
-      <Dialog open={showForm} onOpenChange={() => { setShowForm(false); setEditingDept(null); }}>
-        <DialogContent className="bg-slate-900 border-slate-700">
-          <DialogHeader>
-            <DialogTitle className="text-white">{editingDept ? "Editar Departamento" : "Novo Departamento"}</DialogTitle>
-          </DialogHeader>
-          <form onSubmit={handleSave} className="space-y-4">
-            <div>
-              <Label className="text-slate-300">Nome *</Label>
-              <Input value={form.name} onChange={(e) => setForm(p => ({ ...p, name: e.target.value }))} className="bg-slate-800 border-slate-600 text-white" required />
-            </div>
-            <div>
-              <Label className="text-slate-300">Descrição</Label>
-              <Textarea value={form.description} onChange={(e) => setForm(p => ({ ...p, description: e.target.value }))} className="bg-slate-800 border-slate-600 text-white" />
-            </div>
-            <div>
-              <Label className="text-slate-300">Gerente</Label>
-              <Input value={form.manager} onChange={(e) => setForm(p => ({ ...p, manager: e.target.value }))} className="bg-slate-800 border-slate-600 text-white" />
-            </div>
-            <div>
-              <Label className="text-slate-300">Status</Label>
-              <Select value={form.status} onValueChange={(v) => setForm(p => ({ ...p, status: v }))}>
-                <SelectTrigger className="bg-slate-800 border-slate-600 text-white"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="active">Ativo</SelectItem>
-                  <SelectItem value="inactive">Inativo</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="flex justify-end gap-3">
-              <Button type="button" variant="outline" onClick={() => setShowForm(false)} className="border-slate-600">Cancelar</Button>
-              <Button type="submit" className="bg-blue-600 hover:bg-blue-700">Salvar</Button>
-            </div>
-          </form>
-        </DialogContent>
-      </Dialog>
-
-      <AlertDialog open={!!deleteDept} onOpenChange={() => setDeleteDept(null)}>
-        <AlertDialogContent className="bg-slate-900 border-slate-700">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-white">Confirmar exclusão</AlertDialogTitle>
-            <AlertDialogDescription className="text-slate-400">Deseja excluir o departamento "{deleteDept?.name}"?</AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel className="border-slate-600">Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={() => deleteMutation.mutate(deleteDept.id)} className="bg-red-600 hover:bg-red-700">Excluir</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
 }

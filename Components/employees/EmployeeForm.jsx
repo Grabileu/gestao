@@ -6,14 +6,15 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { api } from "@/api/apiClient";
+import { base44 } from "@/api/base44Client";
 import { Loader2, User, Briefcase, MapPin, Phone, Building2 } from "lucide-react";
 
 const contractTypes = [
   { value: "clt", label: "CLT" },
   { value: "pj", label: "PJ" },
   { value: "temporary", label: "Temporário" },
-  { value: "intern", label: "Estagiário" }
+  { value: "intern", label: "Estagiário" },
+  { value: "casual", label: "Avulso" }
 ];
 
 const statusOptions = [
@@ -55,7 +56,14 @@ export default function EmployeeForm({ open, onClose, employee, departments, onS
 
   useEffect(() => {
     if (employee) {
-      setFormData({ ...employee, salary: employee.salary?.toString() || "" });
+      // Preservar datas exatamente como estão no banco
+      setFormData({ 
+        ...employee, 
+        salary: employee.salary?.toString() || "",
+        birth_date: employee.birth_date ? employee.birth_date.split('T')[0] : "",
+        hire_date: employee.hire_date ? employee.hire_date.split('T')[0] : "",
+        termination_date: employee.termination_date ? employee.termination_date.split('T')[0] : ""
+      });
     } else {
       setFormData({
         full_name: "",
@@ -102,7 +110,7 @@ export default function EmployeeForm({ open, onClose, employee, departments, onS
     if (!file) return;
     
     setUploading(true);
-    const { file_url } = await api.integrations.Core.UploadFile({ file });
+    const { file_url } = await base44.integrations.Core.UploadFile({ file });
     setFormData(prev => ({ ...prev, photo_url: file_url }));
     setUploading(false);
   };
@@ -115,9 +123,9 @@ export default function EmployeeForm({ open, onClose, employee, departments, onS
     };
     
     if (employee?.id) {
-      await api.entities.Employee.update(employee.id, data);
+      await base44.entities.Employee.update(employee.id, data);
     } else {
-      await api.entities.Employee.create(data);
+      await base44.entities.Employee.create(data);
     }
     
     setSaving(false);

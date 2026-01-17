@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { api } from "@/api/apiClient";
+import { base44 } from "@/api/base44Client";
 
 const absenceTypes = [
   { value: "absence", label: "Falta" },
@@ -93,9 +93,9 @@ export default function AbsenceForm({ open, onClose, absence, employees, onSave 
     };
 
     if (absence?.id) {
-      await api.entities.Absence.update(absence.id, dataToSave);
+      await base44.entities.Absence.update(absence.id, dataToSave);
     } else {
-      await api.entities.Absence.create(dataToSave);
+      await base44.entities.Absence.create(dataToSave);
     }
     
     setLoading(false);

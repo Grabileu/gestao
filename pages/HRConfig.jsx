@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { api } from "@/api/apiClient";
+import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,7 +14,7 @@ export default function HRConfig() {
   
   const { data: configs = [] } = useQuery({
     queryKey: ["hr-config"],
-    queryFn: () => api.entities.HRConfig.list()
+    queryFn: () => base44.entities.HRConfig.list()
   });
 
   const [formData, setFormData] = useState({
@@ -71,9 +71,9 @@ export default function HRConfig() {
   const handleSave = async () => {
     setSaving(true);
     if (configs.length > 0 && configs[0].id) {
-      await api.entities.HRConfig.update(configs[0].id, formData);
+      await base44.entities.HRConfig.update(configs[0].id, formData);
     } else {
-      await api.entities.HRConfig.create(formData);
+      await base44.entities.HRConfig.create(formData);
     }
     queryClient.invalidateQueries({ queryKey: ["hr-config"] });
     setSaving(false);

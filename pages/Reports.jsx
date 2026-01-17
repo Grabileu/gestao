@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { api } from "@/api/apiClient";
+import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import { Loader2, FileSpreadsheet } from "lucide-react";
 import ReportFilters from "@/components/reports/ReportFilters";
@@ -20,12 +20,12 @@ export default function Reports() {
 
   const { data: employees = [], isLoading: loadingEmployees } = useQuery({
     queryKey: ['employees'],
-    queryFn: () => api.entities.Employee.list()
+    queryFn: () => base44.entities.Employee.list()
   });
 
   const { data: departments = [], isLoading: loadingDepartments } = useQuery({
     queryKey: ['departments'],
-    queryFn: () => api.entities.Department.list()
+    queryFn: () => base44.entities.Department.list()
   });
 
   const isLoading = loadingEmployees || loadingDepartments;

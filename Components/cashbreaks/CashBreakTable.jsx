@@ -7,7 +7,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { MoreHorizontal, Pencil, Trash2, CheckCircle } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { api } from "@/api/apiClient";
+import { base44 } from "@/api/base44Client";
 
 const typeColors = {
   shortage: "bg-rose-500/20 text-rose-400 border-rose-500/30",
@@ -43,14 +43,14 @@ export default function CashBreakTable({ cashBreaks, onEdit, onRefresh }) {
 
   const handleDelete = async () => {
     setDeleting(true);
-    await api.entities.CashBreak.delete(deleteId);
+    await base44.entities.CashBreak.delete(deleteId);
     setDeleteId(null);
     setDeleting(false);
     onRefresh();
   };
 
   const handleMarkAsPaid = async (item) => {
-    await api.entities.CashBreak.update(item.id, {
+    await base44.entities.CashBreak.update(item.id, {
       ...item,
       voucher_status: "paid",
       payment_date: new Date().toISOString().split('T')[0]

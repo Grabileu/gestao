@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { api } from "@/api/apiClient";
+import { base44 } from "@/api/base44Client";
 
 export default function OvertimeForm({ open, onClose, overtime, employees, onSave }) {
   const [formData, setFormData] = useState({
@@ -70,9 +70,9 @@ export default function OvertimeForm({ open, onClose, overtime, employees, onSav
     };
 
     if (overtime?.id) {
-      await api.entities.Overtime.update(overtime.id, dataToSave);
+      await base44.entities.Overtime.update(overtime.id, dataToSave);
     } else {
-      await api.entities.Overtime.create(dataToSave);
+      await base44.entities.Overtime.create(dataToSave);
     }
     
     setLoading(false);

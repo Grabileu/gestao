@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { api } from "@/api/apiClient";
+import { base44 } from "@/api/base44Client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -24,19 +24,19 @@ export default function Stores() {
 
   const { data: stores = [], isLoading: loadingStores } = useQuery({
     queryKey: ['stores'],
-    queryFn: () => api.entities.Store.list()
+    queryFn: () => base44.entities.Store.list()
   });
 
   const { data: cashiers = [], isLoading: loadingCashiers } = useQuery({
     queryKey: ['cashiers'],
-    queryFn: () => api.entities.Cashier.list()
+    queryFn: () => base44.entities.Cashier.list()
   });
 
   const isLoading = loadingStores || loadingCashiers;
 
   const handleDeleteStore = async () => {
     setDeleting(true);
-    await api.entities.Store.delete(deleteStore);
+    await base44.entities.Store.delete(deleteStore);
     setDeleteStore(null);
     setDeleting(false);
     queryClient.invalidateQueries({ queryKey: ['stores'] });
@@ -44,7 +44,7 @@ export default function Stores() {
 
   const handleDeleteCashier = async () => {
     setDeleting(true);
-    await api.entities.Cashier.delete(deleteCashier);
+    await base44.entities.Cashier.delete(deleteCashier);
     setDeleteCashier(null);
     setDeleting(false);
     queryClient.invalidateQueries({ queryKey: ['cashiers'] });

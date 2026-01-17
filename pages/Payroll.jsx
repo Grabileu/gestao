@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { api } from "@/api/apiClient";
+import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -42,27 +42,27 @@ export default function Payroll() {
 
   const { data: employees = [] } = useQuery({
     queryKey: ["employees"],
-    queryFn: () => api.entities.Employee.list()
+    queryFn: () => base44.entities.Employee.list()
   });
 
   const { data: absences = [] } = useQuery({
     queryKey: ["absences"],
-    queryFn: () => api.entities.Absence.list()
+    queryFn: () => base44.entities.Absence.list()
   });
 
   const { data: overtimes = [] } = useQuery({
     queryKey: ["overtimes"],
-    queryFn: () => api.entities.Overtime.list()
+    queryFn: () => base44.entities.Overtime.list()
   });
 
   const { data: payrolls = [] } = useQuery({
     queryKey: ["payrolls"],
-    queryFn: () => api.entities.Payroll.list("-month_reference")
+    queryFn: () => base44.entities.Payroll.list("-month_reference")
   });
 
   const { data: configs = [] } = useQuery({
     queryKey: ["payroll-config"],
-    queryFn: () => api.entities.PayrollConfig.list()
+    queryFn: () => base44.entities.PayrollConfig.list()
   });
 
   const config = configs[0] || {
@@ -79,7 +79,7 @@ export default function Payroll() {
   };
 
   const deleteMutation = useMutation({
-    mutationFn: (id) => api.entities.Payroll.delete(id),
+    mutationFn: (id) => base44.entities.Payroll.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["payrolls"] });
       setDeletePayroll(null);
@@ -153,7 +153,7 @@ export default function Payroll() {
       const totalDiscounts = absencesDiscount + inss + irrf + vtDiscount;
       const netSalary = grossSalary - inss - irrf - vtDiscount;
 
-      await api.entities.Payroll.create({
+      await base44.entities.Payroll.create({
         employee_id: employee.id,
         employee_name: employee.full_name,
         month_reference: selectedMonth,

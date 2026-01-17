@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { api } from "@/api/apiClient";
+import { base44 } from "@/api/base44Client";
 import { Loader2 } from "lucide-react";
 
 export default function StoreForm({ open, onClose, store, onSave }) {
@@ -43,9 +43,9 @@ export default function StoreForm({ open, onClose, store, onSave }) {
     setSaving(true);
     
     if (store?.id) {
-      await api.entities.Store.update(store.id, formData);
+      await base44.entities.Store.update(store.id, formData);
     } else {
-      await api.entities.Store.create(formData);
+      await base44.entities.Store.create(formData);
     }
     
     setSaving(false);

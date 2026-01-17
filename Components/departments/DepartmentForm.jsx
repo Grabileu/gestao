@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { api } from "@/api/apiClient";
+import { base44 } from "@/api/base44Client";
 import { Loader2 } from "lucide-react";
 
 export default function DepartmentForm({ open, onClose, department, onSave }) {
@@ -44,9 +44,9 @@ export default function DepartmentForm({ open, onClose, department, onSave }) {
     };
     
     if (department?.id) {
-      await api.entities.Department.update(department.id, data);
+      await base44.entities.Department.update(department.id, data);
     } else {
-      await api.entities.Department.create(data);
+      await base44.entities.Department.create(data);
     }
     
     setSaving(false);

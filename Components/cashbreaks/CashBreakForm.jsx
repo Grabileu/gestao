@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { api } from "@/api/apiClient";
+import { base44 } from "@/api/base44Client";
 import { Loader2 } from "lucide-react";
 
 const shiftOptions = [
@@ -108,9 +108,9 @@ export default function CashBreakForm({ open, onClose, cashBreak, stores, cashie
     };
     
     if (cashBreak?.id) {
-      await api.entities.CashBreak.update(cashBreak.id, data);
+      await base44.entities.CashBreak.update(cashBreak.id, data);
     } else {
-      await api.entities.CashBreak.create(data);
+      await base44.entities.CashBreak.create(data);
     }
     
     setSaving(false);

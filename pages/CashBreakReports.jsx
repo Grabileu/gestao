@@ -1,298 +1,294 @@
-import React, { useState } from "react";
+import { useState } from "react";
+import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
-import { api } from "@/api/apiClient";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Loader2, FileSpreadsheet, Store, User, TrendingDown } from "lucide-react";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from "recharts";
+import CashBreakFilters from "@/components/cashbreaks/CashBreakFilters";
+import CashBreakStats from "@/components/cashbreaks/CashBreakStats";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Printer, FileText, Filter } from "lucide-react";
-import moment from "moment";
 
-const paymentTypeLabels = {
-  cash: "Dinheiro",
-  credit: "Crédito",
-  debit: "Débito",
-  subsidy: "Subsídio",
-  food_voucher: "Alimentação",
-  pos: "POS",
-  customer_credit: "Cliente a Prazo",
-  pix: "Pix"
-};
+const COLORS = ['#4361ee', '#3a86ff', '#8338ec', '#ff006e', '#fb5607', '#ffbe0b', '#06d6a0', '#118ab2'];
 
-export default function CashBreakReport() {
+export default function CashBreakReports() {
   const [filters, setFilters] = useState({
-    startDate: moment().startOf("month").format("YYYY-MM-DD"),
-    endDate: moment().endOf("month").format("YYYY-MM-DD"),
-    store_id: "all",
-    employee_id: "all",
-    payment_type: "all"
+    store: "all",
+    cashier: "all",
+    type: "all",
+    status: "all",
+    date_from: "",
+    date_to: ""
   });
 
-  const { data: cashBreaks = [] } = useQuery({
-    queryKey: ["cash-breaks"],
-    queryFn: () => api.entities.CashBreak.list("-date")
+  const { data: cashBreaks = [], isLoading: loadingBreaks } = useQuery({
+    queryKey: ['cashBreaks'],
+    queryFn: () => base44.entities.CashBreak.list('-date')
   });
 
-  const { data: stores = [] } = useQuery({
-    queryKey: ["stores"],
-    queryFn: () => api.entities.Store.list()
+  const { data: stores = [], isLoading: loadingStores } = useQuery({
+    queryKey: ['stores'],
+    queryFn: () => base44.entities.Store.list()
   });
 
-  const { data: employees = [] } = useQuery({
-    queryKey: ["employees"],
-    queryFn: () => api.entities.Employee.list()
+  const { data: cashiers = [], isLoading: loadingCashiers } = useQuery({
+    queryKey: ['cashiers'],
+    queryFn: () => base44.entities.Cashier.list()
   });
 
-  const cashiers = employees.filter(e => e.is_cashier);
+  const isLoading = loadingBreaks || loadingStores || loadingCashiers;
 
-  const filteredData = cashBreaks.filter(b => {
-    const dateMatch = (!filters.startDate || b.date >= filters.startDate) && 
-                      (!filters.endDate || b.date <= filters.endDate);
-    const storeMatch = filters.store_id === "all" || b.store_id === filters.store_id;
-    const empMatch = filters.employee_id === "all" || b.employee_id === filters.employee_id;
-    const typeMatch = filters.payment_type === "all" || b.payment_type === filters.payment_type;
-    return dateMatch && storeMatch && empMatch && typeMatch;
+  const filteredBreaks = cashBreaks.filter(item => {
+    const matchesStore = filters.store === "all" || item.store_id === filters.store;
+    const matchesCashier = filters.cashier === "all" || item.cashier_id === filters.cashier;
+    const matchesType = filters.type === "all" || item.type === filters.type;
+    const matchesStatus = filters.status === "all" || item.voucher_status === filters.status;
+    
+    const matchesDateFrom = !filters.date_from || 
+      (item.date && new Date(item.date) >= new Date(filters.date_from));
+    
+    const matchesDateTo = !filters.date_to || 
+      (item.date && new Date(item.date) <= new Date(filters.date_to));
+
+    return matchesStore && matchesCashier && matchesType && matchesStatus && matchesDateFrom && matchesDateTo;
   });
 
-  const totals = filteredData.reduce((acc, b) => {
-    if (b.type === "shortage") {
-      acc.totalShortage += b.amount || 0;
-      acc.totalDiscount += b.total_discount || 0;
-    } else {
-      acc.totalSurplus += b.amount || 0;
-    }
-    return acc;
-  }, { totalShortage: 0, totalSurplus: 0, totalDiscount: 0 });
+  // Dados por loja
+  const storeData = stores.map(store => {
+    const storeBreaks = filteredBreaks.filter(b => b.store_id === store.id);
+    const shortages = storeBreaks.filter(b => b.type === 'shortage');
+    const surpluses = storeBreaks.filter(b => b.type === 'surplus');
+    return {
+      name: store.code || store.name?.substring(0, 10),
+      faltas: shortages.reduce((sum, b) => sum + (b.amount || 0), 0),
+      sobras: surpluses.reduce((sum, b) => sum + (b.amount || 0), 0),
+      total: storeBreaks.length
+    };
+  }).filter(d => d.total > 0);
 
-  const formatCurrency = (v) => new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(v || 0);
+  // Dados por operador
+  const cashierData = cashiers.map(cashier => {
+    const cashierBreaks = filteredBreaks.filter(b => b.cashier_id === cashier.id);
+    const shortages = cashierBreaks.filter(b => b.type === 'shortage');
+    return {
+      name: cashier.name,
+      store: cashier.store_name,
+      count: cashierBreaks.length,
+      shortageAmount: shortages.reduce((sum, b) => sum + (b.amount || 0), 0),
+      shortageCount: shortages.length
+    };
+  }).filter(d => d.count > 0).sort((a, b) => b.shortageAmount - a.shortageAmount);
 
-  const handlePrint = () => {
-    const printWindow = window.open('', '_blank');
-    printWindow.document.write(`
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <title>Relatório de Quebras de Caixa - GUF System</title>
-          <style>
-            * { margin: 0; padding: 0; box-sizing: border-box; }
-            body { font-family: Arial, sans-serif; padding: 20px; font-size: 11px; }
-            h1 { text-align: center; margin-bottom: 5px; font-size: 16px; }
-            .subtitle { text-align: center; color: #666; margin-bottom: 15px; font-size: 10px; }
-            .filters { background: #f5f5f5; padding: 10px; margin-bottom: 15px; border-radius: 4px; }
-            .filters span { margin-right: 15px; }
-            table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
-            th, td { border: 1px solid #ddd; padding: 6px; text-align: left; }
-            th { background: #f0f0f0; font-weight: bold; }
-            .shortage { color: #dc2626; }
-            .surplus { color: #16a34a; }
-            .totals { background: #f5f5f5; padding: 10px; border-radius: 4px; }
-            .totals div { margin-bottom: 5px; }
-            .total-label { font-weight: bold; }
-            @media print { 
-              body { padding: 10px; }
-              @page { margin: 1cm; }
-            }
-          </style>
-        </head>
-        <body>
-          <h1>GUF System - Relatório de Quebras de Caixa</h1>
-          <p class="subtitle">Período: ${moment(filters.startDate).format("DD/MM/YYYY")} a ${moment(filters.endDate).format("DD/MM/YYYY")}</p>
-          
-          <div class="filters">
-            <span><strong>Registros:</strong> ${filteredData.length}</span>
-            ${filters.store_id !== "all" ? `<span><strong>Loja:</strong> ${stores.find(s => s.id === filters.store_id)?.name}</span>` : ""}
-            ${filters.employee_id !== "all" ? `<span><strong>Operador:</strong> ${employees.find(e => e.id === filters.employee_id)?.full_name}</span>` : ""}
-          </div>
+  // Dados para pie chart por tipo
+  const typeData = [
+    { name: 'Faltas', value: filteredBreaks.filter(b => b.type === 'shortage').reduce((sum, b) => sum + (b.amount || 0), 0) },
+    { name: 'Sobras', value: filteredBreaks.filter(b => b.type === 'surplus').reduce((sum, b) => sum + (b.amount || 0), 0) }
+  ].filter(d => d.value > 0);
 
-          <table>
-            <thead>
-              <tr>
-                <th>Data</th>
-                <th>Operador</th>
-                <th>Loja</th>
-                <th>Finalizadora</th>
-                <th>Tipo</th>
-                <th>Valor</th>
-                <th>Desconto</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${filteredData.map(b => `
-                <tr>
-                  <td>${moment(b.date).format("DD/MM/YYYY")}</td>
-                  <td>${b.employee_name || "-"}</td>
-                  <td>${b.store_name || "-"}</td>
-                  <td>${paymentTypeLabels[b.payment_type] || b.payment_type}</td>
-                  <td class="${b.type === "shortage" ? "shortage" : "surplus"}">${b.type === "shortage" ? "Falta" : "Sobra"}</td>
-                  <td>${formatCurrency(b.amount)}</td>
-                  <td class="shortage">${formatCurrency(b.total_discount)}</td>
-                </tr>
-              `).join("")}
-            </tbody>
-          </table>
-
-          <div class="totals">
-            <div><span class="total-label">Total de Faltas:</span> <span class="shortage">${formatCurrency(totals.totalShortage)}</span></div>
-            <div><span class="total-label">Total de Sobras:</span> <span class="surplus">${formatCurrency(totals.totalSurplus)}</span></div>
-            <div><span class="total-label">Total de Descontos:</span> <span class="shortage">${formatCurrency(totals.totalDiscount)}</span></div>
-          </div>
-
-          <script>window.onload = function() { window.print(); }</script>
-        </body>
-      </html>
-    `);
-    printWindow.document.close();
+  const handleClearFilters = () => {
+    setFilters({
+      store: "all",
+      cashier: "all",
+      type: "all",
+      status: "all",
+      date_from: "",
+      date_to: ""
+    });
   };
 
+  const handleExport = () => {
+    const headers = [
+      "Data", "Loja", "Operador", "Turno", "Tipo", "Valor", "Vale", "Status", "Motivo"
+    ];
+
+    const typeLabels = { shortage: "Falta", surplus: "Sobra" };
+    const statusLabels = { pending: "Pendente", paid: "Pago", cancelled: "Cancelado" };
+    const shiftLabels = { morning: "Manhã", afternoon: "Tarde", night: "Noite" };
+
+    const rows = filteredBreaks.map(b => [
+      b.date || "",
+      b.store_name || "",
+      b.cashier_name || "",
+      shiftLabels[b.shift] || "",
+      typeLabels[b.type] || "",
+      b.amount || 0,
+      b.voucher_number || "",
+      statusLabels[b.voucher_status] || "",
+      b.reason || ""
+    ]);
+
+    const csvContent = [
+      headers.join(";"),
+      ...rows.map(row => row.join(";"))
+    ].join("\n");
+
+    const blob = new Blob(["\ufeff" + csvContent], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `relatorio_quebras_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center">
+        <Loader2 className="w-10 h-10 animate-spin text-blue-400" />
+      </div>
+    );
+  }
+
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-bold text-white">Relatório de Quebras de Caixa</h1>
-          <p className="text-slate-400">Análise detalhada de faltas e sobras</p>
-        </div>
-        <Button onClick={handlePrint} className="bg-blue-600 hover:bg-blue-700">
-          <Printer className="h-4 w-4 mr-2" />Imprimir Relatório
-        </Button>
-      </div>
-
-      {/* Filtros */}
-      <Card className="bg-slate-800/50 border-slate-700">
-        <CardHeader>
-          <CardTitle className="text-white flex items-center gap-2">
-            <Filter className="h-5 w-5" /> Filtros
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-            <div>
-              <Label className="text-slate-300">Data Início</Label>
-              <Input 
-                type="date" 
-                value={filters.startDate} 
-                onChange={(e) => setFilters(p => ({ ...p, startDate: e.target.value }))} 
-                className="bg-slate-900 border-slate-600 text-white"
-              />
-            </div>
-            <div>
-              <Label className="text-slate-300">Data Fim</Label>
-              <Input 
-                type="date" 
-                value={filters.endDate} 
-                onChange={(e) => setFilters(p => ({ ...p, endDate: e.target.value }))} 
-                className="bg-slate-900 border-slate-600 text-white"
-              />
-            </div>
-            <div>
-              <Label className="text-slate-300">Loja</Label>
-              <Select value={filters.store_id} onValueChange={(v) => setFilters(p => ({ ...p, store_id: v }))}>
-                <SelectTrigger className="bg-slate-900 border-slate-600 text-white">
-                  <SelectValue placeholder="Todas" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todas</SelectItem>
-                  {stores.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label className="text-slate-300">Operador</Label>
-              <Select value={filters.employee_id} onValueChange={(v) => setFilters(p => ({ ...p, employee_id: v }))}>
-                <SelectTrigger className="bg-slate-900 border-slate-600 text-white">
-                  <SelectValue placeholder="Todos" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos</SelectItem>
-                  {cashiers.map(c => <SelectItem key={c.id} value={c.id}>{c.full_name}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label className="text-slate-300">Finalizadora</Label>
-              <Select value={filters.payment_type} onValueChange={(v) => setFilters(p => ({ ...p, payment_type: v }))}>
-                <SelectTrigger className="bg-slate-900 border-slate-600 text-white">
-                  <SelectValue placeholder="Todas" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todas</SelectItem>
-                  {Object.entries(paymentTypeLabels).map(([k, v]) => (
-                    <SelectItem key={k} value={k}>{v}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-6">
+      <div className="max-w-7xl mx-auto space-y-6">
+        {/* Header */}
+        <div className="flex items-center gap-3">
+          <div className="p-3 rounded-xl bg-purple-500/20 border border-purple-500/30">
+            <FileSpreadsheet className="w-6 h-6 text-purple-400" />
           </div>
-        </CardContent>
-      </Card>
+          <div>
+            <h1 className="text-3xl font-bold text-white">Relatórios de Quebras</h1>
+            <p className="text-slate-400 mt-1">Análise detalhada por loja e operador</p>
+          </div>
+        </div>
 
-      {/* Totais */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="bg-red-500/10 border-red-500/30">
-          <CardContent className="p-4">
-            <p className="text-red-400 text-sm">Total de Faltas</p>
-            <p className="text-2xl font-bold text-red-400">{formatCurrency(totals.totalShortage)}</p>
-          </CardContent>
-        </Card>
-        <Card className="bg-green-500/10 border-green-500/30">
-          <CardContent className="p-4">
-            <p className="text-green-400 text-sm">Total de Sobras</p>
-            <p className="text-2xl font-bold text-green-400">{formatCurrency(totals.totalSurplus)}</p>
-          </CardContent>
-        </Card>
-        <Card className="bg-yellow-500/10 border-yellow-500/30">
-          <CardContent className="p-4">
-            <p className="text-yellow-400 text-sm">Total Descontos</p>
-            <p className="text-2xl font-bold text-yellow-400">{formatCurrency(totals.totalDiscount)}</p>
+        {/* Filters */}
+        <CashBreakFilters 
+          filters={filters}
+          onChange={setFilters}
+          stores={stores}
+          cashiers={cashiers}
+          onClear={handleClearFilters}
+          onExport={handleExport}
+          showExport={true}
+        />
+
+        {/* Stats */}
+        <CashBreakStats cashBreaks={filteredBreaks} />
+
+        {/* Charts Row */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Bar Chart - Por Loja */}
+          <Card className="bg-gradient-to-br from-slate-900 to-slate-800 border-slate-700/50">
+            <CardHeader className="flex flex-row items-center gap-3">
+              <Store className="w-5 h-5 text-blue-400" />
+              <CardTitle className="text-white text-lg">Quebras por Loja</CardTitle>
+            </CardHeader>
+            <CardContent className="h-72">
+              {storeData.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={storeData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                    <XAxis dataKey="name" stroke="#64748b" tick={{ fill: '#94a3b8', fontSize: 12 }} />
+                    <YAxis stroke="#64748b" tick={{ fill: '#94a3b8', fontSize: 12 }} tickFormatter={(v) => `R$${v}`} />
+                    <Tooltip 
+                      contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '8px', color: '#fff' }}
+                      formatter={(value) => [`R$ ${value.toLocaleString('pt-BR')}`, '']}
+                    />
+                    <Bar dataKey="faltas" fill="#f43f5e" name="Faltas" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="sobras" fill="#10b981" name="Sobras" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="h-full flex items-center justify-center text-slate-500">
+                  Nenhum dado disponível
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Pie Chart - Por Tipo */}
+          <Card className="bg-gradient-to-br from-slate-900 to-slate-800 border-slate-700/50">
+            <CardHeader className="flex flex-row items-center gap-3">
+              <TrendingDown className="w-5 h-5 text-rose-400" />
+              <CardTitle className="text-white text-lg">Distribuição por Tipo</CardTitle>
+            </CardHeader>
+            <CardContent className="h-72">
+              {typeData.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={typeData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={50}
+                      outerRadius={80}
+                      paddingAngle={2}
+                      dataKey="value"
+                      label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                    >
+                      <Cell fill="#f43f5e" />
+                      <Cell fill="#10b981" />
+                    </Pie>
+                    <Tooltip 
+                      contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '8px', color: '#fff' }}
+                      formatter={(value) => [`R$ ${value.toLocaleString('pt-BR')}`, '']}
+                    />
+                    <Legend formatter={(value) => <span style={{ color: '#94a3b8' }}>{value}</span>} />
+                  </PieChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="h-full flex items-center justify-center text-slate-500">
+                  Nenhum dado disponível
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Top Operadores com mais quebras */}
+        <Card className="bg-gradient-to-br from-slate-900 to-slate-800 border-slate-700/50">
+          <CardHeader className="flex flex-row items-center gap-3">
+            <User className="w-5 h-5 text-amber-400" />
+            <CardTitle className="text-white text-lg">Ranking de Operadores (Mais Quebras)</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow className="border-slate-700/50 hover:bg-transparent">
+                  <TableHead className="text-slate-400">#</TableHead>
+                  <TableHead className="text-slate-400">Operador</TableHead>
+                  <TableHead className="text-slate-400">Loja</TableHead>
+                  <TableHead className="text-slate-400">Ocorrências</TableHead>
+                  <TableHead className="text-slate-400">Faltas</TableHead>
+                  <TableHead className="text-slate-400">Total Faltas</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {cashierData.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center py-8 text-slate-500">
+                      Nenhum dado disponível
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  cashierData.slice(0, 10).map((item, index) => (
+                    <TableRow key={index} className="border-slate-700/50 hover:bg-slate-800/50">
+                      <TableCell className="text-white font-bold">{index + 1}</TableCell>
+                      <TableCell className="text-white font-medium">{item.name}</TableCell>
+                      <TableCell className="text-slate-300">{item.store || "-"}</TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className="border-slate-600 text-slate-300">
+                          {item.count}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge className="bg-rose-500/20 text-rose-400 border-rose-500/30">
+                          {item.shortageCount}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-rose-400 font-semibold">
+                        R$ {item.shortageAmount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
           </CardContent>
         </Card>
       </div>
-
-      {/* Tabela */}
-      <Card className="bg-slate-800/50 border-slate-700">
-        <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow className="border-slate-700">
-                <TableHead className="text-slate-300">Data</TableHead>
-                <TableHead className="text-slate-300">Operador</TableHead>
-                <TableHead className="text-slate-300">Loja</TableHead>
-                <TableHead className="text-slate-300">Finalizadora</TableHead>
-                <TableHead className="text-slate-300">Tipo</TableHead>
-                <TableHead className="text-slate-300">Valor</TableHead>
-                <TableHead className="text-slate-300">Desconto</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredData.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={7} className="text-center text-slate-400 py-8">
-                    Nenhum registro encontrado
-                  </TableCell>
-                </TableRow>
-              ) : (
-                filteredData.map((b) => (
-                  <TableRow key={b.id} className="border-slate-700">
-                    <TableCell className="text-white">{moment(b.date).format("DD/MM/YYYY")}</TableCell>
-                    <TableCell className="text-white">{b.employee_name}</TableCell>
-                    <TableCell className="text-slate-300">{b.store_name}</TableCell>
-                    <TableCell className="text-slate-300">{paymentTypeLabels[b.payment_type]}</TableCell>
-                    <TableCell>
-                      <Badge className={b.type === "shortage" ? "bg-red-500/20 text-red-400" : "bg-green-500/20 text-green-400"}>
-                        {b.type === "shortage" ? "Falta" : "Sobra"}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-white">{formatCurrency(b.amount)}</TableCell>
-                    <TableCell className="text-red-400 font-bold">{formatCurrency(b.total_discount)}</TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
     </div>
   );
 }

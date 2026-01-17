@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { api } from "@/api/apiClient";
+import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,7 +12,7 @@ import { Save, Clock, Percent, Receipt, Calculator, Umbrella, Gift, AlertTriangl
 export default function PayrollConfig() {
   const { data: configs = [] } = useQuery({
     queryKey: ["payroll-config"],
-    queryFn: () => api.entities.PayrollConfig.list()
+    queryFn: () => base44.entities.PayrollConfig.list()
   });
 
   const [formData, setFormData] = useState({
@@ -75,9 +75,9 @@ export default function PayrollConfig() {
   const handleSave = async () => {
     setSaving(true);
     if (configs.length > 0 && configs[0].id) {
-      await api.entities.PayrollConfig.update(configs[0].id, formData);
+      await base44.entities.PayrollConfig.update(configs[0].id, formData);
     } else {
-      await api.entities.PayrollConfig.create(formData);
+      await base44.entities.PayrollConfig.create(formData);
     }
     setSaving(false);
   };
