@@ -101,7 +101,7 @@ export default function CashBreaks() {
               <p className="text-slate-400 mt-1">Controle de vales e quebras de caixa</p>
             </div>
           </div>
-          <Button onClick={() => handleOpenForm()} className="bg-blue-600 hover:bg-blue-700">
+          <Button onClick={() => handleOpenForm()} className="bg-blue-600 hover:bg-blue-700 text-white">
             <Plus className="w-4 h-4 mr-2" />
             Registrar Quebra
           </Button>

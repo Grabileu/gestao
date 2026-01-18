@@ -4,22 +4,17 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Store, Plus, MoreVertical, Pencil, Trash2, Users, Loader2, MapPin, User } from "lucide-react";
+import { Store, Plus, MoreVertical, Pencil, Trash2, Users, Loader2, MapPin, User, Landmark } from "lucide-react";
 import StoreForm from "@/components/stores/StoreForm";
-import CashierForm from "@/components/stores/CashierForm";
 
 export default function Stores() {
   const queryClient = useQueryClient();
   const [showStoreForm, setShowStoreForm] = useState(false);
-  const [showCashierForm, setShowCashierForm] = useState(false);
   const [editingStore, setEditingStore] = useState(null);
-  const [editingCashier, setEditingCashier] = useState(null);
   const [deleteStore, setDeleteStore] = useState(null);
-  const [deleteCashier, setDeleteCashier] = useState(null);
   const [deleting, setDeleting] = useState(false);
 
   const { data: stores = [], isLoading: loadingStores } = useQuery({
@@ -27,12 +22,12 @@ export default function Stores() {
     queryFn: () => base44.entities.Store.list()
   });
 
-  const { data: cashiers = [], isLoading: loadingCashiers } = useQuery({
+  const { data: cashiers = [] } = useQuery({
     queryKey: ['cashiers'],
     queryFn: () => base44.entities.Cashier.list()
   });
 
-  const isLoading = loadingStores || loadingCashiers;
+  const isLoading = loadingStores;
 
   const handleDeleteStore = async () => {
     setDeleting(true);
@@ -42,24 +37,10 @@ export default function Stores() {
     queryClient.invalidateQueries({ queryKey: ['stores'] });
   };
 
-  const handleDeleteCashier = async () => {
-    setDeleting(true);
-    await base44.entities.Cashier.delete(deleteCashier);
-    setDeleteCashier(null);
-    setDeleting(false);
-    queryClient.invalidateQueries({ queryKey: ['cashiers'] });
-  };
-
   const handleSaveStore = () => {
     queryClient.invalidateQueries({ queryKey: ['stores'] });
     setShowStoreForm(false);
     setEditingStore(null);
-  };
-
-  const handleSaveCashier = () => {
-    queryClient.invalidateQueries({ queryKey: ['cashiers'] });
-    setShowCashierForm(false);
-    setEditingCashier(null);
   };
 
   const getCashierCount = (storeId) => {
@@ -83,24 +64,12 @@ export default function Stores() {
             <Store className="w-6 h-6 text-emerald-400" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold text-white">Lojas e Operadores</h1>
-            <p className="text-slate-400 mt-1">Gerencie lojas e operadores de caixa</p>
+            <h1 className="text-3xl font-bold text-white">Lojas</h1>
+            <p className="text-slate-400 mt-1">Gerencie as lojas</p>
           </div>
         </div>
 
-        <Tabs defaultValue="stores" className="w-full">
-          <TabsList className="bg-slate-800 mb-6">
-            <TabsTrigger value="stores" className="data-[state=active]:bg-blue-500">
-              <Store className="w-4 h-4 mr-2" />
-              Lojas
-            </TabsTrigger>
-            <TabsTrigger value="cashiers" className="data-[state=active]:bg-blue-500">
-              <User className="w-4 h-4 mr-2" />
-              Operadores de Caixa
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="stores" className="space-y-6">
+        <div className="space-y-6">
             <div className="flex justify-end">
               <Button onClick={() => { setEditingStore(null); setShowStoreForm(true); }} className="bg-blue-600 hover:bg-blue-700">
                 <Plus className="w-4 h-4 mr-2" />
@@ -165,6 +134,10 @@ export default function Stores() {
                           <span>{store.city}{store.state ? ` - ${store.state}` : ''}</span>
                         </div>
                       )}
+                      <div className="flex items-center gap-2 text-sm text-slate-400">
+                        <Landmark className="w-4 h-4" />
+                        <span>CNPJ: {store.cnpj || "Não informado"}</span>
+                      </div>
                       <div className="flex items-center gap-2 pt-3 border-t border-slate-700/50">
                         <Users className="w-4 h-4 text-blue-400" />
                         <span className="text-white font-semibold">{getCashierCount(store.id)}</span>
@@ -175,72 +148,7 @@ export default function Stores() {
                 ))}
               </div>
             )}
-          </TabsContent>
-
-          <TabsContent value="cashiers" className="space-y-6">
-            <div className="flex justify-end">
-              <Button onClick={() => { setEditingCashier(null); setShowCashierForm(true); }} className="bg-blue-600 hover:bg-blue-700" disabled={stores.length === 0}>
-                <Plus className="w-4 h-4 mr-2" />
-                Novo Operador
-              </Button>
-            </div>
-
-            <Card className="bg-slate-900/50 border-slate-700/50 overflow-hidden">
-              <Table>
-                <TableHeader>
-                  <TableRow className="border-slate-700/50 hover:bg-transparent">
-                    <TableHead className="text-slate-400">Código</TableHead>
-                    <TableHead className="text-slate-400">Nome</TableHead>
-                    <TableHead className="text-slate-400">Loja</TableHead>
-                    <TableHead className="text-slate-400">Status</TableHead>
-                    <TableHead className="text-slate-400 text-right">Ações</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {cashiers.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={5} className="text-center py-12 text-slate-500">
-                        Nenhum operador cadastrado
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    cashiers.map(cashier => (
-                      <TableRow key={cashier.id} className="border-slate-700/50 hover:bg-slate-800/50">
-                        <TableCell className="text-slate-300">{cashier.code || "-"}</TableCell>
-                        <TableCell className="text-white font-medium">{cashier.name}</TableCell>
-                        <TableCell className="text-slate-300">{cashier.store_name || "-"}</TableCell>
-                        <TableCell>
-                          <Badge className={cashier.status === 'active' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-500/20 text-slate-400'}>
-                            {cashier.status === 'active' ? 'Ativo' : 'Inativo'}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon" className="text-slate-400 hover:text-white hover:bg-slate-700">
-                                <MoreVertical className="w-4 h-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="bg-slate-800 border-slate-700">
-                              <DropdownMenuItem onClick={() => { setEditingCashier(cashier); setShowCashierForm(true); }} className="text-slate-300 hover:bg-slate-700 cursor-pointer">
-                                <Pencil className="w-4 h-4 mr-2" />
-                                Editar
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => setDeleteCashier(cashier.id)} className="text-rose-400 hover:bg-slate-700 cursor-pointer">
-                                <Trash2 className="w-4 h-4 mr-2" />
-                                Excluir
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-            </Card>
-          </TabsContent>
-        </Tabs>
+        </div>
 
         {/* Store Form */}
         <StoreForm 
@@ -248,15 +156,6 @@ export default function Stores() {
           onClose={() => { setShowStoreForm(false); setEditingStore(null); }}
           store={editingStore}
           onSave={handleSaveStore}
-        />
-
-        {/* Cashier Form */}
-        <CashierForm 
-          open={showCashierForm}
-          onClose={() => { setShowCashierForm(false); setEditingCashier(null); }}
-          cashier={editingCashier}
-          stores={stores}
-          onSave={handleSaveCashier}
         />
 
         {/* Delete Store Dialog */}
@@ -271,24 +170,6 @@ export default function Stores() {
             <AlertDialogFooter>
               <AlertDialogCancel className="bg-slate-800 border-slate-600 text-slate-300 hover:bg-slate-700">Cancelar</AlertDialogCancel>
               <AlertDialogAction onClick={handleDeleteStore} disabled={deleting} className="bg-rose-600 hover:bg-rose-700">
-                {deleting ? "Excluindo..." : "Excluir"}
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-
-        {/* Delete Cashier Dialog */}
-        <AlertDialog open={!!deleteCashier} onOpenChange={() => setDeleteCashier(null)}>
-          <AlertDialogContent className="bg-slate-900 border-slate-700">
-            <AlertDialogHeader>
-              <AlertDialogTitle className="text-white">Excluir Operador</AlertDialogTitle>
-              <AlertDialogDescription className="text-slate-400">
-                Tem certeza que deseja excluir este operador? Esta ação não pode ser desfeita.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel className="bg-slate-800 border-slate-600 text-slate-300 hover:bg-slate-700">Cancelar</AlertDialogCancel>
-              <AlertDialogAction onClick={handleDeleteCashier} disabled={deleting} className="bg-rose-600 hover:bg-rose-700">
                 {deleting ? "Excluindo..." : "Excluir"}
               </AlertDialogAction>
             </AlertDialogFooter>

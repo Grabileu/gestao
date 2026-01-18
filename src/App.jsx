@@ -9,6 +9,7 @@ import OvertimeManagement from '../Pages/OvertimeManagement.jsx';
 import Vacations from '../Pages/Vacations.jsx';
 import Payroll from '../Pages/Payroll.jsx';
 import PayrollConfig from '../Pages/PayrollConfig.jsx';
+import HRConfig from '../Pages/HRConfig.jsx';
 import Reports from '../Pages/Reports.jsx';
 import CashBreaks from '../Pages/CashBreaks.jsx';
 import CashBreakReports from '../Pages/CashBreakReports.jsx';
@@ -28,6 +29,7 @@ const pagesMap = {
   Vacations,
   Payroll,
   PayrollConfig,
+  HRConfig,
   Reports,
   CashBreaks,
   CashBreakReports,

@@ -204,7 +204,7 @@ export default function Payroll() {
             onChange={(e) => setSelectedMonth(e.target.value)}
             className="bg-slate-800 border-slate-600 text-white w-[180px]"
           />
-          <Button onClick={generatePayroll} disabled={generating} className="bg-blue-600 hover:bg-blue-700">
+          <Button onClick={generatePayroll} disabled={generating} className="bg-blue-600 hover:bg-blue-700 text-white">
             <Calculator className="h-4 w-4 mr-2" />
             {generating ? "Gerando..." : "Gerar Folha"}
           </Button>
@@ -305,7 +305,7 @@ export default function Payroll() {
 
       {/* View Dialog */}
       <Dialog open={!!viewPayroll} onOpenChange={() => setViewPayroll(null)}>
-        <DialogContent className="max-w-2xl bg-slate-900 border-slate-700">
+        <DialogContent className="max-w-xl bg-slate-900 border-slate-700 max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-white">Detalhes da Folha - {viewPayroll?.employee_name}</DialogTitle>
           </DialogHeader>

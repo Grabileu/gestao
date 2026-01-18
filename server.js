@@ -141,19 +141,59 @@ app.delete('/api/cashbreaks/:id', (req, res) => {
 
 // Rotas de Ceasa Purchases
 app.get('/api/ceasa-purchases', (req, res) => {
-  res.json([]);
+  try {
+    const sorted = [...db.ceasaPurchases].sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
+    res.json(sorted);
+  } catch (error) {
+    console.error('❌ ERRO GET /api/ceasa-purchases:', error.message);
+    res.status(500).json({ error: 'Erro ao listar compras', message: error.message });
+  }
 });
 
 app.post('/api/ceasa-purchases', (req, res) => {
-  res.status(201).json({ message: 'Compra Ceasa criada', data: req.body });
+  try {
+    const newPurchase = { id: Date.now(), ...req.body };
+    db.ceasaPurchases.push(newPurchase);
+    console.log('✅ POST /api/ceasa-purchases sucesso', newPurchase);
+    res.status(201).json(newPurchase);
+  } catch (error) {
+    console.error('❌ ERRO POST /api/ceasa-purchases:', error.message);
+    res.status(500).json({ error: 'Erro ao criar compra', message: error.message });
+  }
 });
 
 app.put('/api/ceasa-purchases/:id', (req, res) => {
-  res.json({ message: 'Compra Ceasa atualizada', id: req.params.id, data: req.body });
+  try {
+    const id = parseInt(req.params.id);
+    const index = db.ceasaPurchases.findIndex(p => p.id === id);
+    if (index !== -1) {
+      db.ceasaPurchases[index] = { ...db.ceasaPurchases[index], ...req.body, id };
+      console.log('✅ PUT /api/ceasa-purchases/:id sucesso', db.ceasaPurchases[index]);
+      res.json(db.ceasaPurchases[index]);
+    } else {
+      res.status(404).json({ error: 'Compra não encontrada' });
+    }
+  } catch (error) {
+    console.error('❌ ERRO PUT /api/ceasa-purchases/:id:', error.message);
+    res.status(500).json({ error: 'Erro ao atualizar compra', message: error.message });
+  }
 });
 
 app.delete('/api/ceasa-purchases/:id', (req, res) => {
-  res.json({ message: 'Compra Ceasa excluída', id: req.params.id });
+  try {
+    const id = parseInt(req.params.id);
+    const index = db.ceasaPurchases.findIndex(p => p.id === id);
+    if (index !== -1) {
+      db.ceasaPurchases.splice(index, 1);
+      console.log('✅ DELETE /api/ceasa-purchases/:id sucesso', id);
+      res.json({ message: 'Compra excluída', id });
+    } else {
+      res.status(404).json({ error: 'Compra não encontrada' });
+    }
+  } catch (error) {
+    console.error('❌ ERRO DELETE /api/ceasa-purchases/:id:', error.message);
+    res.status(500).json({ error: 'Erro ao deletar compra', message: error.message });
+  }
 });
 
 // Rotas de Employees
@@ -419,47 +459,70 @@ app.delete('/api/overtime/:id', (req, res) => {
 
 // Rotas de Payroll
 app.get('/api/payroll', (req, res) => {
-  res.json([]);
+  res.json(db.payroll);
 });
 
 app.post('/api/payroll', (req, res) => {
   console.log('POST /api/payroll', req.body);
-  res.status(201).json({ id: Date.now(), ...req.body });
+  const newPayroll = { id: Date.now().toString(), ...req.body };
+  db.payroll.push(newPayroll);
+  saveData();
+  res.status(201).json(newPayroll);
 });
 
 app.delete('/api/payroll/:id', (req, res) => {
   console.log('DELETE /api/payroll/:id', req.params.id);
+  db.payroll = db.payroll.filter(p => String(p.id) !== String(req.params.id));
+  saveData();
   res.json({ message: 'Folha excluída', id: req.params.id });
 });
 
 // Rotas de PayrollConfig
 app.get('/api/payroll-config', (req, res) => {
-  res.json([]);
+  res.json(db.payrollConfig);
 });
 
 app.post('/api/payroll-config', (req, res) => {
   console.log('POST /api/payroll-config', req.body);
-  res.status(201).json({ id: Date.now(), ...req.body });
+  const newConfig = { id: Date.now().toString(), ...req.body };
+  db.payrollConfig.push(newConfig);
+  saveData();
+  res.status(201).json(newConfig);
 });
 
 app.put('/api/payroll-config/:id', (req, res) => {
   console.log('PUT /api/payroll-config/:id', req.params.id, req.body);
-  res.json({ id: req.params.id, ...req.body });
+  const index = db.payrollConfig.findIndex(c => String(c.id) === String(req.params.id));
+  if (index !== -1) {
+    db.payrollConfig[index] = { ...db.payrollConfig[index], ...req.body };
+  } else {
+    db.payrollConfig.push({ id: req.params.id, ...req.body });
+  }
+  saveData();
+  res.json(db.payrollConfig[index !== -1 ? index : db.payrollConfig.length - 1]);
 });
 
 // Rotas de HRConfig
 app.get('/api/hr-config', (req, res) => {
-  res.json([]);
+  res.json(db.hrConfig);
 });
 
 app.post('/api/hr-config', (req, res) => {
   console.log('POST /api/hr-config', req.body);
-  res.status(201).json({ id: Date.now(), ...req.body });
+  const config = { id: Date.now(), ...req.body };
+  db.hrConfig.push(config);
+  saveData();
+  res.status(201).json(config);
 });
 
 app.put('/api/hr-config/:id', (req, res) => {
   console.log('PUT /api/hr-config/:id', req.params.id, req.body);
-  res.json({ id: req.params.id, ...req.body });
+  const index = db.hrConfig.findIndex(c => c.id == req.params.id);
+  if (index !== -1) {
+    db.hrConfig[index] = { id: req.params.id, ...req.body };
+    saveData();
+  }
+  res.json(db.hrConfig[index !== -1 ? index : db.hrConfig.length - 1]);
 });
 
 // Rotas de SystemConfig
@@ -479,42 +542,104 @@ app.put('/api/system-config/:id', (req, res) => {
 
 // Rotas de CeasaSuppliers
 app.get('/api/ceasa-suppliers', (req, res) => {
-  res.json([]);
+  res.json(db.ceasaSuppliers);
 });
 
 app.post('/api/ceasa-suppliers', (req, res) => {
-  console.log('POST /api/ceasa-suppliers', req.body);
-  res.status(201).json({ id: Date.now(), ...req.body });
+  try {
+    const newSupplier = { id: Date.now(), ...req.body };
+    db.ceasaSuppliers.push(newSupplier);
+    console.log('✅ POST /api/ceasa-suppliers sucesso', newSupplier);
+    res.status(201).json(newSupplier);
+  } catch (error) {
+    console.error('❌ ERRO POST /api/ceasa-suppliers:', error.message);
+    res.status(500).json({ error: 'Erro ao criar fornecedor', message: error.message });
+  }
 });
 
 app.put('/api/ceasa-suppliers/:id', (req, res) => {
-  console.log('PUT /api/ceasa-suppliers/:id', req.params.id, req.body);
-  res.json({ id: req.params.id, ...req.body });
+  try {
+    const id = parseInt(req.params.id);
+    const index = db.ceasaSuppliers.findIndex(s => s.id === id);
+    if (index !== -1) {
+      db.ceasaSuppliers[index] = { ...db.ceasaSuppliers[index], ...req.body, id };
+      console.log('✅ PUT /api/ceasa-suppliers/:id sucesso', db.ceasaSuppliers[index]);
+      res.json(db.ceasaSuppliers[index]);
+    } else {
+      res.status(404).json({ error: 'Fornecedor não encontrado' });
+    }
+  } catch (error) {
+    console.error('❌ ERRO PUT /api/ceasa-suppliers/:id:', error.message);
+    res.status(500).json({ error: 'Erro ao atualizar fornecedor', message: error.message });
+  }
 });
 
 app.delete('/api/ceasa-suppliers/:id', (req, res) => {
-  console.log('DELETE /api/ceasa-suppliers/:id', req.params.id);
-  res.json({ message: 'Fornecedor excluído', id: req.params.id });
+  try {
+    const id = parseInt(req.params.id);
+    const index = db.ceasaSuppliers.findIndex(s => s.id === id);
+    if (index !== -1) {
+      db.ceasaSuppliers.splice(index, 1);
+      console.log('✅ DELETE /api/ceasa-suppliers/:id sucesso', id);
+      res.json({ message: 'Fornecedor excluído', id });
+    } else {
+      res.status(404).json({ error: 'Fornecedor não encontrado' });
+    }
+  } catch (error) {
+    console.error('❌ ERRO DELETE /api/ceasa-suppliers/:id:', error.message);
+    res.status(500).json({ error: 'Erro ao deletar fornecedor', message: error.message });
+  }
 });
 
 // Rotas de CeasaProducts
 app.get('/api/ceasa-products', (req, res) => {
-  res.json([]);
+  res.json(db.ceasaProducts);
 });
 
 app.post('/api/ceasa-products', (req, res) => {
-  console.log('POST /api/ceasa-products', req.body);
-  res.status(201).json({ id: Date.now(), ...req.body });
+  try {
+    const newProduct = { id: Date.now(), ...req.body };
+    db.ceasaProducts.push(newProduct);
+    console.log('✅ POST /api/ceasa-products sucesso', newProduct);
+    res.status(201).json(newProduct);
+  } catch (error) {
+    console.error('❌ ERRO POST /api/ceasa-products:', error.message);
+    res.status(500).json({ error: 'Erro ao criar produto', message: error.message });
+  }
 });
 
 app.put('/api/ceasa-products/:id', (req, res) => {
-  console.log('PUT /api/ceasa-products/:id', req.params.id, req.body);
-  res.json({ id: req.params.id, ...req.body });
+  try {
+    const id = parseInt(req.params.id);
+    const index = db.ceasaProducts.findIndex(p => p.id === id);
+    if (index !== -1) {
+      db.ceasaProducts[index] = { ...db.ceasaProducts[index], ...req.body, id };
+      console.log('✅ PUT /api/ceasa-products/:id sucesso', db.ceasaProducts[index]);
+      res.json(db.ceasaProducts[index]);
+    } else {
+      res.status(404).json({ error: 'Produto não encontrado' });
+    }
+  } catch (error) {
+    console.error('❌ ERRO PUT /api/ceasa-products/:id:', error.message);
+    res.status(500).json({ error: 'Erro ao atualizar produto', message: error.message });
+  }
 });
 
 app.delete('/api/ceasa-products/:id', (req, res) => {
-  console.log('DELETE /api/ceasa-products/:id', req.params.id);
-  res.json({ message: 'Produto excluído', id: req.params.id });
+  try {
+    const id = parseInt(req.params.id);
+    const index = db.ceasaProducts.findIndex(p => p.id === id);
+    if (index !== -1) {
+      db.ceasaProducts.splice(index, 1);
+      console.log('✅ DELETE /api/ceasa-products/:id sucesso', id);
+      res.json({ message: 'Produto excluído', id });
+    } else {
+      res.status(404).json({ error: 'Produto não encontrado' });
+    }
+  } catch (error) {
+    console.error('❌ ERRO DELETE /api/ceasa-products/:id:', error.message);
+    res.status(500).json({ error: 'Erro ao deletar produto', message: error.message });
+  }
 });
 
 // Tratamento de erros

@@ -7,10 +7,12 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useToast } from "@/components/ui/use-toast";
 import { Save, Clock, Percent, Receipt, Calculator, Umbrella, AlertCircle, Calendar, DollarSign } from "lucide-react";
 
 export default function HRConfig() {
   const queryClient = useQueryClient();
+  const { toast } = useToast();
   
   const { data: configs = [] } = useQuery({
     queryKey: ["hr-config"],
@@ -70,13 +72,29 @@ export default function HRConfig() {
 
   const handleSave = async () => {
     setSaving(true);
-    if (configs.length > 0 && configs[0].id) {
-      await base44.entities.HRConfig.update(configs[0].id, formData);
-    } else {
-      await base44.entities.HRConfig.create(formData);
+    try {
+      if (configs.length > 0 && configs[0].id) {
+        await base44.entities.HRConfig.update(configs[0].id, formData);
+      } else {
+        await base44.entities.HRConfig.create(formData);
+      }
+      queryClient.invalidateQueries({ queryKey: ["hr-config"] });
+      toast({
+        title: "✓ Salvo com sucesso",
+        description: "As configurações de RH foram salvas",
+        className: "border-green-500 bg-green-50 text-green-800 font-semibold",
+        duration: 3000,
+      });
+    } catch (error) {
+      toast({
+        title: "✗ Erro ao salvar",
+        description: "Não foi possível salvar as configurações",
+        variant: "destructive",
+        duration: 3000,
+      });
+    } finally {
+      setSaving(false);
     }
-    queryClient.invalidateQueries({ queryKey: ["hr-config"] });
-    setSaving(false);
   };
 
   const updateField = (field, value) => {
@@ -90,7 +108,7 @@ export default function HRConfig() {
           <h1 className="text-2xl font-bold text-white">Configurações de RH</h1>
           <p className="text-slate-400">Configure todos os parâmetros de cálculos trabalhistas</p>
         </div>
-        <Button onClick={handleSave} disabled={saving} className="bg-blue-600 hover:bg-blue-700">
+        <Button onClick={handleSave} disabled={saving} className="bg-blue-600 hover:bg-blue-700 text-white">
           <Save className="h-4 w-4 mr-2" />
           {saving ? "Salvando..." : "Salvar"}
         </Button>
@@ -98,13 +116,13 @@ export default function HRConfig() {
 
       <Tabs defaultValue="jornada" className="space-y-6">
         <TabsList className="bg-slate-800 border-slate-700">
-          <TabsTrigger value="jornada" className="data-[state=active]:bg-blue-600">Jornada</TabsTrigger>
-          <TabsTrigger value="faltas" className="data-[state=active]:bg-blue-600">Faltas</TabsTrigger>
-          <TabsTrigger value="ferias" className="data-[state=active]:bg-blue-600">Férias</TabsTrigger>
-          <TabsTrigger value="adicionais" className="data-[state=active]:bg-blue-600">Adicionais</TabsTrigger>
-          <TabsTrigger value="impostos" className="data-[state=active]:bg-blue-600">Impostos</TabsTrigger>
-          <TabsTrigger value="beneficios" className="data-[state=active]:bg-blue-600">Benefícios</TabsTrigger>
-          <TabsTrigger value="contratos" className="data-[state=active]:bg-blue-600">Contratos</TabsTrigger>
+          <TabsTrigger value="jornada" className="text-slate-400 data-[state=active]:text-white data-[state=active]:bg-blue-600">Jornada</TabsTrigger>
+          <TabsTrigger value="faltas" className="text-slate-400 data-[state=active]:text-white data-[state=active]:bg-blue-600">Faltas</TabsTrigger>
+          <TabsTrigger value="ferias" className="text-slate-400 data-[state=active]:text-white data-[state=active]:bg-blue-600">Férias</TabsTrigger>
+          <TabsTrigger value="adicionais" className="text-slate-400 data-[state=active]:text-white data-[state=active]:bg-blue-600">Adicionais</TabsTrigger>
+          <TabsTrigger value="impostos" className="text-slate-400 data-[state=active]:text-white data-[state=active]:bg-blue-600">Impostos</TabsTrigger>
+          <TabsTrigger value="beneficios" className="text-slate-400 data-[state=active]:text-white data-[state=active]:bg-blue-600">Benefícios</TabsTrigger>
+          <TabsTrigger value="contratos" className="text-slate-400 data-[state=active]:text-white data-[state=active]:bg-blue-600">Contratos</TabsTrigger>
         </TabsList>
 
         {/* Jornada */}
@@ -123,6 +141,10 @@ export default function HRConfig() {
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
+                <div className="flex items-center justify-between p-4 bg-slate-800 rounded-lg mb-4">
+                  <Label className="text-slate-300">Habilitar Jornada de Trabalho</Label>
+                  <Switch checked={formData.work_hours_per_day > 0} onCheckedChange={(v) => updateField("work_hours_per_day", v ? 8 : 0)} className="data-[state=checked]:bg-blue-600 data-[state=unchecked]:bg-gray-500" />
+                </div>
                 <div>
                   <Label className="text-slate-300">Horas por dia</Label>
                   <Input type="number" value={formData.work_hours_per_day} onChange={(e) => updateField("work_hours_per_day", parseFloat(e.target.value))} className="bg-slate-900 border-slate-600 text-white" />
@@ -147,6 +169,10 @@ export default function HRConfig() {
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
+                <div className="flex items-center justify-between p-4 bg-slate-800 rounded-lg mb-4">
+                  <Label className="text-slate-300">Habilitar Horas Extras</Label>
+                  <Switch checked={formData.overtime_50_percent > 0 || formData.overtime_100_percent > 0} onCheckedChange={(v) => { updateField("overtime_50_percent", v ? 50 : 0); updateField("overtime_100_percent", v ? 100 : 0); }} className="data-[state=checked]:bg-blue-600 data-[state=unchecked]:bg-gray-500" />
+                </div>
                 <div>
                   <Label className="text-slate-300">Hora Extra Normal (%)</Label>
                   <Input type="number" value={formData.overtime_50_percent} onChange={(e) => updateField("overtime_50_percent", parseFloat(e.target.value))} className="bg-slate-900 border-slate-600 text-white" />
@@ -171,6 +197,10 @@ export default function HRConfig() {
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
+                <div className="flex items-center justify-between p-4 bg-slate-800 rounded-lg mb-4">
+                  <Label className="text-slate-300">Habilitar Tolerâncias</Label>
+                <Switch checked={formData.late_tolerance_minutes > 0 || formData.early_leave_tolerance_minutes > 0} onCheckedChange={(v) => { updateField("late_tolerance_minutes", v ? 10 : 0); updateField("early_leave_tolerance_minutes", v ? 10 : 0); }} className="data-[state=checked]:bg-blue-600 data-[state=unchecked]:bg-gray-500" />
+                </div>
                 <div>
                   <Label className="text-slate-300">Tolerância de Atraso (minutos)</Label>
                   <Input type="number" value={formData.late_tolerance_minutes} onChange={(e) => updateField("late_tolerance_minutes", parseInt(e.target.value))} className="bg-slate-900 border-slate-600 text-white" />
@@ -206,7 +236,7 @@ export default function HRConfig() {
                       <Label className="text-slate-300">Descontar Faltas</Label>
                       <p className="text-xs text-slate-500">Desconta automaticamente as faltas do salário</p>
                     </div>
-                    <Switch checked={formData.absence_discount_enabled} onCheckedChange={(v) => updateField("absence_discount_enabled", v)} />
+                    <Switch checked={formData.absence_discount_enabled} onCheckedChange={(v) => updateField("absence_discount_enabled", v)} className="data-[state=checked]:bg-blue-600 data-[state=unchecked]:bg-gray-500" />
                   </div>
                   
                   <div className="flex items-center justify-between p-4 bg-slate-800 rounded-lg">
@@ -214,7 +244,7 @@ export default function HRConfig() {
                       <Label className="text-slate-300">Descontar DSR na Falta</Label>
                       <p className="text-xs text-slate-500">Desconta o descanso semanal remunerado junto com a falta</p>
                     </div>
-                    <Switch checked={formData.absence_discount_dsr} onCheckedChange={(v) => updateField("absence_discount_dsr", v)} />
+                    <Switch checked={formData.absence_discount_dsr} onCheckedChange={(v) => updateField("absence_discount_dsr", v)} className="data-[state=checked]:bg-blue-600 data-[state=unchecked]:bg-gray-500" />
                   </div>
                 </div>
                 
@@ -224,7 +254,7 @@ export default function HRConfig() {
                       <Label className="text-slate-300">Descontar Atestados</Label>
                       <p className="text-xs text-slate-500">Desconta os dias de atestado médico</p>
                     </div>
-                    <Switch checked={formData.medical_certificate_discount} onCheckedChange={(v) => updateField("medical_certificate_discount", v)} />
+                    <Switch checked={formData.medical_certificate_discount} onCheckedChange={(v) => updateField("medical_certificate_discount", v)} className="data-[state=checked]:bg-blue-600 data-[state=unchecked]:bg-gray-500" />
                   </div>
                   
                   <div className="p-4 bg-slate-800 rounded-lg">
@@ -304,6 +334,10 @@ export default function HRConfig() {
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
+              <div className="flex items-center justify-between p-4 bg-slate-800 rounded-lg mb-4">
+                <Label className="text-slate-300">Habilitar Adicionais</Label>
+                <Switch checked={formData.night_shift_percent > 0 || formData.hazard_pay_percent > 0 || formData.unhealthy_pay_percent > 0} onCheckedChange={(v) => { updateField("night_shift_percent", v ? 20 : 0); updateField("hazard_pay_percent", v ? 30 : 0); updateField("unhealthy_pay_percent", v ? 20 : 0); }} className="data-[state=checked]:bg-blue-600 data-[state=unchecked]:bg-gray-500" />
+              </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <Label className="text-slate-300">Adicional Noturno (%)</Label>
@@ -343,21 +377,21 @@ export default function HRConfig() {
                     <Label className="text-slate-300">Calcular INSS</Label>
                     <p className="text-xs text-slate-500">Tabela progressiva automática</p>
                   </div>
-                  <Switch checked={formData.inss_enabled} onCheckedChange={(v) => updateField("inss_enabled", v)} />
+                  <Switch checked={formData.inss_enabled} onCheckedChange={(v) => updateField("inss_enabled", v)} className="data-[state=checked]:bg-blue-600 data-[state=unchecked]:bg-gray-500" />
                 </div>
                 <div className="flex items-center justify-between p-4 bg-slate-800 rounded-lg">
                   <div>
                     <Label className="text-slate-300">Calcular IRRF</Label>
                     <p className="text-xs text-slate-500">Tabela progressiva automática</p>
                   </div>
-                  <Switch checked={formData.irrf_enabled} onCheckedChange={(v) => updateField("irrf_enabled", v)} />
+                  <Switch checked={formData.irrf_enabled} onCheckedChange={(v) => updateField("irrf_enabled", v)} className="data-[state=checked]:bg-blue-600 data-[state=unchecked]:bg-gray-500" />
                 </div>
                 <div className="flex items-center justify-between p-4 bg-slate-800 rounded-lg">
                   <div>
                     <Label className="text-slate-300">Calcular FGTS</Label>
                     <p className="text-xs text-slate-500">8% sobre remuneração</p>
                   </div>
-                  <Switch checked={formData.fgts_enabled} onCheckedChange={(v) => updateField("fgts_enabled", v)} />
+                  <Switch checked={formData.fgts_enabled} onCheckedChange={(v) => updateField("fgts_enabled", v)} className="data-[state=checked]:bg-blue-600 data-[state=unchecked]:bg-gray-500" />
                 </div>
               </div>
               {formData.fgts_enabled && (
@@ -385,6 +419,10 @@ export default function HRConfig() {
               </div>
             </CardHeader>
             <CardContent className="space-y-6">
+              <div className="flex items-center justify-between p-4 bg-slate-800 rounded-lg mb-4">
+                <Label className="text-slate-300">Habilitar Benefícios</Label>
+                <Switch checked={formData.vt_enabled || formData.vr_value > 0} onCheckedChange={(v) => { updateField("vt_enabled", v); updateField("vr_value", v ? 10 : 0); }} className="data-[state=checked]:bg-blue-600 data-[state=unchecked]:bg-gray-500" />
+              </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-4">
                   <h3 className="text-white font-semibold">Vale Transporte</h3>
@@ -431,6 +469,10 @@ export default function HRConfig() {
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
+              <div className="flex items-center justify-between p-4 bg-slate-800 rounded-lg mb-4">
+                <Label className="text-slate-300">Habilitar Períodos de Contrato</Label>
+                <Switch checked={formData.probation_period_days > 0 || formData.notice_period_days > 0} onCheckedChange={(v) => { updateField("probation_period_days", v ? 90 : 0); updateField("notice_period_days", v ? 30 : 0); }} className="data-[state=checked]:bg-blue-600 data-[state=unchecked]:bg-gray-500" />
+              </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label className="text-slate-300">Período de Experiência (dias)</Label>

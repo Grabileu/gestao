@@ -39,7 +39,7 @@ export default function CeasaSuppliers() {
   });
 
   const [productForm, setProductForm] = useState({
-    name: "", supplier_id: "", supplier_name: "", price_type: "per_kg", default_price: "", box_weight_kg: "", category: "fruit", status: "active"
+    name: "", supplier_id: "", supplier_name: "", price_type: "per_box", default_price: "", box_weight_kg: "", category: "fruit", status: "active"
   });
 
   const deleteMutation = useMutation({
@@ -78,7 +78,7 @@ export default function CeasaSuppliers() {
     e.preventDefault();
     const data = { 
       ...productForm, 
-      default_price: parseFloat(productForm.default_price) || 0,
+      default_price: 0,
       box_weight_kg: productForm.price_type === "per_box" ? parseFloat(productForm.box_weight_kg) || 0 : null
     };
     if (editingProduct?.id) {
@@ -89,7 +89,7 @@ export default function CeasaSuppliers() {
     queryClient.invalidateQueries({ queryKey: ["ceasa-products"] });
     setShowProductForm(false);
     setEditingProduct(null);
-    setProductForm({ name: "", supplier_id: showProducts?.id || "", supplier_name: showProducts?.name || "", price_type: "per_kg", default_price: "", box_weight_kg: "", category: "fruit", status: "active" });
+    setProductForm({ name: "", supplier_id: showProducts?.id || "", supplier_name: showProducts?.name || "", price_type: "per_box", default_price: "", box_weight_kg: "", category: "fruit", status: "active" });
   };
 
   const handleDeleteProduct = async (product) => {
@@ -103,7 +103,7 @@ export default function CeasaSuppliers() {
 
   const supplierProducts = products.filter(p => p.supplier_id === showProducts?.id);
 
-  const priceTypeLabels = { per_kg: "Por Kg", per_box: "Por Caixa", per_unit: "Por Unidade", per_dozen: "Por Dúzia" };
+  const priceTypeLabels = { per_box: "Por Caixa (quantidade fixa)", per_unit: "Por Unidade", per_kg: "Por Kg (legado)", per_dozen: "Por Dúzia (legado)" };
   const categoryLabels = { fruit: "Fruta", vegetable: "Legume", greens: "Verdura", other: "Outro" };
 
   return (
@@ -241,14 +241,13 @@ export default function CeasaSuppliers() {
                   <TableRow className="border-slate-700">
                     <TableHead className="text-slate-300">Produto</TableHead>
                     <TableHead className="text-slate-300">Categoria</TableHead>
-                    <TableHead className="text-slate-300">Tipo Preço</TableHead>
-                    <TableHead className="text-slate-300">Preço</TableHead>
+                    <TableHead className="text-slate-300">Tipo de Custo</TableHead>
                     <TableHead className="text-slate-300 text-right">Ações</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {supplierProducts.length === 0 ? (
-                    <TableRow><TableCell colSpan={5} className="text-center text-slate-400 py-4">Nenhum produto</TableCell></TableRow>
+                    <TableRow><TableCell colSpan={4} className="text-center text-slate-400 py-4">Nenhum produto</TableCell></TableRow>
                   ) : (
                     supplierProducts.map((product) => (
                       <TableRow key={product.id} className="border-slate-700">
@@ -260,10 +259,14 @@ export default function CeasaSuppliers() {
                             <span className="text-xs text-slate-500 block">({product.box_weight_kg}kg)</span>
                           )}
                         </TableCell>
-                        <TableCell className="text-slate-300">R$ {product.default_price?.toFixed(2)}</TableCell>
                         <TableCell className="text-right">
                           <div className="flex justify-end gap-2">
-                            <Button size="icon" variant="ghost" onClick={() => { setProductForm(product); setEditingProduct(product); setShowProductForm(true); }} className="text-slate-400 hover:text-white">
+                            <Button size="icon" variant="ghost" onClick={() => { 
+                              const safeType = product.price_type === "per_unit" ? "per_unit" : "per_box";
+                              setProductForm({ ...product, price_type: safeType }); 
+                              setEditingProduct(product); 
+                              setShowProductForm(true); 
+                            }} className="text-slate-400 hover:text-white">
                               <Pencil className="h-4 w-4" />
                             </Button>
                             <Button size="icon" variant="ghost" onClick={() => handleDeleteProduct(product)} className="text-slate-400 hover:text-red-400">
@@ -306,14 +309,12 @@ export default function CeasaSuppliers() {
                 </Select>
               </div>
               <div>
-                <Label className="text-slate-300">Tipo de Preço *</Label>
+                <Label className="text-slate-300">Tipo de Custo *</Label>
                 <Select value={productForm.price_type} onValueChange={(v) => setProductForm(p => ({ ...p, price_type: v }))}>
                   <SelectTrigger className="bg-slate-800 border-slate-600 text-white"><SelectValue /></SelectTrigger>
                   <SelectContent side="bottom" className="bg-slate-800 border-slate-600 text-white z-50">
-                    <SelectItem value="per_kg" className="text-white hover:bg-slate-700 cursor-pointer">Por Kg (preço do kg)</SelectItem>
-                    <SelectItem value="per_box" className="text-white hover:bg-slate-700 cursor-pointer">Por Caixa (preço fixo da caixa)</SelectItem>
+                    <SelectItem value="per_box" className="text-white hover:bg-slate-700 cursor-pointer">Por Caixa (quantidade fixa)</SelectItem>
                     <SelectItem value="per_unit" className="text-white hover:bg-slate-700 cursor-pointer">Por Unidade</SelectItem>
-                    <SelectItem value="per_dozen" className="text-white hover:bg-slate-700 cursor-pointer">Por Dúzia</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -332,12 +333,6 @@ export default function CeasaSuppliers() {
                 <p className="text-xs text-slate-500 mt-1">Informe o peso médio da caixa para calcular o custo por kg</p>
               </div>
             )}
-            <div>
-              <Label className="text-slate-300">
-                Preço Padrão (R$) {productForm.price_type === "per_kg" ? "por Kg" : productForm.price_type === "per_box" ? "por Caixa" : productForm.price_type === "per_unit" ? "por Unidade" : "por Dúzia"}
-              </Label>
-              <Input type="number" step="0.01" value={productForm.default_price} onChange={(e) => setProductForm(p => ({ ...p, default_price: e.target.value }))} className="bg-slate-800 border-slate-600 text-white" />
-            </div>
             <div className="flex justify-end gap-3">
               <Button type="button" variant="outline" onClick={() => setShowProductForm(false)} className="border-slate-600 text-slate-300 hover:bg-slate-800">Cancelar</Button>
               <Button type="submit" className="bg-blue-600 hover:bg-blue-700">Salvar</Button>

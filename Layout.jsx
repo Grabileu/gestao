@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Toaster } from "@/components/ui/toaster";
 import { cn } from "@/lib/utils";
 import { base44 } from "@/api/base44Client";
 
@@ -94,6 +95,7 @@ export default function Layout({ children, currentPageName }) {
   };
 
   return (
+  <>
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (
@@ -232,5 +234,7 @@ export default function Layout({ children, currentPageName }) {
         </main>
       </div>
     </div>
+    <Toaster />
+  </>
   );
 }

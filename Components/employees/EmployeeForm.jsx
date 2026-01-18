@@ -24,7 +24,7 @@ const statusOptions = [
   { value: "terminated", label: "Desligado" }
 ];
 
-export default function EmployeeForm({ open, onClose, employee, departments, onSave }) {
+export default function EmployeeForm({ open, onClose, employee, departments, stores = [], onSave }) {
   const [formData, setFormData] = useState({
     full_name: "",
     email: "",
@@ -39,6 +39,8 @@ export default function EmployeeForm({ open, onClose, employee, departments, onS
     salary: "",
     contract_type: "clt",
     status: "active",
+    store_id: "",
+    store_name: "",
     address: "",
     city: "",
     state: "",
@@ -54,12 +56,46 @@ export default function EmployeeForm({ open, onClose, employee, departments, onS
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [validationError, setValidationError] = useState("");
+  const [salaryFocused, setSalaryFocused] = useState(false);
+
+  const formatCpf = (value) => {
+    const digits = (value || "").replace(/\D/g, "").slice(0, 11);
+    const p1 = digits.slice(0, 3);
+    const p2 = digits.slice(3, 6);
+    const p3 = digits.slice(6, 9);
+    const p4 = digits.slice(9, 11);
+    let out = p1;
+    if (p2) out += `.${p2}`;
+    if (p3) out += `.${p3}`;
+    if (p4) out += `-${p4}`;
+    return out;
+  };
+
+  const formatPhone = (value) => {
+    const digits = (value || "").replace(/\D/g, "").slice(0, 11);
+    const ddd = digits.slice(0, 2);
+    const p1 = digits.length > 10 ? digits.slice(2, 7) : digits.slice(2, 6);
+    const p2 = digits.length > 10 ? digits.slice(7, 11) : digits.slice(6, 10);
+    let out = ddd ? `(${ddd}` : "";
+    if (ddd && ddd.length === 2) out += ") ";
+    if (p1) out += p1;
+    if (p2) out += `-${p2}`;
+    return out;
+  };
+
+  const formatSalary = (value) => {
+    if (!value) return "";
+    const numValue = parseFloat(value) || 0;
+    return numValue.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  };
 
   useEffect(() => {
     if (employee) {
       // Preservar datas exatamente como estão no banco
       setFormData({ 
-        ...employee, 
+        ...employee,
+        department_id: String(employee.department_id || ""),
+        store_id: String(employee.store_id || ""),
         salary: employee.salary?.toString() || "",
         birth_date: employee.birth_date ? employee.birth_date.split('T')[0] : "",
         hire_date: employee.hire_date ? employee.hire_date.split('T')[0] : "",
@@ -80,6 +116,8 @@ export default function EmployeeForm({ open, onClose, employee, departments, onS
         salary: "",
         contract_type: "clt",
         status: "active",
+        store_id: "",
+        store_name: "",
         address: "",
         city: "",
         state: "",
@@ -97,12 +135,22 @@ export default function EmployeeForm({ open, onClose, employee, departments, onS
   }, [employee, open]);
 
   const handleChange = (field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    let next = value;
+    if (field === "cpf") next = formatCpf(value);
+    if (field === "phone" || field === "emergency_phone") next = formatPhone(value);
+    setFormData(prev => ({ ...prev, [field]: next }));
     
     if (field === "department_id") {
-      const dept = departments.find(d => d.id === value);
+      const dept = departments.find(d => String(d.id) === String(value));
       if (dept) {
         setFormData(prev => ({ ...prev, department_id: value, department_name: dept.name }));
+      }
+    }
+    
+    if (field === "store_id") {
+      const store = stores.find(s => String(s.id) === String(value));
+      if (store) {
+        setFormData(prev => ({ ...prev, store_id: value, store_name: store.name }));
       }
     }
   };
@@ -129,6 +177,10 @@ export default function EmployeeForm({ open, onClose, employee, departments, onS
     }
     if (!formData.department_id) {
       setValidationError("Departamento é obrigatório");
+      return;
+    }
+    if (!formData.store_id) {
+      setValidationError("Loja é obrigatória");
       return;
     }
     if (!formData.position.trim()) {
@@ -177,19 +229,19 @@ export default function EmployeeForm({ open, onClose, employee, departments, onS
 
         <Tabs defaultValue="personal" className="w-full">
           <TabsList className="grid w-full grid-cols-4 bg-slate-800">
-            <TabsTrigger value="personal" className="data-[state=active]:bg-blue-500">
+            <TabsTrigger value="personal" className="text-slate-400 data-[state=active]:text-white data-[state=active]:bg-blue-600">
               <User className="w-4 h-4 mr-2" />
               Pessoal
             </TabsTrigger>
-            <TabsTrigger value="professional" className="data-[state=active]:bg-blue-500">
+            <TabsTrigger value="professional" className="text-slate-400 data-[state=active]:text-white data-[state=active]:bg-blue-600">
               <Briefcase className="w-4 h-4 mr-2" />
               Profissional
             </TabsTrigger>
-            <TabsTrigger value="address" className="data-[state=active]:bg-blue-500">
+            <TabsTrigger value="address" className="text-slate-400 data-[state=active]:text-white data-[state=active]:bg-blue-600">
               <MapPin className="w-4 h-4 mr-2" />
               Endereço
             </TabsTrigger>
-            <TabsTrigger value="banking" className="data-[state=active]:bg-blue-500">
+            <TabsTrigger value="banking" className="text-slate-400 data-[state=active]:text-white data-[state=active]:bg-blue-600">
               <Building2 className="w-4 h-4 mr-2" />
               Bancário
             </TabsTrigger>
@@ -268,6 +320,21 @@ export default function EmployeeForm({ open, onClose, employee, departments, onS
                   className="bg-slate-800 border-slate-600 text-white"
                 />
               </div>
+              <div className="space-y-2">
+                <Label className="text-slate-300">Loja *</Label>
+                <Select value={formData.store_id} onValueChange={(v) => handleChange("store_id", v)}>
+                  <SelectTrigger className="bg-slate-800 border-slate-600 text-white">
+                    <SelectValue placeholder="Selecione a loja" />
+                  </SelectTrigger>
+                  <SelectContent side="bottom" className="bg-slate-800 border-slate-600 text-white z-50">
+                    {stores && stores.length > 0 ? stores.map(store => (
+                      <SelectItem key={store.id} value={String(store.id)} className="text-white hover:bg-slate-700 cursor-pointer">
+                        {store.name}
+                      </SelectItem>
+                    )) : null}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
@@ -293,7 +360,7 @@ export default function EmployeeForm({ open, onClose, employee, departments, onS
           </TabsContent>
 
           <TabsContent value="professional" className="space-y-4 mt-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Label className="text-slate-300">Departamento *</Label>
                 <Select value={formData.department_id} onValueChange={(v) => handleChange("department_id", v)}>
@@ -311,12 +378,24 @@ export default function EmployeeForm({ open, onClose, employee, departments, onS
               </div>
               <div className="space-y-2">
                 <Label className="text-slate-300">Cargo *</Label>
-                <Input
-                  value={formData.position}
-                  onChange={(e) => handleChange("position", e.target.value)}
-                  className="bg-slate-800 border-slate-600 text-white"
-                  placeholder="Ex: Analista, Gerente..."
-                />
+                <Select value={formData.position} onValueChange={(v) => handleChange("position", v)}>
+                  <SelectTrigger className="bg-slate-800 border-slate-600 text-white">
+                    <SelectValue placeholder="Selecione o cargo" />
+                  </SelectTrigger>
+                  <SelectContent side="bottom" className="bg-slate-800 border-slate-600 text-white z-50">
+                    {formData.department_id && departments.find(d => String(d.id) === String(formData.department_id))?.positions?.length > 0 ? (
+                      departments.find(d => String(d.id) === String(formData.department_id))?.positions.map((pos, idx) => (
+                        <SelectItem key={idx} value={pos} className="text-white hover:bg-slate-700 cursor-pointer">
+                          {pos}
+                        </SelectItem>
+                      ))
+                    ) : (
+                      <SelectItem value="none" disabled className="text-slate-500">
+                        {formData.department_id ? "Nenhum cargo cadastrado" : "Selecione um departamento"}
+                      </SelectItem>
+                    )}
+                  </SelectContent>
+                </Select>
               </div>
               <div className="space-y-2">
                 <Label className="text-slate-300">Tipo de Contrato</Label>
@@ -335,13 +414,24 @@ export default function EmployeeForm({ open, onClose, employee, departments, onS
               </div>
               <div className="space-y-2">
                 <Label className="text-slate-300">Salário</Label>
-                <Input
-                  type="number"
-                  value={formData.salary}
-                  onChange={(e) => handleChange("salary", e.target.value)}
-                  className="bg-slate-800 border-slate-600 text-white"
-                  placeholder="0.00"
-                />
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400">R$</span>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    value={salaryFocused ? formData.salary : formatSalary(formData.salary)}
+                    onChange={(e) => {
+                      let value = e.target.value;
+                      // Aceita apenas números
+                      value = value.replace(/[^\d]/g, "");
+                      handleChange("salary", value);
+                    }}
+                    onFocus={() => setSalaryFocused(true)}
+                    onBlur={() => setSalaryFocused(false)}
+                    className="w-full h-9 rounded-md border border-slate-600 bg-slate-800 text-white px-3 py-1 pl-10 text-base placeholder:text-slate-600 focus-visible:outline-none"
+                    placeholder="0,00"
+                  />
+                </div>
               </div>
               <div className="space-y-2">
                 <Label className="text-slate-300">Data de Admissão *</Label>
@@ -469,7 +559,7 @@ export default function EmployeeForm({ open, onClose, employee, departments, onS
           <Button variant="outline" onClick={onClose} className="border-slate-600 text-slate-300 hover:bg-slate-800">
             Cancelar
           </Button>
-          <Button onClick={handleSubmit} disabled={saving} className="bg-blue-600 hover:bg-blue-700">
+          <Button onClick={handleSubmit} disabled={saving} className="bg-blue-600 hover:bg-blue-700 text-white">
             {saving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
             {employee ? "Salvar Alterações" : "Cadastrar"}
           </Button>

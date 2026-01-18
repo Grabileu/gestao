@@ -30,7 +30,12 @@ export default function Employees() {
     queryFn: () => base44.entities.Department.list()
   });
 
-  const isLoading = loadingEmployees || loadingDepartments;
+  const { data: stores = [], isLoading: loadingStores } = useQuery({
+    queryKey: ['stores'],
+    queryFn: () => base44.entities.Store.list()
+  });
+
+  const isLoading = loadingEmployees || loadingDepartments || loadingStores;
 
   const filteredEmployees = employees.filter(employee => {
     const searchLower = filters.search.toLowerCase();
@@ -87,7 +92,7 @@ export default function Employees() {
             <h1 className="text-3xl font-bold text-white">Funcionários</h1>
             <p className="text-slate-400 mt-1">Gerencie todos os colaboradores da empresa</p>
           </div>
-          <Button onClick={() => handleOpenForm()} className="bg-blue-600 hover:bg-blue-700">
+          <Button onClick={() => handleOpenForm()} className="bg-blue-600 hover:bg-blue-700 text-white">
             <UserPlus className="w-4 h-4 mr-2" />
             Novo Funcionário
           </Button>
@@ -120,6 +125,7 @@ export default function Employees() {
           onClose={handleCloseForm}
           employee={editingEmployee}
           departments={departments}
+          stores={stores}
           onSave={handleSave}
         />
 

@@ -118,7 +118,7 @@ export default function PayrollConfig() {
           <h1 className="text-2xl font-bold text-white">Configurações de Folha</h1>
           <p className="text-slate-400">Configure todos os parâmetros para cálculo da folha de pagamento</p>
         </div>
-        <Button onClick={handleSave} disabled={saving} className="bg-blue-600 hover:bg-blue-700">
+        <Button onClick={handleSave} disabled={saving} className="bg-blue-600 hover:bg-blue-700 text-white">
           <Save className="h-4 w-4 mr-2" />
           {saving ? "Salvando..." : "Salvar Configurações"}
         </Button>
@@ -126,13 +126,13 @@ export default function PayrollConfig() {
 
       <Tabs defaultValue="jornada" className="space-y-6">
         <TabsList className="bg-slate-800 border-slate-700">
-          <TabsTrigger value="jornada" className="data-[state=active]:bg-slate-700">Jornada</TabsTrigger>
-          <TabsTrigger value="extras" className="data-[state=active]:bg-slate-700">Horas Extras</TabsTrigger>
-          <TabsTrigger value="adicionais" className="data-[state=active]:bg-slate-700">Adicionais</TabsTrigger>
-          <TabsTrigger value="faltas" className="data-[state=active]:bg-slate-700">Faltas</TabsTrigger>
-          <TabsTrigger value="ferias" className="data-[state=active]:bg-slate-700">Férias/13º</TabsTrigger>
-          <TabsTrigger value="impostos" className="data-[state=active]:bg-slate-700">Impostos</TabsTrigger>
-          <TabsTrigger value="beneficios" className="data-[state=active]:bg-slate-700">Benefícios</TabsTrigger>
+          <TabsTrigger value="jornada" className="text-slate-400 data-[state=active]:text-white data-[state=active]:bg-blue-600">Jornada</TabsTrigger>
+          <TabsTrigger value="extras" className="text-slate-400 data-[state=active]:text-white data-[state=active]:bg-blue-600">Horas Extras</TabsTrigger>
+          <TabsTrigger value="adicionais" className="text-slate-400 data-[state=active]:text-white data-[state=active]:bg-blue-600">Adicionais</TabsTrigger>
+          <TabsTrigger value="faltas" className="text-slate-400 data-[state=active]:text-white data-[state=active]:bg-blue-600">Faltas</TabsTrigger>
+          <TabsTrigger value="ferias" className="text-slate-400 data-[state=active]:text-white data-[state=active]:bg-blue-600">Férias/13º</TabsTrigger>
+          <TabsTrigger value="impostos" className="text-slate-400 data-[state=active]:text-white data-[state=active]:bg-blue-600">Impostos</TabsTrigger>
+          <TabsTrigger value="beneficios" className="text-slate-400 data-[state=active]:text-white data-[state=active]:bg-blue-600">Benefícios</TabsTrigger>
         </TabsList>
 
         {/* Jornada */}

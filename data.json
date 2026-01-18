@@ -9,9 +9,9 @@
       "birth_date": "2008-06-09",
       "hire_date": "2026-01-17",
       "termination_date": "",
-      "department_id": 1768620797624,
+      "department_id": "1768620797624",
       "department_name": "ADMINISTRAÇÃO",
-      "position": "Patroa",
+      "position": "Assistente Administrativo",
       "salary": 10000,
       "contract_type": "clt",
       "status": "active",
@@ -25,22 +25,24 @@
       "bank_agency": "",
       "bank_account": "",
       "notes": "",
-      "photo_url": ""
+      "photo_url": "",
+      "store_id": "1768679791540",
+      "store_name": "ÁREA VERDE"
     },
     {
       "id": 1768621008426,
       "full_name": "Gabriel Umbelino Félix",
       "email": "gabrielumbelino34@gmail.com",
-      "phone": "",
-      "cpf": "09034899373",
+      "phone": "(85) 98609-8558",
+      "cpf": "090.348.993-73",
       "birth_date": "2005-04-16",
       "hire_date": "2023-12-22",
       "termination_date": "",
-      "department_id": 1768620797624,
+      "department_id": "1768620778808",
       "department_name": "ADMINISTRAÇÃO",
-      "position": "Assistente Administrativo",
+      "position": "Operador(a) de caixa",
       "salary": 1621,
-      "contract_type": "clt",
+      "contract_type": "casual",
       "status": "active",
       "address": "",
       "city": "",
@@ -52,7 +54,9 @@
       "bank_agency": "",
       "bank_account": "",
       "notes": "",
-      "photo_url": ""
+      "photo_url": "",
+      "store_id": "1768679791540",
+      "store_name": "ÁREA VERDE"
     }
   ],
   "departments": [
@@ -62,7 +66,10 @@
       "description": "",
       "manager": "",
       "budget": null,
-      "status": "active"
+      "status": "active",
+      "positions": [
+        "Balconista"
+      ]
     },
     {
       "id": 1768620778808,
@@ -70,7 +77,10 @@
       "description": "",
       "manager": "",
       "budget": null,
-      "status": "active"
+      "status": "active",
+      "positions": [
+        "Operador(a) de caixa"
+      ]
     },
     {
       "id": 1768620791728,
@@ -78,7 +88,10 @@
       "description": "",
       "manager": "",
       "budget": null,
-      "status": "active"
+      "status": "active",
+      "positions": [
+        "Frente de loja"
+      ]
     },
     {
       "id": 1768620797624,
@@ -86,7 +99,10 @@
       "description": "",
       "manager": "",
       "budget": null,
-      "status": "active"
+      "status": "active",
+      "positions": [
+        "Assistente Administrativo"
+      ]
     },
     {
       "id": 1768620803021,
@@ -94,7 +110,10 @@
       "description": "",
       "manager": "",
       "budget": null,
-      "status": "active"
+      "status": "active",
+      "positions": [
+        "Repositor"
+      ]
     },
     {
       "id": 1768620817096,
@@ -102,56 +121,44 @@
       "description": "",
       "manager": "",
       "budget": null,
+      "status": "active",
+      "positions": [
+        "Serviços Gerais"
+      ]
+    }
+  ],
+  "stores": [
+    {
+      "id": 1768679791540,
+      "name": "ÁREA VERDE",
+      "code": "01",
+      "address": "RUA JOSÉ FELICIANO",
+      "city": "Maranguape",
+      "state": "CE",
+      "manager": "",
+      "status": "active",
+      "cnpj": "04.400.402/0001-34"
+    },
+    {
+      "id": 1768680106842,
+      "name": "SUPER MACHADO",
+      "code": "02",
+      "cnpj": "04.400.402/0002-15",
+      "address": "RUA AMARO DE MORAES",
+      "city": "Maranguape",
+      "state": "CE",
+      "manager": "",
       "status": "active"
     }
   ],
-  "stores": [],
   "cashiers": [],
   "absences": [
     {
-      "id": 1768620948462,
-      "employee_id": "1768620904508",
-      "employee_name": "Angelina Ferreira",
-      "date": "2026-01-17",
+      "id": 1768707823056,
+      "employee_id": "1768621008426",
+      "employee_name": "Gabriel Umbelino Félix",
+      "date": "2026-01-18",
       "type": "absence",
-      "hours": null,
-      "full_day": true,
-      "reason": "",
-      "document_url": "",
-      "cid": "",
-      "doctor_name": "",
-      "crm": "",
-      "days_off": 1,
-      "discount_salary": true,
-      "month_reference": "2026-01",
-      "status": "pending",
-      "observations": ""
-    },
-    {
-      "id": 1768621049970,
-      "employee_id": "1768621008426",
-      "employee_name": "Gabriel Umbelino Félix",
-      "date": "2026-01-15",
-      "type": "medical_certificate",
-      "hours": null,
-      "full_day": true,
-      "reason": "",
-      "document_url": "",
-      "cid": "",
-      "doctor_name": "",
-      "crm": "",
-      "days_off": 2,
-      "discount_salary": true,
-      "month_reference": "2026-01",
-      "status": "pending",
-      "observations": ""
-    },
-    {
-      "id": 1768621101858,
-      "employee_id": "1768621008426",
-      "employee_name": "Gabriel Umbelino Félix",
-      "date": "2026-01-17",
-      "type": "justified",
       "hours": null,
       "full_day": true,
       "reason": "",
@@ -167,7 +174,92 @@
     }
   ],
   "cashbreaks": [],
-  "ceasaPurchases": [],
+  "ceasaPurchases": [
+    {
+      "id": 1768700950120,
+      "date": "2026-01-17",
+      "supplier_id": "1768698597875",
+      "supplier_name": "PERBONI",
+      "items": [
+        {
+          "product_id": "1768700509273",
+          "product_name": "Mamão Bola",
+          "price_type": "per_unit",
+          "quantity": 110,
+          "unit_type": "unit",
+          "unit_price": 2.2,
+          "total_price": 242.00000000000003
+        },
+        {
+          "product_id": "1768700524992",
+          "product_name": "Gengibre",
+          "price_type": "per_unit",
+          "quantity": 150,
+          "unit_type": "unit",
+          "unit_price": 5,
+          "total_price": 750
+        }
+      ],
+      "total_amount": 992,
+      "payment_method": "cash",
+      "paid": true,
+      "observations": ""
+    },
+    {
+      "id": 1768701130998,
+      "date": "2026-01-17",
+      "supplier_id": "1768700444705",
+      "supplier_name": "ALE",
+      "items": [
+        {
+          "product_id": "1768700455786",
+          "product_name": "Cenoura",
+          "price_type": "per_box_fixed",
+          "boxes": 2,
+          "box_weight_kg": 20,
+          "total_kg": 40,
+          "price_per_box": 110,
+          "cost_per_kg": 5.5,
+          "unit_type": "box",
+          "quantity": 2,
+          "unit_price": 110,
+          "total_price": 220
+        },
+        {
+          "product_id": "1768700470399",
+          "product_name": "Pimenta de Cheiro",
+          "price_type": "per_box_fixed",
+          "boxes": 2,
+          "box_weight_kg": 10,
+          "total_kg": 20,
+          "price_per_box": 110,
+          "cost_per_kg": 11,
+          "unit_type": "box",
+          "quantity": 2,
+          "unit_price": 110,
+          "total_price": 220
+        },
+        {
+          "product_id": "1768700489260",
+          "product_name": "Maracujá",
+          "price_type": "per_box_fixed",
+          "boxes": 1,
+          "box_weight_kg": 15,
+          "total_kg": 15,
+          "price_per_box": 90,
+          "cost_per_kg": 6,
+          "unit_type": "box",
+          "quantity": 1,
+          "unit_price": 90,
+          "total_price": 90
+        }
+      ],
+      "total_amount": 530,
+      "payment_method": "cash",
+      "paid": true,
+      "observations": ""
+    }
+  ],
   "vacations": [
     {
       "id": 1768623689010,
@@ -202,10 +294,168 @@
       "observations": ""
     }
   ],
-  "payroll": [],
+  "payroll": [
+    {
+      "id": "1768707833444",
+      "employee_id": 1768620904508,
+      "employee_name": "Angelina Ferreira",
+      "month_reference": "2026-01",
+      "base_salary": 10000,
+      "work_days": 22,
+      "absences_days": 0,
+      "absences_discount": 0,
+      "medical_certificates_days": 0,
+      "overtime_50_hours": 0,
+      "overtime_50_value": 0,
+      "overtime_100_hours": 0,
+      "overtime_100_value": 0,
+      "total_overtime": 0,
+      "inss_value": 908.85,
+      "irrf_value": 1604.0662500000003,
+      "vt_discount": 600,
+      "gross_salary": 10000,
+      "total_discounts": 3112.91625,
+      "net_salary": 6887.08375,
+      "status": "draft"
+    },
+    {
+      "id": "1768707833458",
+      "employee_id": 1768621008426,
+      "employee_name": "Gabriel Umbelino Félix",
+      "month_reference": "2026-01",
+      "base_salary": 1621,
+      "work_days": 22,
+      "absences_days": 0,
+      "absences_discount": 0,
+      "medical_certificates_days": 0,
+      "overtime_50_hours": 0,
+      "overtime_50_value": 0,
+      "overtime_100_hours": 0,
+      "overtime_100_value": 0,
+      "total_overtime": 0,
+      "inss_value": 124.71,
+      "irrf_value": 0,
+      "vt_discount": 97.25999999999999,
+      "gross_salary": 1621,
+      "total_discounts": 221.96999999999997,
+      "net_salary": 1399.03,
+      "status": "draft"
+    }
+  ],
   "payrollConfig": [],
-  "hrConfig": [],
+  "hrConfig": [
+    {
+      "id": 1768706209678,
+      "name": "default",
+      "work_hours_per_day": 8,
+      "work_days_per_month": 22,
+      "overtime_50_percent": 50,
+      "overtime_100_percent": 100,
+      "night_shift_percent": 20,
+      "hazard_pay_percent": 30,
+      "unhealthy_pay_percent": 20,
+      "absence_discount_enabled": true,
+      "absence_discount_dsr": true,
+      "medical_certificate_discount": false,
+      "max_medical_days_no_discount": 15,
+      "vacation_days": 30,
+      "vacation_bonus_percent": 33.33,
+      "max_vacation_sell_days": 10,
+      "vacation_anticipation_days": 2,
+      "thirteenth_first_installment_month": 11,
+      "thirteenth_second_installment_month": 12,
+      "inss_enabled": true,
+      "irrf_enabled": true,
+      "fgts_percent": 8,
+      "fgts_enabled": true,
+      "vt_discount_percent": 6,
+      "vt_enabled": true,
+      "vr_value": 0,
+      "vr_discount_percent": 0,
+      "late_tolerance_minutes": 10,
+      "early_leave_tolerance_minutes": 10,
+      "probation_period_days": 90,
+      "notice_period_days": 30
+    }
+  ],
   "systemConfig": [],
-  "ceasaSuppliers": [],
-  "ceasaProducts": []
+  "ceasaSuppliers": [
+    {
+      "id": 1768698597875,
+      "name": "PERBONI",
+      "contact_name": "",
+      "phone": "",
+      "email": "",
+      "address": "",
+      "status": "active",
+      "observations": ""
+    },
+    {
+      "id": 1768700444705,
+      "name": "ALE",
+      "contact_name": "",
+      "phone": "",
+      "email": "",
+      "address": "",
+      "status": "active",
+      "observations": ""
+    }
+  ],
+  "ceasaProducts": [
+    {
+      "id": 1768700455786,
+      "name": "Cenoura",
+      "supplier_id": 1768700444705,
+      "supplier_name": "ALE",
+      "price_type": "per_box",
+      "default_price": 0,
+      "box_weight_kg": 20,
+      "category": "fruit",
+      "status": "active"
+    },
+    {
+      "id": 1768700470399,
+      "name": "Pimenta de Cheiro",
+      "supplier_id": 1768700444705,
+      "supplier_name": "ALE",
+      "price_type": "per_box",
+      "default_price": 0,
+      "box_weight_kg": 10,
+      "category": "fruit",
+      "status": "active"
+    },
+    {
+      "id": 1768700489260,
+      "name": "Maracujá",
+      "supplier_id": 1768700444705,
+      "supplier_name": "ALE",
+      "price_type": "per_box",
+      "default_price": 0,
+      "box_weight_kg": 15,
+      "category": "fruit",
+      "status": "active"
+    },
+    {
+      "id": 1768700509273,
+      "name": "Mamão Bola",
+      "supplier_id": 1768698597875,
+      "supplier_name": "PERBONI",
+      "price_type": "per_unit",
+      "default_price": 0,
+      "box_weight_kg": null,
+      "category": "fruit",
+      "status": "active"
+    },
+    {
+      "id": 1768700524992,
+      "name": "Gengibre",
+      "supplier_id": 1768698597875,
+      "supplier_name": "PERBONI",
+      "price_type": "per_unit",
+      "default_price": 0,
+      "box_weight_kg": null,
+      "category": "fruit",
+      "status": "active"
+    }
+  ]
 }

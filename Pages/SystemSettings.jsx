@@ -62,20 +62,20 @@ export default function SystemSettings() {
           <h1 className="text-2xl font-bold text-white">Configurações do Sistema</h1>
           <p className="text-slate-400">Configure parâmetros gerais do Sistema GUF</p>
         </div>
-        <Button onClick={handleSave} disabled={saving} className="bg-blue-600 hover:bg-blue-700">
+        <Button onClick={handleSave} disabled={saving} className="bg-blue-600 hover:bg-blue-700 text-white">
           <Save className="h-4 w-4 mr-2" />{saving ? "Salvando..." : "Salvar"}
         </Button>
       </div>
 
       <Tabs defaultValue="cashbreak" className="space-y-6">
         <TabsList className="bg-slate-800 border-slate-700">
-          <TabsTrigger value="cashbreak" className="data-[state=active]:bg-blue-600">
+          <TabsTrigger value="cashbreak" className="text-slate-400 data-[state=active]:text-white data-[state=active]:bg-blue-600">
             <Receipt className="h-4 w-4 mr-2" />Quebra de Caixa
           </TabsTrigger>
-          <TabsTrigger value="basket" className="data-[state=active]:bg-blue-600">
+          <TabsTrigger value="basket" className="text-slate-400 data-[state=active]:text-white data-[state=active]:bg-blue-600">
             <Gift className="h-4 w-4 mr-2" />Cesta Bonificação
           </TabsTrigger>
-          <TabsTrigger value="absence" className="data-[state=active]:bg-blue-600">
+          <TabsTrigger value="absence" className="text-slate-400 data-[state=active]:text-white data-[state=active]:bg-blue-600">
             <AlertCircle className="h-4 w-4 mr-2" />Faltas e Férias
           </TabsTrigger>
         </TabsList>
