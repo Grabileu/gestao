@@ -90,20 +90,30 @@ export default function Payroll() {
 
   const generatePayroll = async () => {
     setGenerating(true);
-    
+
+    // Excluir folhas do mês antes de gerar
+    const toDelete = payrolls.filter(p => p.month_reference === selectedMonth);
+    for (const folha of toDelete) {
+      await base44.entities.Payroll.delete(folha.id);
+    }
+
     const activeEmployees = employees.filter(e => e.status === "active" && e.salary > 0);
     const monthAbsences = absences.filter(a => a.month_reference === selectedMonth);
     const monthOvertimes = overtimes.filter(o => o.month_reference === selectedMonth && o.status === "approved");
+    // Buscar quebras de caixa do mês
+    const { data: cashBreaks = [] } = await base44.entities.CashBreak.list();
+    const monthCashBreaks = cashBreaks.filter(b => {
+      const breakMonth = b.date ? b.date.slice(0, 7) : "";
+      return breakMonth === selectedMonth;
+    });
 
     const hourlyRate = (salary) => salary / (config.work_days_per_month * config.work_hours_per_day);
 
     for (const employee of activeEmployees) {
-      // Check if already exists
-      const existing = payrolls.find(p => p.employee_id === employee.id && p.month_reference === selectedMonth);
-      if (existing) continue;
-
       const empAbsences = monthAbsences.filter(a => a.employee_id === employee.id);
       const empOvertimes = monthOvertimes.filter(o => o.employee_id === employee.id);
+      // Quebras de caixa do funcionário (associar por employee_id ou cashier_id)
+      const empCashBreaks = monthCashBreaks.filter(b => (String(b.employee_id) === String(employee.id) || String(b.cashier_id) === String(employee.id)) && b.type === "shortage");
 
       // Calculate absences
       let absencesDays = 0;
@@ -124,6 +134,8 @@ export default function Payroll() {
       if (config.medical_certificate_discount) {
         absencesDiscount += certificateDays * dailyRate;
       }
+      // Desconto de quebras de caixa
+      const cashBreakDiscount = empCashBreaks.reduce((sum, b) => sum + (b.amount || 0), 0);
 
       // Calculate overtime
       let overtime50Hours = 0;
@@ -139,21 +151,25 @@ export default function Payroll() {
       const totalOvertime = overtime50Value + overtime100Value;
 
       // Gross salary
-      const grossSalary = employee.salary + totalOvertime - absencesDiscount;
+      const grossSalary = employee.salary + totalOvertime - absencesDiscount - cashBreakDiscount;
 
-      // INSS
-      const inss = config.inss_enabled ? calculateINSS(grossSalary) : 0;
-      
-      // IRRF
-      const irrf = config.irrf_enabled ? Math.max(0, calculateIRRF(grossSalary, inss)) : 0;
+      // INSS: só para CLT/efetivo
+      let inss = 0;
+      if (config.inss_enabled && ["clt", "efetivo"].includes((employee.contract_type || "").toLowerCase())) {
+        inss = calculateINSS(grossSalary);
+      }
 
-      // VT
-      const vtDiscount = config.vt_enabled ? employee.salary * (config.vt_discount_percent / 100) : 0;
+      // IRRF: nunca desconta
+      const irrf = 0;
 
-      const totalDiscounts = absencesDiscount + inss + irrf + vtDiscount;
-      const netSalary = grossSalary - inss - irrf - vtDiscount;
+      // VT removido
+      const vtDiscount = 0;
+
+      const totalDiscounts = absencesDiscount + cashBreakDiscount + inss;
+      const netSalary = grossSalary - inss;
 
       await base44.entities.Payroll.create({
+        cashbreak_discount: cashBreakDiscount,
         employee_id: employee.id,
         employee_name: employee.full_name,
         month_reference: selectedMonth,
@@ -173,7 +189,7 @@ export default function Payroll() {
         gross_salary: grossSalary,
         total_discounts: totalDiscounts,
         net_salary: netSalary,
-        status: "draft"
+        status: "a pagar"
       });
     }
 
@@ -280,10 +296,10 @@ export default function Payroll() {
                   <TableCell>
                     <Badge className={
                       payroll.status === "paid" ? "bg-green-500/20 text-green-400" :
-                      payroll.status === "approved" ? "bg-blue-500/20 text-blue-400" :
-                      "bg-yellow-500/20 text-yellow-400"
+                      payroll.status === "a pagar" ? "bg-yellow-500/20 text-yellow-400" :
+                      "bg-blue-500/20 text-blue-400"
                     }>
-                      {payroll.status === "paid" ? "Pago" : payroll.status === "approved" ? "Aprovado" : "Rascunho"}
+                      {payroll.status === "paid" ? "Pago" : payroll.status === "a pagar" ? "A Pagar" : "Aprovado"}
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right">
@@ -291,6 +307,16 @@ export default function Payroll() {
                       <Button size="icon" variant="ghost" onClick={() => setViewPayroll(payroll)} className="text-slate-400 hover:text-white">
                         <Eye className="h-4 w-4" />
                       </Button>
+                      {payroll.status === "a pagar" && (
+                        <Button size="sm" className="bg-green-600 text-white" onClick={async () => {
+                          await base44.entities.Payroll.update(payroll.id, { status: "paid" });
+                          setTimeout(() => {
+                            queryClient.invalidateQueries({ queryKey: ["payrolls"] });
+                          }, 300);
+                        }}>
+                          Pagar
+                        </Button>
+                      )}
                       <Button size="icon" variant="ghost" onClick={() => setDeletePayroll(payroll)} className="text-slate-400 hover:text-red-400">
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -325,18 +351,24 @@ export default function Payroll() {
               <div className="p-4 bg-green-500/10 rounded-lg border border-green-500/20">
                 <h3 className="text-green-400 font-semibold mb-3">Proventos</h3>
                 <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-slate-300">Salário Base</span>
-                    <span className="text-white">{formatCurrency(viewPayroll.base_salary)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-300">Horas Extras 50% ({viewPayroll.overtime_50_hours}h)</span>
-                    <span className="text-white">{formatCurrency(viewPayroll.overtime_50_value)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-300">Horas Extras 100% ({viewPayroll.overtime_100_hours}h)</span>
-                    <span className="text-white">{formatCurrency(viewPayroll.overtime_100_value)}</span>
-                  </div>
+                  {viewPayroll.base_salary > 0 && (
+                    <div className="flex justify-between">
+                      <span className="text-slate-300">Salário Base</span>
+                      <span className="text-white">{formatCurrency(viewPayroll.base_salary)}</span>
+                    </div>
+                  )}
+                  {viewPayroll.overtime_50_value > 0 && (
+                    <div className="flex justify-between">
+                      <span className="text-slate-300">Horas Extras 50% ({viewPayroll.overtime_50_hours}h)</span>
+                      <span className="text-white">{formatCurrency(viewPayroll.overtime_50_value)}</span>
+                    </div>
+                  )}
+                  {viewPayroll.overtime_100_value > 0 && (
+                    <div className="flex justify-between">
+                      <span className="text-slate-300">Horas Extras 100% ({viewPayroll.overtime_100_hours}h)</span>
+                      <span className="text-white">{formatCurrency(viewPayroll.overtime_100_value)}</span>
+                    </div>
+                  )}
                   <div className="flex justify-between font-bold border-t border-green-500/20 pt-2 mt-2">
                     <span className="text-green-400">Total Bruto</span>
                     <span className="text-green-400">{formatCurrency(viewPayroll.gross_salary)}</span>
@@ -348,21 +380,35 @@ export default function Payroll() {
                 <h3 className="text-red-400 font-semibold mb-3">Descontos</h3>
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-slate-300">Faltas ({viewPayroll.absences_days} dias)</span>
-                    <span className="text-white">{formatCurrency(viewPayroll.absences_discount)}</span>
+                    <span className="text-slate-300">Faltas ({viewPayroll.absences_days || 0} dias)</span>
+                    <span className={viewPayroll.absences_discount > 0 ? "text-red-400" : "text-white"}>
+                      {viewPayroll.absences_discount > 0 ? `-${formatCurrency(viewPayroll.absences_discount)}` : formatCurrency(0)}
+                    </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-slate-300">INSS</span>
-                    <span className="text-white">{formatCurrency(viewPayroll.inss_value)}</span>
+                    <span className="text-slate-300">Quebras de Caixa</span>
+                    <span className={viewPayroll.cashbreak_discount > 0 ? "text-red-400" : "text-white"}>
+                      {viewPayroll.cashbreak_discount > 0 ? `-${formatCurrency(viewPayroll.cashbreak_discount)}` : formatCurrency(0)}
+                    </span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-300">IRRF</span>
-                    <span className="text-white">{formatCurrency(viewPayroll.irrf_value)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-300">Vale Transporte</span>
-                    <span className="text-white">{formatCurrency(viewPayroll.vt_discount)}</span>
-                  </div>
+                  {viewPayroll.inss_value > 0 && (
+                    <div className="flex justify-between">
+                      <span className="text-slate-300">INSS</span>
+                      <span className="text-white">{formatCurrency(viewPayroll.inss_value)}</span>
+                    </div>
+                  )}
+                  {viewPayroll.irrf_value > 0 && (
+                    <div className="flex justify-between">
+                      <span className="text-slate-300">IRRF</span>
+                      <span className="text-white">{formatCurrency(viewPayroll.irrf_value)}</span>
+                    </div>
+                  )}
+                  {viewPayroll.vt_discount > 0 && (
+                    <div className="flex justify-between">
+                      <span className="text-slate-300">Vale Transporte</span>
+                      <span className="text-white">{formatCurrency(viewPayroll.vt_discount)}</span>
+                    </div>
+                  )}
                   <div className="flex justify-between font-bold border-t border-red-500/20 pt-2 mt-2">
                     <span className="text-red-400">Total Descontos</span>
                     <span className="text-red-400">{formatCurrency(viewPayroll.total_discounts)}</span>

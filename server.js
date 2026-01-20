@@ -492,6 +492,18 @@ app.post('/api/payroll', (req, res) => {
   res.status(201).json(newPayroll);
 });
 
+app.put('/api/payroll/:id', (req, res) => {
+  const id = String(req.params.id);
+  const index = db.payroll.findIndex(p => String(p.id) === id);
+  if (index !== -1) {
+    db.payroll[index] = { ...db.payroll[index], ...req.body, id };
+    saveData();
+    res.json(db.payroll[index]);
+  } else {
+    res.status(404).json({ error: 'Folha não encontrada' });
+  }
+});
+
 app.delete('/api/payroll/:id', (req, res) => {
   console.log('DELETE /api/payroll/:id', req.params.id);
   db.payroll = db.payroll.filter(p => String(p.id) !== String(req.params.id));
