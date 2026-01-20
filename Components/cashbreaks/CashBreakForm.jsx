@@ -20,9 +20,9 @@ const typeOptions = [
 ];
 
 const statusOptions = [
-  { value: "pending", label: "Pendente" },
-  { value: "paid", label: "Pago/Descontado" },
-  { value: "cancelled", label: "Cancelado" }
+  { value: "not_delivered", label: "Não entregue" },
+  { value: "delivered", label: "Entregue" },
+  { value: "discounted", label: "Descontado" }
 ];
 
 export default function CashBreakForm({ open, onClose, cashBreak, stores, cashiers, onSave }) {
@@ -36,10 +36,11 @@ export default function CashBreakForm({ open, onClose, cashBreak, stores, cashie
     amount: "",
     reason: "",
     voucher_number: "",
-    voucher_status: "pending",
+    voucher_status: "",
     payment_date: "",
     observations: "",
-    shift: ""
+    shift: "",
+    payment_method: "cash" // novo campo
   });
   const [saving, setSaving] = useState(false);
   const [filteredCashiers, setFilteredCashiers] = useState([]);
@@ -59,10 +60,11 @@ export default function CashBreakForm({ open, onClose, cashBreak, stores, cashie
         amount: "",
         reason: "",
         voucher_number: "",
-        voucher_status: "pending",
+        voucher_status: "",
         payment_date: "",
         observations: "",
-        shift: ""
+        shift: "",
+        payment_method: "cash"
       });
     }
   }, [cashBreak, open]);
@@ -77,42 +79,59 @@ export default function CashBreakForm({ open, onClose, cashBreak, stores, cashie
   }, [formData.store_id, cashiers]);
 
   const handleChange = (field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-    
-    if (field === "store_id") {
-      const store = stores.find(s => s.id === value);
-      setFormData(prev => ({ 
-        ...prev, 
-        store_id: value, 
-        store_name: store?.name || "",
-        cashier_id: "",
-        cashier_name: ""
-      }));
-    }
-    
-    if (field === "cashier_id") {
-      const cashier = cashiers.find(c => c.id === value);
-      setFormData(prev => ({ 
-        ...prev, 
-        cashier_id: value, 
-        cashier_name: cashier?.name || ""
-      }));
-    }
+    setFormData(prev => {
+      let next = { ...prev, [field]: value };
+      if (field === "store_id") {
+        const store = stores.find(s => s.id === value);
+        next = {
+          ...next,
+          store_id: value,
+          store_name: store?.name || "",
+          cashier_id: "",
+          cashier_name: ""
+        };
+      }
+      if (field === "cashier_id") {
+        const cashier = cashiers.find(c => c.id === value);
+        next = {
+          ...next,
+          cashier_id: value,
+          cashier_name: cashier?.name || ""
+        };
+      }
+      // Se mudar o método de pagamento, atualiza status do vale
+      if (field === "payment_method") {
+        if (value === "cash") {
+          next.voucher_status = "";
+        } else {
+          next.voucher_status = "not_delivered";
+        }
+      }
+      return next;
+    });
   };
 
   const handleSubmit = async () => {
     setSaving(true);
+    // Busca os nomes corretos antes de salvar
+    const store = stores.find(s => String(s.id) === String(formData.store_id));
+    const cashier = cashiers.find(c => String(c.id) === String(formData.cashier_id));
+    let amount = formData.amount ? parseFloat(formData.amount) : 0;
+    // Se for comprovante perdido, sempre R$5
+    if (formData.payment_method !== "cash") {
+      amount = 5;
+    }
     const data = {
       ...formData,
-      amount: formData.amount ? parseFloat(formData.amount) : 0
+      amount,
+      store_name: store?.name || "",
+      cashier_name: cashier?.name || ""
     };
-    
     if (cashBreak?.id) {
       await base44.entities.CashBreak.update(cashBreak.id, data);
     } else {
       await base44.entities.CashBreak.create(data);
     }
-    
     setSaving(false);
     onSave();
   };
@@ -126,7 +145,9 @@ export default function CashBreakForm({ open, onClose, cashBreak, stores, cashie
           </DialogTitle>
         </DialogHeader>
 
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Data */}
           <div className="space-y-2">
             <Label className="text-slate-300">Data *</Label>
             <Input
@@ -137,22 +158,7 @@ export default function CashBreakForm({ open, onClose, cashBreak, stores, cashie
             />
           </div>
 
-          <div className="space-y-2">
-            <Label className="text-slate-300">Turno</Label>
-            <Select value={formData.shift} onValueChange={(v) => handleChange("shift", v)}>
-              <SelectTrigger className="bg-slate-800 border-slate-600 text-white">
-                <SelectValue placeholder="Selecione o turno" />
-              </SelectTrigger>
-              <SelectContent side="bottom" className="bg-slate-800 border-slate-600 text-white z-50">
-                {shiftOptions.map(opt => (
-                  <SelectItem key={opt.value} value={opt.value} className="text-white hover:bg-slate-700 cursor-pointer">
-                    {opt.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
+          {/* Loja */}
           <div className="space-y-2">
             <Label className="text-slate-300">Loja *</Label>
             <Select value={formData.store_id} onValueChange={(v) => handleChange("store_id", v)}>
@@ -169,6 +175,7 @@ export default function CashBreakForm({ open, onClose, cashBreak, stores, cashie
             </Select>
           </div>
 
+          {/* Operador de Caixa */}
           <div className="space-y-2">
             <Label className="text-slate-300">Operador de Caixa *</Label>
             <Select 
@@ -182,41 +189,80 @@ export default function CashBreakForm({ open, onClose, cashBreak, stores, cashie
               <SelectContent side="bottom" className="bg-slate-800 border-slate-600 text-white z-50">
                 {filteredCashiers.map(cashier => (
                   <SelectItem key={cashier.id} value={String(cashier.id)} className="text-white hover:bg-slate-700 cursor-pointer">
-                    {cashier.code ? `${cashier.code} - ` : ''}{cashier.name}
+                    {cashier.name}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
 
+          {/* Forma de Pagamento */}
           <div className="space-y-2">
-            <Label className="text-slate-300">Tipo *</Label>
-            <Select value={formData.type} onValueChange={(v) => handleChange("type", v)}>
+            <Label className="text-slate-300">Forma de Pagamento *</Label>
+            <Select value={formData.payment_method} onValueChange={(v) => handleChange("payment_method", v)}>
               <SelectTrigger className="bg-slate-800 border-slate-600 text-white">
-                <SelectValue />
+                <SelectValue placeholder="Selecione a forma de pagamento" />
               </SelectTrigger>
               <SelectContent side="bottom" className="bg-slate-800 border-slate-600 text-white z-50">
-                {typeOptions.map(opt => (
-                  <SelectItem key={opt.value} value={opt.value} className="text-white hover:bg-slate-700 cursor-pointer">
-                    {opt.label}
-                  </SelectItem>
-                ))}
+                <SelectItem value="cash" className="text-white hover:bg-slate-700 cursor-pointer">Dinheiro</SelectItem>
+                <SelectItem value="debit" className="text-white hover:bg-slate-700 cursor-pointer">Cartão Débito</SelectItem>
+                <SelectItem value="credit" className="text-white hover:bg-slate-700 cursor-pointer">Cartão Crédito</SelectItem>
+                <SelectItem value="pix" className="text-white hover:bg-slate-700 cursor-pointer">Pix</SelectItem>
+                <SelectItem value="other" className="text-white hover:bg-slate-700 cursor-pointer">Outro</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
-          <div className="space-y-2">
-            <Label className="text-slate-300">Valor (R$) *</Label>
-            <Input
-              type="number"
-              step="0.01"
-              value={formData.amount}
-              onChange={(e) => handleChange("amount", e.target.value)}
-              className="bg-slate-800 border-slate-600 text-white"
-              placeholder="0.00"
-            />
-          </div>
+          {/* Tipo (apenas para dinheiro) */}
+          {formData.payment_method === "cash" && (
+            <div className="space-y-2">
+              <Label className="text-slate-300">Tipo *</Label>
+              <Select value={formData.type} onValueChange={(v) => handleChange("type", v)}>
+                <SelectTrigger className="bg-slate-800 border-slate-600 text-white">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent side="bottom" className="bg-slate-800 border-slate-600 text-white z-50">
+                  {typeOptions.map(opt => (
+                    <SelectItem key={opt.value} value={opt.value} className="text-white hover:bg-slate-700 cursor-pointer">
+                      {opt.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
 
+          {/* Valor do comprovante perdido (apenas para cartão/pix/outros) */}
+          {formData.payment_method !== "cash" && (
+            <div className="space-y-2">
+              <Label className="text-slate-300">Valor do comprovante perdido</Label>
+              <Input
+                type="number"
+                step="0.01"
+                value={formData.amount}
+                onChange={(e) => handleChange("amount", e.target.value)}
+                className="bg-slate-800 border-slate-600 text-white"
+                placeholder="0.00"
+              />
+            </div>
+          )}
+
+          {/* Valor (R$) - só para dinheiro */}
+          {formData.payment_method === "cash" && (
+            <div className="space-y-2">
+              <Label className="text-slate-300">Valor (R$) *</Label>
+              <Input
+                type="number"
+                step="0.01"
+                value={formData.amount}
+                onChange={(e) => handleChange("amount", e.target.value)}
+                className="bg-slate-800 border-slate-600 text-white"
+                placeholder="0.00"
+              />
+            </div>
+          )}
+
+          {/* Número do Vale */}
           <div className="space-y-2">
             <Label className="text-slate-300">Número do Vale</Label>
             <Input
@@ -227,21 +273,24 @@ export default function CashBreakForm({ open, onClose, cashBreak, stores, cashie
             />
           </div>
 
-          <div className="space-y-2">
-            <Label className="text-slate-300">Status do Vale</Label>
-            <Select value={formData.voucher_status} onValueChange={(v) => handleChange("voucher_status", v)}>
-              <SelectTrigger className="bg-slate-800 border-slate-600 text-white">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent side="bottom" className="bg-slate-800 border-slate-600 text-white z-50">
-                {statusOptions.map(opt => (
-                  <SelectItem key={opt.value} value={opt.value} className="text-white hover:bg-slate-700 cursor-pointer">
-                    {opt.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          {/* Status do Vale (apenas para cartão/pix/outros) */}
+          {formData.payment_method !== "cash" && (
+            <div className="space-y-2">
+              <Label className="text-slate-300">Status do Vale</Label>
+              <Select value={formData.voucher_status} onValueChange={(v) => handleChange("voucher_status", v)}>
+                <SelectTrigger className="bg-slate-800 border-slate-600 text-white">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent side="bottom" className="bg-slate-800 border-slate-600 text-white z-50">
+                  {statusOptions.map(opt => (
+                    <SelectItem key={opt.value} value={opt.value} className="text-white hover:bg-slate-700 cursor-pointer">
+                      {opt.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
 
           {formData.voucher_status === "paid" && (
             <div className="space-y-2">

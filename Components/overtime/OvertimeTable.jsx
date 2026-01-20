@@ -26,7 +26,6 @@ export default function OvertimeTable({ overtimes, onEdit, onDelete }) {
             <TableHead className="text-slate-300">Funcionário</TableHead>
             <TableHead className="text-slate-300">Horas</TableHead>
             <TableHead className="text-slate-300">Tipo</TableHead>
-            <TableHead className="text-slate-300">Status</TableHead>
             <TableHead className="text-slate-300">Motivo</TableHead>
             <TableHead className="text-slate-300 text-right">Ações</TableHead>
           </TableRow>
@@ -53,11 +52,6 @@ export default function OvertimeTable({ overtimes, onEdit, onDelete }) {
                 <TableCell>
                   <Badge className={typeLabels[overtime.type]?.color}>
                     {typeLabels[overtime.type]?.label}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  <Badge className={statusLabels[overtime.status]?.color}>
-                    {statusLabels[overtime.status]?.label}
                   </Badge>
                 </TableCell>
                 <TableCell className="text-slate-300 max-w-[200px] truncate">

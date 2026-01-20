@@ -232,7 +232,7 @@ export default function CeasaSuppliers() {
             <DialogTitle className="text-white">Produtos - {showProducts?.name}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <Button onClick={() => { setProductForm(p => ({ ...p, supplier_id: showProducts?.id, supplier_name: showProducts?.name })); setShowProductForm(true); }} className="bg-blue-600 hover:bg-blue-700">
+            <Button onClick={() => { setProductForm(p => ({ ...p, supplier_id: showProducts?.id, supplier_name: showProducts?.name })); setShowProductForm(true); }} className="bg-blue-600 hover:bg-blue-700 text-white">
               <Plus className="h-4 w-4 mr-2" /> Adicionar Produto
             </Button>
             <div className="bg-slate-800/50 rounded-lg border border-slate-700 overflow-hidden">
@@ -335,7 +335,7 @@ export default function CeasaSuppliers() {
             )}
             <div className="flex justify-end gap-3">
               <Button type="button" variant="outline" onClick={() => setShowProductForm(false)} className="border-slate-600 text-slate-300 hover:bg-slate-800">Cancelar</Button>
-              <Button type="submit" className="bg-blue-600 hover:bg-blue-700">Salvar</Button>
+              <Button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white">Salvar</Button>
             </div>
           </form>
         </DialogContent>

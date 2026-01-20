@@ -124,19 +124,41 @@ app.delete('/api/absences/:id', (req, res) => {
 
 // Rotas de Cash Breaks
 app.get('/api/cashbreaks', (req, res) => {
-  res.json([]);
+  res.json(db.cashbreaks);
 });
 
 app.post('/api/cashbreaks', (req, res) => {
-  res.status(201).json({ message: 'Cash break criado', data: req.body });
+  const newBreak = { id: Date.now(), ...req.body };
+  db.cashbreaks.push(newBreak);
+  console.log('POST /api/cashbreaks', newBreak);
+  saveData();
+  res.status(201).json(newBreak);
 });
 
 app.put('/api/cashbreaks/:id', (req, res) => {
-  res.json({ message: 'Cash break atualizado', id: req.params.id, data: req.body });
+  const id = parseInt(req.params.id);
+  const index = db.cashbreaks.findIndex(b => b.id === id);
+  if (index !== -1) {
+    db.cashbreaks[index] = { ...db.cashbreaks[index], ...req.body, id };
+    console.log('PUT /api/cashbreaks/:id', db.cashbreaks[index]);
+    saveData();
+    res.json(db.cashbreaks[index]);
+  } else {
+    res.status(404).json({ error: 'Quebra de caixa não encontrada' });
+  }
 });
 
 app.delete('/api/cashbreaks/:id', (req, res) => {
-  res.json({ message: 'Cash break excluído', id: req.params.id });
+  const id = parseInt(req.params.id);
+  const index = db.cashbreaks.findIndex(b => b.id === id);
+  if (index !== -1) {
+    db.cashbreaks.splice(index, 1);
+    console.log('DELETE /api/cashbreaks/:id', id);
+    saveData();
+    res.json({ message: 'Quebra de caixa excluída', id });
+  } else {
+    res.status(404).json({ error: 'Quebra de caixa não encontrada' });
+  }
 });
 
 // Rotas de Ceasa Purchases

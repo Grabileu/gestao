@@ -27,6 +27,8 @@ export default function Vacations() {
   const [viewVacation, setViewVacation] = useState(null);
   const [deleteVacation, setDeleteVacation] = useState(null);
   const [search, setSearch] = useState("");
+  const [month, setMonth] = useState("");
+  const [year, setYear] = useState("");
 
   const queryClient = useQueryClient();
 
@@ -146,7 +148,9 @@ export default function Vacations() {
   };
 
   const filteredVacations = vacations.filter(v =>
-    v.employee_name?.toLowerCase().includes(search.toLowerCase())
+    v.employee_name?.toLowerCase().includes(search.toLowerCase()) &&
+    (month === "" || (v.start_date && moment(v.start_date).format("MM") === month)) &&
+    (year === "" || (v.start_date && moment(v.start_date).format("YYYY") === year))
   );
 
   const formatCurrency = (value) => new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value || 0);
@@ -202,14 +206,26 @@ export default function Vacations() {
 
       {/* Search */}
       <Card className="bg-slate-800/50 border-slate-700">
-        <CardContent className="p-4">
-          <div className="relative max-w-md">
+        <CardContent className="p-4 flex flex-wrap items-center justify-between gap-4">
+          <div className="relative max-w-md flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
             <Input
               placeholder="Buscar funcionário..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="pl-10 bg-slate-900 border-slate-600 text-white"
+            />
+          </div>
+          <div className="flex-shrink-0">
+            <Input
+              type="month"
+              value={year && month ? `${year}-${month}` : ""}
+              onChange={e => {
+                const [y, m] = e.target.value.split("-");
+                setYear(y || "");
+                setMonth(m || "");
+              }}
+              className="bg-slate-900 border-slate-600 text-white min-w-[140px]"
             />
           </div>
         </CardContent>

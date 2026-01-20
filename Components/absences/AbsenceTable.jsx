@@ -28,7 +28,6 @@ export default function AbsenceTable({ absences, onEdit, onDelete }) {
             <TableHead className="text-slate-300">Tipo</TableHead>
             <TableHead className="text-slate-300">Dias</TableHead>
             <TableHead className="text-slate-300">Desconta</TableHead>
-            <TableHead className="text-slate-300">Status</TableHead>
             <TableHead className="text-slate-300">Motivo</TableHead>
             <TableHead className="text-slate-300 text-right">Ações</TableHead>
           </TableRow>
@@ -59,11 +58,6 @@ export default function AbsenceTable({ absences, onEdit, onDelete }) {
                 </TableCell>
                 <TableCell className="text-white">
                   {absence.discount_salary ? "Sim" : "Não"}
-                </TableCell>
-                <TableCell>
-                  <Badge className={statusLabels[absence.status]?.color}>
-                    {statusLabels[absence.status]?.label}
-                  </Badge>
                 </TableCell>
                 <TableCell className="text-slate-300 max-w-[200px] truncate">
                   {absence.reason || "-"}

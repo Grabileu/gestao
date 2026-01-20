@@ -55,20 +55,20 @@ export default function CashBreakReports() {
 
   // Dados por loja
   const storeData = stores.map(store => {
-    const storeBreaks = filteredBreaks.filter(b => b.store_id === store.id);
+    const storeBreaks = filteredBreaks.filter(b => String(b.store_id) === String(store.id));
     const shortages = storeBreaks.filter(b => b.type === 'shortage');
     const surpluses = storeBreaks.filter(b => b.type === 'surplus');
     return {
-      name: store.code || store.name?.substring(0, 10),
+      name: store.code ? `${store.code} - ${store.name}` : store.name,
       faltas: shortages.reduce((sum, b) => sum + (b.amount || 0), 0),
       sobras: surpluses.reduce((sum, b) => sum + (b.amount || 0), 0),
       total: storeBreaks.length
     };
-  }).filter(d => d.total > 0);
+  }).filter(d => d.faltas > 0 || d.sobras > 0);
 
   // Dados por operador
   const cashierData = cashiers.map(cashier => {
-    const cashierBreaks = filteredBreaks.filter(b => b.cashier_id === cashier.id);
+    const cashierBreaks = filteredBreaks.filter(b => String(b.cashier_id) === String(cashier.id));
     const shortages = cashierBreaks.filter(b => b.type === 'shortage');
     return {
       name: cashier.name,

@@ -198,13 +198,34 @@ export default function EmployeeForm({ open, onClose, employee, departments, sto
       ...formData,
       salary: formData.salary ? parseFloat(formData.salary) : null
     };
-    
-    if (employee?.id) {
-      await base44.entities.Employee.update(employee.id, data);
+
+    let employeeId = employee?.id;
+    if (employeeId) {
+      await base44.entities.Employee.update(employeeId, data);
     } else {
-      await base44.entities.Employee.create(data);
+      const created = await base44.entities.Employee.create(data);
+      employeeId = created.id;
     }
-    
+
+    // Integração automática: se for operador de caixa, cria/atualiza registro em cashiers
+    if (data.position === "Operador(a) de caixa") {
+      const cashierData = {
+        name: data.full_name,
+        code: data.cpf || String(employeeId),
+        store_id: data.store_id,
+        store_name: data.store_name,
+        status: data.status || "active"
+      };
+      // Busca se já existe caixa para esse funcionário
+      const allCashiers = await base44.entities.Cashier.list();
+      const existing = allCashiers.find(c => c.code === cashierData.code);
+      if (existing) {
+        await base44.entities.Cashier.update(existing.id, cashierData);
+      } else {
+        await base44.entities.Cashier.create(cashierData);
+      }
+    }
+
     setSaving(false);
     onSave();
   };
