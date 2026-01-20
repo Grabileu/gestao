@@ -69,7 +69,7 @@ export default function OvertimeManagement() {
           <h1 className="text-2xl font-bold text-white">Horas Extras</h1>
           <p className="text-slate-400">Gerencie as horas extras dos funcionários</p>
         </div>
-        <Button onClick={() => setShowForm(true)} className="bg-blue-600 hover:bg-blue-700">
+        <Button onClick={() => setShowForm(true)} className="bg-blue-600 hover:bg-blue-700 text-white">
           <Plus className="h-4 w-4 mr-2" />
           Nova Hora Extra
         </Button>

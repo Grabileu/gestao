@@ -71,7 +71,7 @@ export default function Stores() {
 
         <div className="space-y-6">
             <div className="flex justify-end">
-              <Button onClick={() => { setEditingStore(null); setShowStoreForm(true); }} className="bg-blue-600 hover:bg-blue-700">
+              <Button onClick={() => { setEditingStore(null); setShowStoreForm(true); }} className="bg-blue-600 hover:bg-blue-700 text-white">
                 <Plus className="w-4 h-4 mr-2" />
                 Nova Loja
               </Button>

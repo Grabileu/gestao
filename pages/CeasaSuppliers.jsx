@@ -113,7 +113,7 @@ export default function CeasaSuppliers() {
           <h1 className="text-2xl font-bold text-white">Fornecedores CEASA</h1>
           <p className="text-slate-400">Gerencie os fornecedores e seus produtos</p>
         </div>
-        <Button onClick={() => setShowForm(true)} className="bg-blue-600 hover:bg-blue-700">
+        <Button onClick={() => setShowForm(true)} className="bg-blue-600 hover:bg-blue-700 text-white">
           <Plus className="h-4 w-4 mr-2" />
           Novo Fornecedor
         </Button>

@@ -77,7 +77,7 @@ export default function Departments() {
             <h1 className="text-3xl font-bold text-white">Departamentos</h1>
             <p className="text-slate-400 mt-1">Gerencie os departamentos da empresa</p>
           </div>
-          <Button onClick={() => handleOpenForm()} className="bg-blue-600 hover:bg-blue-700">
+          <Button onClick={() => handleOpenForm()} className="bg-blue-600 hover:bg-blue-700 text-white">
             <Plus className="w-4 h-4 mr-2" />
             Novo Departamento
           </Button>
@@ -90,7 +90,7 @@ export default function Departments() {
               <Building2 className="w-16 h-16 mx-auto text-slate-600 mb-4" />
               <h3 className="text-xl font-semibold text-white mb-2">Nenhum departamento cadastrado</h3>
               <p className="text-slate-400 mb-6">Comece criando o primeiro departamento da empresa.</p>
-              <Button onClick={() => handleOpenForm()} className="bg-blue-600 hover:bg-blue-700">
+              <Button onClick={() => handleOpenForm()} className="bg-blue-600 hover:bg-blue-700 text-white">
                 <Plus className="w-4 h-4 mr-2" />
                 Criar Departamento
               </Button>
