@@ -3,7 +3,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 
 export default function SalaryChart({ employees, departments }) {
   const data = departments.map(dept => {
-    const deptEmployees = employees.filter(e => e.department_id === dept.id && e.status === 'active');
+    const deptEmployees = employees.filter(e => String(e.department_id) === String(dept.id) && e.status === 'active');
     const totalSalary = deptEmployees.reduce((sum, e) => sum + (e.salary || 0), 0);
     return {
       name: dept.name?.substring(0, 10) || 'N/A',

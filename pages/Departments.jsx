@@ -52,7 +52,7 @@ export default function Departments() {
   };
 
   const getDepartmentStats = (deptId) => {
-    const deptEmployees = employees.filter(e => e.department_id === deptId && e.status === 'active');
+    const deptEmployees = employees.filter(e => String(e.department_id) === String(deptId) && e.status === 'active');
     const totalSalary = deptEmployees.reduce((sum, e) => sum + (e.salary || 0), 0);
     return {
       count: deptEmployees.length,

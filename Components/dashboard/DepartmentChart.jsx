@@ -6,7 +6,7 @@ const COLORS = ['#4361ee', '#3a86ff', '#8338ec', '#ff006e', '#fb5607', '#ffbe0b'
 export default function DepartmentChart({ employees, departments }) {
   const data = departments.map(dept => ({
     name: dept.name,
-    value: employees.filter(e => e.department_id === dept.id).length
+    value: employees.filter(e => String(e.department_id) === String(dept.id)).length
   })).filter(d => d.value > 0);
 
   if (data.length === 0) {
