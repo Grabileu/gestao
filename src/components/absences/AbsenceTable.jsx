@@ -1,7 +1,7 @@
 import React from "react";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "/src/components/ui/table";
+import { Badge } from "/src/components/ui/badge";
+import { Button } from "/src/components/ui/button";
 import { Pencil, Trash2 } from "lucide-react";
 import moment from "moment";
 
@@ -28,7 +28,6 @@ export default function AbsenceTable({ absences, onEdit, onDelete }) {
             <TableHead className="text-slate-300">Tipo</TableHead>
             <TableHead className="text-slate-300">Dias</TableHead>
             <TableHead className="text-slate-300">Desconta</TableHead>
-            <TableHead className="text-slate-300">Status</TableHead>
             <TableHead className="text-slate-300">Motivo</TableHead>
             <TableHead className="text-slate-300 text-right">Ações</TableHead>
           </TableRow>
@@ -60,12 +59,7 @@ export default function AbsenceTable({ absences, onEdit, onDelete }) {
                 <TableCell className="text-white">
                   {absence.discount_salary ? "Sim" : "Não"}
                 </TableCell>
-                <TableCell>
-                  <Badge className={statusLabels[absence.status]?.color}>
-                    {statusLabels[absence.status]?.label}
-                  </Badge>
-                </TableCell>
-                <TableCell className="text-slate-300 max-w-[200px] truncate">
+                <TableCell className="text-slate-300 max-w-50 truncate">
                   {absence.reason || "-"}
                 </TableCell>
                 <TableCell className="text-right">

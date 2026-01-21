@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
-import { base44 } from "@/api/base44Client";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "/src/components/ui/dialog";
+import { Button } from "/src/components/ui/button";
+import { Input } from "/src/components/ui/input";
+import { Label } from "/src/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "/src/components/ui/select";
+import { Textarea } from "/src/components/ui/textarea";
+import { Checkbox } from "/src/components/ui/checkbox";
+import { base44 } from "/src/api/base44Client";
 import { AlertCircle } from "lucide-react";
 
 const absenceTypes = [
@@ -31,7 +31,7 @@ export default function AbsenceForm({ open, onClose, absence, employees, onSave 
     days_off: 1,
     discount_salary: true,
     month_reference: "",
-    status: "confirmed",
+    status: "pending",
     observations: ""
   });
   const [loading, setLoading] = useState(false);
@@ -60,7 +60,7 @@ export default function AbsenceForm({ open, onClose, absence, employees, onSave 
         days_off: 1,
         discount_salary: true,
         month_reference: "",
-        status: "confirmed",
+        status: "pending",
         observations: ""
       });
     }
@@ -129,7 +129,7 @@ export default function AbsenceForm({ open, onClose, absence, employees, onSave 
         
         {validationError && (
           <div className="bg-red-500/10 border border-red-500/50 rounded-lg p-4 flex items-start gap-3">
-            <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+            <AlertCircle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
             <div className="flex-1">
               <p className="text-red-400 font-medium">{validationError}</p>
             </div>

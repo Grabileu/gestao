@@ -96,7 +96,7 @@ export default function Layout({ children, currentPageName }) {
 
   return (
   <>
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+    <div className="min-h-screen bg-linear-to-br from-slate-950 via-slate-900 to-slate-950">
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (
         <div 
@@ -114,7 +114,7 @@ export default function Layout({ children, currentPageName }) {
           {/* Logo */}
           <div className="flex items-center justify-between px-6 h-16 border-b border-slate-700/50">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600">
+              <div className="p-2 rounded-xl bg-linear-to-br from-blue-500 to-blue-600">
                 <Building2 className="w-5 h-5 text-white" />
               </div>
               <span className="text-xl font-bold text-white">Sistema GUF</span>

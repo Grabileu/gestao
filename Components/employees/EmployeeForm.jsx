@@ -241,7 +241,7 @@ export default function EmployeeForm({ open, onClose, employee, departments, sto
 
         {validationError && (
           <div className="bg-red-500/10 border border-red-500/50 rounded-lg p-4 flex items-start gap-3">
-            <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+            <AlertCircle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
             <div className="flex-1">
               <p className="text-red-400 font-medium">{validationError}</p>
             </div>

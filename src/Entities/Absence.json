@@ -1,0 +1,23 @@
+{
+  "name": "Absence",
+  "type": "object",
+  "properties": {
+    "employee_id": { "type": "string", "description": "ID do funcionário" },
+    "employee_name": { "type": "string", "description": "Nome do funcionário" },
+    "date": { "type": "string", "format": "date", "description": "Data da falta/atestado" },
+    "type": { "type": "string", "enum": ["absence", "medical_certificate", "justified"], "default": "absence", "description": "Tipo: falta, atestado ou justificada" },
+    "hours": { "type": "number", "description": "Horas de ausência (parcial)" },
+    "full_day": { "type": "boolean", "default": true, "description": "Dia inteiro ou parcial" },
+    "reason": { "type": "string", "description": "Motivo da falta" },
+    "document_url": { "type": "string", "description": "URL do documento/atestado" },
+    "cid": { "type": "string", "description": "CID do atestado médico" },
+    "doctor_name": { "type": "string", "description": "Nome do médico" },
+    "crm": { "type": "string", "description": "CRM do médico" },
+    "days_off": { "type": "number", "default": 1, "description": "Dias de afastamento" },
+    "discount_salary": { "type": "boolean", "default": true, "description": "Desconta do salário" },
+    "month_reference": { "type": "string", "description": "Mês de referência (YYYY-MM)" },
+    "status": { "type": "string", "enum": ["pending", "approved", "rejected"], "default": "pending" },
+    "observations": { "type": "string", "description": "Observações" }
+  },
+  "required": ["employee_id", "date", "type"]
+}

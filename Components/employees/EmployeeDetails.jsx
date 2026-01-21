@@ -51,7 +51,7 @@ export default function EmployeeDetails({ employee, open, onClose }) {
 
         <div className="space-y-6">
           {/* Header com foto e info básica */}
-          <div className="flex items-center gap-6 p-4 rounded-xl bg-gradient-to-r from-slate-800 to-slate-800/50">
+          <div className="flex items-center gap-6 p-4 rounded-xl bg-linear-to-r from-slate-800 to-slate-800/50">
             <Avatar className="h-20 w-20 border-4 border-slate-600">
               <AvatarImage src={employee.photo_url} />
               <AvatarFallback className="bg-blue-500/20 text-blue-400 text-xl">

@@ -1,0 +1,12 @@
+{
+  "name": "Department",
+  "type": "object",
+  "properties": {
+    "name": { "type": "string", "description": "Nome do departamento" },
+    "description": { "type": "string", "description": "Descrição do departamento" },
+    "manager": { "type": "string", "description": "Gerente responsável" },
+    "budget": { "type": "number", "description": "Orçamento do departamento" },
+    "status": { "type": "string", "enum": ["active", "inactive"], "default": "active" }
+  },
+  "required": ["name"]
+}

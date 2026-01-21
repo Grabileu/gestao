@@ -1,0 +1,14 @@
+{
+  "name": "CeasaSupplier",
+  "type": "object",
+  "properties": {
+    "name": { "type": "string", "description": "Nome do fornecedor" },
+    "contact_name": { "type": "string", "description": "Nome do contato" },
+    "phone": { "type": "string", "description": "Telefone" },
+    "email": { "type": "string", "description": "Email" },
+    "address": { "type": "string", "description": "Endereço/Box no CEASA" },
+    "status": { "type": "string", "enum": ["active", "inactive"], "default": "active" },
+    "observations": { "type": "string", "description": "Observações" }
+  },
+  "required": ["name"]
+}

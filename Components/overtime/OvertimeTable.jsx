@@ -54,7 +54,7 @@ export default function OvertimeTable({ overtimes, onEdit, onDelete }) {
                     {typeLabels[overtime.type]?.label}
                   </Badge>
                 </TableCell>
-                <TableCell className="text-slate-300 max-w-[200px] truncate">
+                <TableCell className="text-slate-300 max-w-50 truncate">
                   {overtime.reason || "-"}
                 </TableCell>
                 <TableCell className="text-right">

@@ -198,13 +198,34 @@ export default function EmployeeForm({ open, onClose, employee, departments, sto
       ...formData,
       salary: formData.salary ? parseFloat(formData.salary) : null
     };
-    
-    if (employee?.id) {
-      await base44.entities.Employee.update(employee.id, data);
+
+    let employeeId = employee?.id;
+    if (employeeId) {
+      await base44.entities.Employee.update(employeeId, data);
     } else {
-      await base44.entities.Employee.create(data);
+      const created = await base44.entities.Employee.create(data);
+      employeeId = created.id;
     }
-    
+
+    // Integração automática: se for operador de caixa, cria/atualiza registro em cashiers
+    if (data.position === "Operador(a) de caixa") {
+      const cashierData = {
+        name: data.full_name,
+        code: data.cpf || String(employeeId),
+        store_id: data.store_id,
+        store_name: data.store_name,
+        status: data.status || "active"
+      };
+      // Busca se já existe caixa para esse funcionário
+      const allCashiers = await base44.entities.Cashier.list();
+      const existing = allCashiers.find(c => c.code === cashierData.code);
+      if (existing) {
+        await base44.entities.Cashier.update(existing.id, cashierData);
+      } else {
+        await base44.entities.Cashier.create(cashierData);
+      }
+    }
+
     setSaving(false);
     onSave();
   };
@@ -220,7 +241,7 @@ export default function EmployeeForm({ open, onClose, employee, departments, sto
 
         {validationError && (
           <div className="bg-red-500/10 border border-red-500/50 rounded-lg p-4 flex items-start gap-3">
-            <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+            <AlertCircle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
             <div className="flex-1">
               <p className="text-red-400 font-medium">{validationError}</p>
             </div>
@@ -559,7 +580,7 @@ export default function EmployeeForm({ open, onClose, employee, departments, sto
           <Button variant="outline" onClick={onClose} className="border-slate-600 text-slate-300 hover:bg-slate-800">
             Cancelar
           </Button>
-          <Button onClick={handleSubmit} disabled={saving} className="bg-blue-600 hover:bg-blue-700">
+          <Button onClick={handleSubmit} disabled={saving} className="bg-blue-600 hover:bg-blue-700 text-white">
             {saving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
             {employee ? "Salvar Alterações" : "Cadastrar"}
           </Button>

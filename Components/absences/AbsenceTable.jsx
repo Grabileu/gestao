@@ -59,7 +59,7 @@ export default function AbsenceTable({ absences, onEdit, onDelete }) {
                 <TableCell className="text-white">
                   {absence.discount_salary ? "Sim" : "Não"}
                 </TableCell>
-                <TableCell className="text-slate-300 max-w-[200px] truncate">
+                <TableCell className="text-slate-300 max-w-50 truncate">
                   {absence.reason || "-"}
                 </TableCell>
                 <TableCell className="text-right">

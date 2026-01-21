@@ -14,7 +14,7 @@ export default function SalaryChart({ employees, departments }) {
 
   if (data.length === 0) {
     return (
-      <Card className="bg-gradient-to-br from-slate-900 to-slate-800 border-slate-700/50">
+      <Card className="bg-linear-to-br from-slate-900 to-slate-800 border-slate-700/50">
         <CardHeader>
           <CardTitle className="text-white text-lg">Folha por Departamento</CardTitle>
         </CardHeader>
@@ -26,7 +26,7 @@ export default function SalaryChart({ employees, departments }) {
   }
 
   return (
-    <Card className="bg-gradient-to-br from-slate-900 to-slate-800 border-slate-700/50">
+    <Card className="bg-linear-to-br from-slate-900 to-slate-800 border-slate-700/50">
       <CardHeader>
         <CardTitle className="text-white text-lg">Folha por Departamento</CardTitle>
       </CardHeader>

@@ -24,7 +24,7 @@ export default function RecentEmployees({ employees }) {
     .slice(0, 5);
 
   return (
-    <Card className="bg-gradient-to-br from-slate-900 to-slate-800 border-slate-700/50">
+    <Card className="bg-linear-to-br from-slate-900 to-slate-800 border-slate-700/50">
       <CardHeader>
         <CardTitle className="text-white text-lg">Últimos Cadastros</CardTitle>
       </CardHeader>

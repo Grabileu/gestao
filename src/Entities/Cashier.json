@@ -1,0 +1,12 @@
+{
+  "name": "Cashier",
+  "type": "object",
+  "properties": {
+    "name": { "type": "string", "description": "Nome do caixa/operador" },
+    "code": { "type": "string", "description": "Código/matrícula do caixa" },
+    "store_id": { "type": "string", "description": "ID da loja" },
+    "store_name": { "type": "string", "description": "Nome da loja" },
+    "status": { "type": "string", "enum": ["active", "inactive"], "default": "active" }
+  },
+  "required": ["name", "store_id"]
+}
