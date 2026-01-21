@@ -11,8 +11,8 @@ export default defineConfig({
  resolve: {
   alias: {
     '@': path.resolve(__dirname, './src'),
-    '@/components': path.resolve(__dirname, './Components'),
-    '@/pages': path.resolve(__dirname, './Pages'),          // ← ADICIONE ESTE!
+    '@/components': path.resolve(__dirname, './components'),
+    '@/pages': path.resolve(__dirname, './pages'),          // ← ADICIONE ESTE!
     '@/api': path.resolve(__dirname, './src/api'),
     // Se tiver Layout ou outras pastas na raiz, adicione aqui também
   }

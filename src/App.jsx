@@ -2,23 +2,23 @@ import { Routes, Route, Navigate, useParams } from 'react-router-dom';
 import Layout from '../Layout.jsx';
 
 import Dashboard from '../pages/Dashboard.jsx';
-import Employees from '../Pages/Employees.jsx';
-import Departments from '../Pages/Departments.jsx';
-import Absences from '../Pages/Absences.jsx';
-import OvertimeManagement from '../Pages/OvertimeManagement.jsx';
-import Vacations from '../Pages/Vacations.jsx';
-import Payroll from '../Pages/Payroll.jsx';
-import PayrollConfig from '../Pages/PayrollConfig.jsx';
-import HRConfig from '../Pages/HRConfig.jsx';
+import Employees from '../pages/Employees.jsx';
+import Departments from '../pages/Departments.jsx';
+import Absences from '../pages/Absences.jsx';
+import OvertimeManagement from '../pages/OvertimeManagement.jsx';
+import Vacations from '../pages/Vacations.jsx';
+import Payroll from '../pages/Payroll.jsx';
+import PayrollConfig from '../pages/PayrollConfig.jsx';
+import HRConfig from '../pages/HRConfig.jsx';
 import Reports from '../Pages/Reports.jsx';
-import CashBreaks from '../Pages/CashBreaks.jsx';
+import CashBreaks from '../pages/CashBreaks.jsx';
 import CashBreakReports from '../Pages/CashBreakReports.jsx';
-import CeasaSuppliers from '../Pages/CeasaSuppliers.jsx';
-import CeasaPurchases from '../Pages/CeasaPurchases.jsx';
-import CeasaReports from '../Pages/CeasaReports.jsx';
-import Stores from '../Pages/Stores.jsx';
-import SystemSettings from '../Pages/SystemSettings.jsx';
-import AbsenceReports from '../Pages/AbsenceReports.jsx';
+import CeasaSuppliers from '../pages/CeasaSuppliers.jsx';
+import CeasaPurchases from '../pages/CeasaPurchases.jsx';
+import CeasaReports from '../pages/CeasaReports.jsx';
+import Stores from '../pages/Stores.jsx';
+import SystemSettings from '../pages/SystemSettings.jsx';
+import AbsenceReports from '../pages/AbsenceReports.jsx';
 
 const pagesMap = {
   Dashboard,
