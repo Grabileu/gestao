@@ -4,10 +4,10 @@ import { cn } from "@/lib/utils";
 export default function StatCard({ title, value, subtitle, icon: Icon, trend, trendUp, className }) {
   return (
     <Card className={cn(
-      "relative overflow-hidden bg-gradient-to-br from-slate-900 to-slate-800 border-slate-700/50 p-6",
+      "relative overflow-hidden bg-linear-to-br from-slate-900 to-slate-800 border-slate-700/50 p-6",
       className
     )}>
-      <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-500/10 to-transparent rounded-full -translate-y-8 translate-x-8" />
+      <div className="absolute top-0 right-0 w-32 h-32 bg-linear-to-br from-blue-500/10 to-transparent rounded-full -translate-y-8 translate-x-8" />
       
       <div className="flex items-start justify-between relative z-10">
         <div className="space-y-2">

@@ -133,14 +133,14 @@ export default function CashBreakReports() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center">
+      <div className="min-h-screen bg-linear-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center">
         <Loader2 className="w-10 h-10 animate-spin text-blue-400" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-6">
+    <div className="min-h-screen bg-linear-to-br from-slate-950 via-slate-900 to-slate-950 p-6">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center gap-3">
@@ -170,7 +170,7 @@ export default function CashBreakReports() {
         {/* Charts Row */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Bar Chart - Por Loja */}
-          <Card className="bg-gradient-to-br from-slate-900 to-slate-800 border-slate-700/50">
+          <Card className="bg-linear-to-br from-slate-900 to-slate-800 border-slate-700/50">
             <CardHeader className="flex flex-row items-center gap-3">
               <Store className="w-5 h-5 text-blue-400" />
               <CardTitle className="text-white text-lg">Quebras por Loja</CardTitle>
@@ -199,7 +199,7 @@ export default function CashBreakReports() {
           </Card>
 
           {/* Pie Chart - Por Tipo */}
-          <Card className="bg-gradient-to-br from-slate-900 to-slate-800 border-slate-700/50">
+          <Card className="bg-linear-to-br from-slate-900 to-slate-800 border-slate-700/50">
             <CardHeader className="flex flex-row items-center gap-3">
               <TrendingDown className="w-5 h-5 text-rose-400" />
               <CardTitle className="text-white text-lg">Distribuição por Tipo</CardTitle>
@@ -238,7 +238,7 @@ export default function CashBreakReports() {
         </div>
 
         {/* Top Operadores com mais quebras */}
-        <Card className="bg-gradient-to-br from-slate-900 to-slate-800 border-slate-700/50">
+        <Card className="bg-linear-to-br from-slate-900 to-slate-800 border-slate-700/50">
           <CardHeader className="flex flex-row items-center gap-3">
             <User className="w-5 h-5 text-amber-400" />
             <CardTitle className="text-white text-lg">Ranking de Operadores (Mais Quebras)</CardTitle>
