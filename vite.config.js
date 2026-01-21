@@ -8,13 +8,15 @@ export default defineConfig({
     react(),
     tailwindcss(),  // ← adicione aqui
   ],
-  resolve: {
-    alias: [
-      { find: '@/components', replacement: path.resolve(__dirname, 'Components') },
-      { find: '@/api', replacement: path.resolve(__dirname, 'src/api') },
-      { find: '@', replacement: path.resolve(__dirname, 'src') }
-    ]
-  },
+ resolve: {
+  alias: {
+    '@': path.resolve(__dirname, './src'),
+    '@/components': path.resolve(__dirname, './Components'),
+    '@/pages': path.resolve(__dirname, './Pages'),          // ← ADICIONE ESTE!
+    '@/api': path.resolve(__dirname, './src/api'),
+    // Se tiver Layout ou outras pastas na raiz, adicione aqui também
+  }
+},
   server: {
     port: 5173,
     proxy: {

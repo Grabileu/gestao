@@ -1,3 +1,4 @@
+
 import { useToast } from "@/components/ui/use-toast";
 import {
   Toast,
@@ -7,6 +8,8 @@ import {
   ToastTitle,
   ToastViewport,
 } from "@/components/ui/toast";
+
+export default function Toaster() {
 
   const { toasts, dismiss } = useToast();
 
@@ -29,4 +32,4 @@ import {
       <ToastViewport />
     </ToastProvider>
   );
-} 
+}

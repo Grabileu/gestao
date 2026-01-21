@@ -24,7 +24,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Toaster } from "@/components/ui/toaster";
+import Toaster from "@/components/ui/toaster";
 import { cn } from "@/lib/utils";
 import { base44 } from "@/api/base44Client";
 

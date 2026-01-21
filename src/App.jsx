@@ -1,7 +1,7 @@
 import { Routes, Route, Navigate, useParams } from 'react-router-dom';
 import Layout from '../Layout.jsx';
 
-import Dashboard from '../Pages/Dashboard.jsx';
+import Dashboard from '../pages/Dashboard.jsx';
 import Employees from '../Pages/Employees.jsx';
 import Departments from '../Pages/Departments.jsx';
 import Absences from '../Pages/Absences.jsx';
