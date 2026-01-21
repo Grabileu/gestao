@@ -4,7 +4,7 @@ import Layout from '../Layout.jsx';
 import Dashboard from './pages/Dashboard.jsx';
 import Employees from './pages/Employees.jsx';
 import Departments from './pages/Departments.jsx';
-import Absences from './Pages/Absences.jsx';
+import Absences from './pages/Absences.jsx';
 import OvertimeManagement from './pages/OvertimeManagement.jsx';
 import Vacations from './pages/Vacations.jsx';
 import Payroll from './pages/Payroll.jsx';
@@ -18,7 +18,7 @@ import CeasaPurchases from './pages/CeasaPurchases.jsx';
 import CeasaReports from './pages/CeasaReports.jsx';
 import Stores from './pages/Stores.jsx';
 import SystemSettings from './pages/SystemSettings.jsx';
-import AbsenceReports from './Pages/AbsenceReports.jsx';
+import AbsenceReports from './pages/AbsenceReports.jsx';
 
 const pagesMap = {
   Dashboard,
