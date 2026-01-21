@@ -117,7 +117,7 @@ export default function Absences() {
       <Card className="bg-slate-800/50 border-slate-700">
         <CardContent className="p-4">
           <div className="flex flex-wrap gap-4">
-            <div className="flex-1 min-w-[200px]">
+            <div className="flex-1 min-w-50">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                 <Input
@@ -128,7 +128,7 @@ export default function Absences() {
                 />
               </div>
             </div>
-            <div className="w-[180px]">
+            <div className="w-45">
               <Select value={filters.type} onValueChange={(v) => setFilters(prev => ({ ...prev, type: v }))}>
                 <SelectTrigger className="bg-slate-900 border-slate-600 text-white">
                   <SelectValue placeholder="Tipo" />
@@ -141,7 +141,7 @@ export default function Absences() {
                 </SelectContent>
               </Select>
             </div>
-            <div className="w-[180px]">
+            <div className="w-45">
               <Input
                 type="month"
                 value={filters.month}
