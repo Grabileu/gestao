@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { base44 } from "@/api/base44Client";
+import { base44 } from "@/api/base44SupabaseClient";
 import { Loader2, User, Briefcase, MapPin, Phone, Building2, AlertCircle } from "lucide-react";
 
 const contractTypes = [

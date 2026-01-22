@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { base44 } from "@/api/base44Client";
+import { base44 } from "@/api/base44SupabaseClient";
 import { Loader2 } from "lucide-react";
 
 export default function StoreForm({ open, onClose, store, onSave }) {

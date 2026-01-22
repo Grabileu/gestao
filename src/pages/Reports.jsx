@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { base44 } from "@/api/base44SupabaseClient";
 import { useQuery } from "@tanstack/react-query";
 import { Loader2, FileSpreadsheet } from "lucide-react";
 import ReportFilters from "@/components/reports/ReportFilters";

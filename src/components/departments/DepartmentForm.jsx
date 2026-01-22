@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { base44 } from "@/api/base44Client";
+import { base44 } from "@/api/base44SupabaseClient";
 import { Loader2, Plus, X } from "lucide-react";
 
 export default function DepartmentForm({ open, onClose, department, onSave }) {
@@ -20,12 +20,13 @@ export default function DepartmentForm({ open, onClose, department, onSave }) {
   const [newPosition, setNewPosition] = useState("");
   const [saving, setSaving] = useState(false);
 
+
   useEffect(() => {
     if (department) {
       setFormData({ 
         ...department, 
         budget: department.budget?.toString() || "",
-        positions: department.positions || []
+        positions: Array.isArray(department.positions) ? department.positions : []
       });
     } else {
       setFormData({
@@ -63,19 +64,32 @@ export default function DepartmentForm({ open, onClose, department, onSave }) {
 
   const handleSubmit = async () => {
     setSaving(true);
-    const data = {
-      ...formData,
-      budget: formData.budget ? parseFloat(formData.budget) : null
-    };
-    
-    if (department?.id) {
-      await base44.entities.Department.update(department.id, data);
-    } else {
-      await base44.entities.Department.create(data);
+    try {
+      const departmentData = {
+        name: formData.name,
+        description: formData.description,
+        manager: formData.manager,
+        budget: formData.budget ? parseFloat(formData.budget) : null,
+        status: formData.status,
+        positions: formData.positions
+      };
+
+      if (department?.id) {
+        const { error } = await base44.entities.Department.update(department.id, departmentData);
+        if (error) throw error;
+      } else {
+        const { data, error } = await base44.entities.Department.create(departmentData);
+        if (error) throw error;
+        console.log("Departamento criado:", data);
+      }
+
+      setSaving(false);
+      onSave();
+    } catch (err) {
+      console.error("Erro ao salvar departamento:", err);
+      alert("Erro ao salvar: " + (err.message || "Verifique o console para detalhes"));
+      setSaving(false);
     }
-    
-    setSaving(false);
-    onSave();
   };
 
   return (

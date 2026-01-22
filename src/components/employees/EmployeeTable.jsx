@@ -8,7 +8,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { MoreHorizontal, Pencil, Trash2, Eye } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { base44 } from "@/api/base44Client";
+import { base44 } from "@/api/base44SupabaseClient";
 
 const statusColors = {
   active: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
@@ -44,9 +44,10 @@ export default function EmployeeTable({ employees, onEdit, onView, onRefresh }) 
     onRefresh();
   };
 
+
   return (
     <>
-      <div className="rounded-xl border border-slate-700/50 overflow-hidden bg-slate-900/50">
+      <div className="relative rounded-xl border border-slate-700/50 overflow-hidden bg-slate-900/50">
         <Table>
           <TableHeader>
             <TableRow className="border-slate-700/50 hover:bg-transparent">
@@ -130,6 +131,14 @@ export default function EmployeeTable({ employees, onEdit, onView, onRefresh }) 
             )}
           </TableBody>
         </Table>
+        {deleting && (
+          <div className="absolute inset-0 flex items-center justify-center bg-slate-900/70 z-10">
+            <svg className="animate-spin h-8 w-8 text-blue-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+            </svg>
+          </div>
+        )}
       </div>
 
       <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>

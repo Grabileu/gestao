@@ -6,7 +6,7 @@ import { Label } from "/src/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "/src/components/ui/select";
 import { Textarea } from "/src/components/ui/textarea";
 import { Checkbox } from "/src/components/ui/checkbox";
-import { base44 } from "/src/api/base44Client";
+import { base44 } from "/src/api/base44SupabaseClient";
 import { AlertCircle } from "lucide-react";
 
 const absenceTypes = [

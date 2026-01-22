@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { base44 } from "@/api/base44SupabaseClient";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { UserPlus, Loader2 } from "lucide-react";
@@ -75,13 +75,9 @@ export default function Employees() {
     });
   };
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center">
-        <Loader2 className="w-10 h-10 animate-spin text-blue-400" />
-      </div>
-    );
-  }
+
+  // Exibe loading sobre a tabela se estiver recarregando após cadastro
+  const showTableLoading = loadingEmployees;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-6">
@@ -112,12 +108,20 @@ export default function Employees() {
         </p>
 
         {/* Table */}
-        <EmployeeTable 
-          employees={filteredEmployees}
-          onEdit={handleOpenForm}
-          onView={setViewingEmployee}
-          onRefresh={() => queryClient.invalidateQueries({ queryKey: ['employees'] })}
-        />
+
+        <div className="relative">
+          <EmployeeTable 
+            employees={filteredEmployees}
+            onEdit={handleOpenForm}
+            onView={setViewingEmployee}
+            onRefresh={() => queryClient.invalidateQueries({ queryKey: ['employees'] })}
+          />
+          {showTableLoading && (
+            <div className="absolute inset-0 flex items-center justify-center bg-slate-900/70 z-10">
+              <Loader2 className="w-8 h-8 animate-spin text-blue-400" />
+            </div>
+          )}
+        </div>
 
         {/* Form Modal */}
         <EmployeeForm 

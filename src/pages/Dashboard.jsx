@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { base44 } from "@/api/base44SupabaseClient";
 import { useQuery } from "@tanstack/react-query";
 import { Users, Building2, Wallet, TrendingUp, Loader2 } from "lucide-react";
 import StatCard from "@/components/dashboard/StatCard";
