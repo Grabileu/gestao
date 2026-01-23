@@ -4,42 +4,44 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { MoreHorizontal, Pencil, Trash2, CheckCircle } from "lucide-react";
+import { MoreHorizontal, Pencil, Trash2, CheckCircle, Eye } from "lucide-react";
+import CashBreakViewDialog from "./CashBreakViewDialog";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { base44 } from "@/api/base44SupabaseClient";
 
-const typeColors = {
+export const typeColors = {
   shortage: "bg-rose-500/20 text-rose-400 border-rose-500/30",
   surplus: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30"
 };
 
-const typeLabels = {
+export const typeLabels = {
   shortage: "Falta",
   surplus: "Sobra"
 };
 
-const statusColors = {
+export const statusColors = {
   not_delivered: "bg-amber-500/20 text-amber-400 border-amber-500/30",
   delivered: "bg-blue-500/20 text-blue-400 border-blue-500/30",
   discounted: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30"
 };
 
-const statusLabels = {
+export const statusLabels = {
   not_delivered: "Não entregue",
   delivered: "Entregue",
   discounted: "Descontado"
 };
 
-const shiftLabels = {
+export const shiftLabels = {
   morning: "Manhã",
   afternoon: "Tarde",
   night: "Noite"
 };
 
-export default function CashBreakTable({ cashBreaks, onEdit, onRefresh }) {
+function CashBreakTable({ cashBreaks, onEdit, onRefresh }) {
   const [deleteId, setDeleteId] = useState(null);
   const [deleting, setDeleting] = useState(false);
+  const [viewItem, setViewItem] = useState(null);
 
   const handleDelete = async () => {
     setDeleting(true);
@@ -60,6 +62,7 @@ export default function CashBreakTable({ cashBreaks, onEdit, onRefresh }) {
 
   return (
     <>
+      <CashBreakViewDialog open={!!viewItem} onClose={() => setViewItem(null)} cashBreak={viewItem} />
       <div className="rounded-xl border border-slate-700/50 overflow-hidden bg-slate-900/50">
         <Table>
           <TableHeader>
@@ -92,9 +95,12 @@ export default function CashBreakTable({ cashBreaks, onEdit, onRefresh }) {
                   <TableCell className="text-slate-300">{item.cashier_name || item.employee_name || "-"}</TableCell>
                   <TableCell className="text-slate-300">{
                     item.payment_method === 'cash' ? 'Dinheiro' :
-                    item.payment_method === 'debit' ? 'Cartão Débito' :
                     item.payment_method === 'credit' ? 'Cartão Crédito' :
+                    item.payment_method === 'debit' ? 'Cartão Débito' :
+                    item.payment_method === 'food' ? 'Cartão Alimentação' :
                     item.payment_method === 'pix' ? 'Pix' :
+                    item.payment_method === 'pos' ? 'POS' :
+                    item.payment_method === 'client_credit' ? 'Cliente a Prazo' :
                     item.payment_method === 'other' ? 'Outro' : '-'
                   }</TableCell>
                   <TableCell>
@@ -111,7 +117,10 @@ export default function CashBreakTable({ cashBreaks, onEdit, onRefresh }) {
                       {statusLabels[item.voucher_status]}
                     </Badge>
                   </TableCell>
-                  <TableCell className="text-right">
+                  <TableCell className="text-right flex gap-2 items-center justify-end">
+                    <Button variant="ghost" size="icon" className="text-slate-400 hover:text-white hover:bg-slate-700" onClick={() => setViewItem(item)} title="Visualizar">
+                      <Eye className="w-4 h-4" />
+                    </Button>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="icon" className="text-slate-400 hover:text-white hover:bg-slate-700">
@@ -164,3 +173,5 @@ export default function CashBreakTable({ cashBreaks, onEdit, onRefresh }) {
     </>
   );
 }
+
+export default CashBreakTable;

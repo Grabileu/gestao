@@ -29,7 +29,11 @@ export default function CeasaPurchases() {
 
   const { data: purchases = [] } = useQuery({
     queryKey: ["ceasa-purchases"],
-    queryFn: () => base44.entities.CeasaPurchase.list("-date")
+    queryFn: async () => {
+      const data = await base44.entities.CeasaPurchase.list("-date");
+      console.log("[DEBUG] Compras retornadas:", data);
+      return data;
+    }
   });
 
   const { data: suppliers = [] } = useQuery({
@@ -215,8 +219,13 @@ export default function CeasaPurchases() {
   const handleSave = async (e) => {
     e.preventDefault();
     if (form.items.length === 0) return;
-    
-    await base44.entities.CeasaPurchase.create(form);
+    try {
+      const result = await base44.entities.CeasaPurchase.create(form);
+      console.log("[DEBUG] Resultado do create:", result);
+    } catch (err) {
+      console.error("[DEBUG] Erro ao criar compra:", err);
+      alert("Erro ao salvar compra: " + (err?.message || err));
+    }
     queryClient.invalidateQueries({ queryKey: ["ceasa-purchases"] });
     setShowForm(false);
     setForm({

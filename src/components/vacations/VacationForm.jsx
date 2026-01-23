@@ -1,8 +1,23 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-export default function VacationForm({ onSave, onCancel, vacation }) {
-  // Layout simples para cadastro/edição de férias
+export default function VacationForm({ onSave, onCancel, vacation = {}, employees = [] }) {
+  const [formData, setFormData] = useState({ ...vacation });
+
+  useEffect(() => {
+    setFormData({ ...vacation });
+  }, [vacation]);
+
+  const handleEmployeeChange = (employeeId) => {
+    const employee = employees.find(e => String(e.id) === String(employeeId));
+    setFormData(prev => ({
+      ...prev,
+      employee_id: employeeId,
+      employee_name: employee?.full_name || ""
+    }));
+  };
+
   return (
     <div className="bg-slate-900 p-6 rounded-xl max-w-lg mx-auto">
       <h2 className="text-2xl font-bold text-white mb-4">Programar Férias</h2>
@@ -10,24 +25,28 @@ export default function VacationForm({ onSave, onCancel, vacation }) {
         className="space-y-4"
         onSubmit={e => {
           e.preventDefault();
-          if (onSave) onSave(vacation);
+          if (onSave) onSave(formData);
         }}
       >
         <div>
           <label className="block text-sm text-slate-300 mb-1">Funcionário</label>
-          <input
-            type="text"
-            value={vacation?.employee_name || ""}
-            readOnly
-            className="w-full rounded bg-slate-800 border-slate-700 text-white px-3 py-2"
-          />
+          <Select value={String(formData.employee_id || "")} onValueChange={handleEmployeeChange}>
+            <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
+              <SelectValue placeholder="Selecione" />
+            </SelectTrigger>
+            <SelectContent side="bottom" className="bg-slate-800 border-slate-700 text-white z-50">
+              {employees.filter(e => e.status === "active").map(emp => (
+                <SelectItem key={emp.id} value={String(emp.id)} className="text-white hover:bg-slate-700 cursor-pointer">{emp.full_name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
         <div>
           <label className="block text-sm text-slate-300 mb-1">Período Aquisitivo</label>
           <input
             type="text"
-            value={vacation?.period || ""}
-            onChange={e => vacation.period = e.target.value}
+            value={formData.period || ""}
+            onChange={e => setFormData(prev => ({ ...prev, period: e.target.value }))
             className="w-full rounded bg-slate-800 border-slate-700 text-white px-3 py-2"
           />
         </div>
@@ -36,8 +55,8 @@ export default function VacationForm({ onSave, onCancel, vacation }) {
             <label className="block text-sm text-slate-300 mb-1">Dias</label>
             <input
               type="number"
-              value={vacation?.days || ""}
-              onChange={e => vacation.days = e.target.value}
+              value={formData.days || ""}
+              onChange={e => setFormData(prev => ({ ...prev, days: e.target.value }))
               className="w-full rounded bg-slate-800 border-slate-700 text-white px-3 py-2"
             />
           </div>
@@ -45,8 +64,8 @@ export default function VacationForm({ onSave, onCancel, vacation }) {
             <label className="block text-sm text-slate-300 mb-1">Início</label>
             <input
               type="date"
-              value={vacation?.start_date || ""}
-              onChange={e => vacation.start_date = e.target.value}
+              value={formData.start_date || ""}
+              onChange={e => setFormData(prev => ({ ...prev, start_date: e.target.value }))
               className="w-full rounded bg-slate-800 border-slate-700 text-white px-3 py-2"
             />
           </div>
@@ -55,16 +74,16 @@ export default function VacationForm({ onSave, onCancel, vacation }) {
           <label className="block text-sm text-slate-300 mb-1">Valor</label>
           <input
             type="number"
-            value={vacation?.value || ""}
-            onChange={e => vacation.value = e.target.value}
+            value={formData.value || ""}
+            onChange={e => setFormData(prev => ({ ...prev, value: e.target.value }))
             className="w-full rounded bg-slate-800 border-slate-700 text-white px-3 py-2"
           />
         </div>
         <div>
           <label className="block text-sm text-slate-300 mb-1">Status</label>
           <select
-            value={vacation?.status || ""}
-            onChange={e => vacation.status = e.target.value}
+            value={formData.status || ""}
+            onChange={e => setFormData(prev => ({ ...prev, status: e.target.value }))
             className="w-full rounded bg-slate-800 border-slate-700 text-white px-3 py-2"
           >
             <option value="pendente">Pendente</option>
@@ -72,8 +91,10 @@ export default function VacationForm({ onSave, onCancel, vacation }) {
             <option value="em_gozo">Em Gozo</option>
           </select>
         </div>
-        <div className="flex gap-2 justify-end pt-4">
-          <Button type="button" variant="outline" onClick={onCancel} className="border-slate-600 text-slate-300 hover:bg-slate-800">Cancelar</Button>
+        <div className="flex justify-end gap-3 pt-4">
+          <Button type="button" variant="outline" onClick={onCancel} className="border-slate-600 text-slate-300 hover:bg-slate-800">
+            Cancelar
+          </Button>
           <Button type="submit" className="bg-green-600 hover:bg-green-700 text-white">Salvar</Button>
         </div>
       </form>

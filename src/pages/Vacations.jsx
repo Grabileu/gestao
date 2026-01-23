@@ -265,84 +265,14 @@ export default function Vacations() {
           <DialogHeader>
             <DialogTitle className="text-white">Programar Férias</DialogTitle>
           </DialogHeader>
-          <form onSubmit={handleSave} className="space-y-4">
-            <div>
-              <Label className="text-slate-300">Funcionário *</Label>
-              <Select value={form.employee_id} onValueChange={handleEmployeeChange}>
-                <SelectTrigger className="bg-slate-800 border-slate-600 text-white"><SelectValue placeholder="Selecione" /></SelectTrigger>
-                <SelectContent>
-                  {employees.filter(e => e.status === "active").map(emp => (
-                    <SelectItem key={emp.id} value={emp.id}>{emp.full_name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {form.employee_id && (
-              <>
-                <div className="grid grid-cols-2 gap-4 p-4 bg-slate-800/50 rounded-lg">
-                  <div>
-                    <Label className="text-slate-300">Período Aquisitivo</Label>
-                    <p className="text-white">{moment(form.acquisition_period_start).format("DD/MM/YYYY")} - {moment(form.acquisition_period_end).format("DD/MM/YYYY")}</p>
-                  </div>
-                  <div>
-                    <Label className="text-slate-300">Limite Concessivo</Label>
-                    <p className="text-white">{moment(form.concession_period_end).format("DD/MM/YYYY")}</p>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label className="text-slate-300">Dias de Direito</Label>
-                    <Input type="number" value={form.days_entitled} onChange={(e) => setForm(p => ({ ...p, days_entitled: parseInt(e.target.value) }))} className="bg-slate-800 border-slate-600 text-white" />
-                  </div>
-                  <div>
-                    <Label className="text-slate-300">Dias Vendidos (Abono)</Label>
-                    <Input type="number" max={10} value={form.days_sold} onChange={(e) => setForm(p => ({ ...p, days_sold: parseInt(e.target.value) || 0 }))} className="bg-slate-800 border-slate-600 text-white" />
-                    <p className="text-xs text-slate-500">Máximo 10 dias</p>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-3 gap-4">
-                  <div>
-                    <Label className="text-slate-300">Data Início *</Label>
-                    <Input type="date" value={form.start_date} onChange={(e) => handleDatesChange("start_date", e.target.value)} className="bg-slate-800 border-slate-600 text-white" required />
-                  </div>
-                  <div>
-                    <Label className="text-slate-300">Data Fim</Label>
-                    <Input type="date" value={form.end_date} readOnly className="bg-slate-800 border-slate-600 text-white" />
-                  </div>
-                  <div>
-                    <Label className="text-slate-300">Retorno</Label>
-                    <Input type="date" value={form.return_date} readOnly className="bg-slate-800 border-slate-600 text-white" />
-                  </div>
-                </div>
-
-                <div>
-                  <Label className="text-slate-300">Status</Label>
-                  <Select value={form.status} onValueChange={(v) => setForm(p => ({ ...p, status: v }))}>
-                    <SelectTrigger className="bg-slate-800 border-slate-600 text-white"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="pending">Pendente</SelectItem>
-                      <SelectItem value="scheduled">Agendada</SelectItem>
-                      <SelectItem value="in_progress">Em Gozo</SelectItem>
-                      <SelectItem value="completed">Concluída</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <Label className="text-slate-300">Observações</Label>
-                  <Textarea value={form.observations} onChange={(e) => setForm(p => ({ ...p, observations: e.target.value }))} className="bg-slate-800 border-slate-600 text-white" />
-                </div>
-              </>
-            )}
-
-            <div className="flex justify-end gap-3 pt-4">
-              <Button type="button" variant="outline" onClick={() => setShowForm(false)} className="border-slate-600">Cancelar</Button>
-              <Button type="submit" className="bg-green-600 hover:bg-green-700">Salvar</Button>
-            </div>
-          </form>
+          {showForm && (
+            <VacationForm
+              vacation={editingVacation}
+              employees={employees}
+              onSave={handleSave}
+              onCancel={() => { setShowForm(false); setEditingVacation(null); }}
+            />
+          )}
         </DialogContent>
       </Dialog>
 

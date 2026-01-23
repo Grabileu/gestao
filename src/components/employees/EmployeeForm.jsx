@@ -194,35 +194,63 @@ export default function EmployeeForm({ open, onClose, employee, departments, sto
     
     setValidationError("");
     setSaving(true);
+    // Corrigir campos de data vazios para null
     const data = {
       ...formData,
-      salary: formData.salary ? parseFloat(formData.salary) : null
+      salary: formData.salary ? parseFloat(formData.salary) : null,
+      birth_date: formData.birth_date || null,
+      hire_date: formData.hire_date || null,
+      termination_date: formData.termination_date || null
     };
 
     let employeeId = employee?.id;
-    if (employeeId) {
-      await base44.entities.Employee.update(employeeId, data);
-    } else {
-      const created = await base44.entities.Employee.create(data);
-      employeeId = created.id;
+    console.log('[DEBUG] Payload enviado para Employee:', data);
+    try {
+      if (employeeId) {
+        await base44.entities.Employee.update(employeeId, data);
+      } else {
+        const created = await base44.entities.Employee.create(data);
+        employeeId = created.id;
+      }
+    } catch (err) {
+      setSaving(false);
+      console.error('[DEBUG] Erro ao salvar funcionário:', err);
+      alert('Erro ao salvar funcionário: ' + (err?.message || err));
+      return;
     }
 
     // Integração automática: se for operador de caixa, cria/atualiza registro em cashiers
     if (data.position === "Operador(a) de caixa") {
-      const cashierData = {
-        name: data.full_name,
-        code: data.cpf || String(employeeId),
-        store_id: data.store_id,
-        store_name: data.store_name,
-        status: data.status || "active"
-      };
-      // Busca se já existe caixa para esse funcionário
-      const allCashiers = await base44.entities.Cashier.list();
-      const existing = allCashiers.find(c => c.code === cashierData.code);
-      if (existing) {
-        await base44.entities.Cashier.update(existing.id, cashierData);
+      if (!data.store_id) {
+        console.warn('[DEBUG] Store ID ausente - pulando criação de cashier');
+        alert('Funcionário salvo, mas loja não selecionada - caixa não criado');
       } else {
-        await base44.entities.Cashier.create(cashierData);
+        const cashierData = {
+          name: data.full_name,
+          code: data.cpf || String(employeeId || 'temp-' + Date.now()), // Garante code único se cpf vazio
+          store_id: data.store_id,
+          status: data.status || "active"
+        };
+
+        console.log('[DEBUG] Tentando salvar Cashier com:', cashierData);
+
+        try {
+          const allCashiers = await base44.entities.Cashier.list();
+          const existing = allCashiers.find(c => c.code === cashierData.code);
+
+          if (existing) {
+            console.log('[DEBUG] Atualizando cashier ID:', existing.id);
+            await base44.entities.Cashier.update(existing.id, cashierData);
+          } else {
+            console.log('[DEBUG] Criando novo cashier');
+            await base44.entities.Cashier.create(cashierData);
+          }
+        } catch (cashierErr) {
+          console.error('[ERRO CRÍTICO] Falha ao salvar cashier:', cashierErr);
+          // Mostre para o usuário (não deixe silencioso!)
+          alert('Funcionário salvo, mas falhou ao registrar como caixa: ' + (cashierErr.message || 'Verifique se a loja foi selecionada e se store_id existe'));
+          // Opcional: não bloqueie o fluxo, já que o funcionário foi salvo
+        }
       }
     }
 

@@ -43,8 +43,8 @@ export default function Employees() {
       employee.full_name?.toLowerCase().includes(searchLower) ||
       employee.email?.toLowerCase().includes(searchLower) ||
       employee.position?.toLowerCase().includes(searchLower);
-    
-    const matchesDepartment = filters.department === "all" || employee.department_id === filters.department;
+
+    const matchesDepartment = filters.department === "all" || String(employee.department_id) === String(filters.department);
     const matchesStatus = filters.status === "all" || employee.status === filters.status;
     const matchesContract = filters.contract_type === "all" || employee.contract_type === filters.contract_type;
 

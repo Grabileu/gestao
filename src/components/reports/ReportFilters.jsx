@@ -41,8 +41,8 @@ export default function ReportFilters({ filters, onChange, departments, onClear,
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="space-y-2">
-            <Label className="text-slate-400">Departamento</Label>
+          <div className="flex flex-col space-y-2">
+            <span className="text-slate-400 text-xs mb-1 ml-1">Departamento</span>
             <Select value={filters.department} onValueChange={(v) => handleChange("department", v)}>
               <SelectTrigger className="bg-slate-800 border-slate-600 text-white">
                 <SelectValue placeholder="Todos" />
@@ -58,8 +58,8 @@ export default function ReportFilters({ filters, onChange, departments, onClear,
             </Select>
           </div>
 
-          <div className="space-y-2">
-            <Label className="text-slate-400">Status</Label>
+          <div className="flex flex-col space-y-2">
+            <span className="text-slate-400 text-xs mb-1 ml-1">Situação</span>
             <Select value={filters.status} onValueChange={(v) => handleChange("status", v)}>
               <SelectTrigger className="bg-slate-800 border-slate-600 text-white">
                 <SelectValue placeholder="Todos" />
@@ -74,8 +74,8 @@ export default function ReportFilters({ filters, onChange, departments, onClear,
             </Select>
           </div>
 
-          <div className="space-y-2">
-            <Label className="text-slate-400">Tipo de Contrato</Label>
+          <div className="flex flex-col space-y-2">
+            <span className="text-slate-400 text-xs mb-1 ml-1">Contrato</span>
             <Select value={filters.contract_type} onValueChange={(v) => handleChange("contract_type", v)}>
               <SelectTrigger className="bg-slate-800 border-slate-600 text-white">
                 <SelectValue placeholder="Todos" />
@@ -90,8 +90,8 @@ export default function ReportFilters({ filters, onChange, departments, onClear,
             </Select>
           </div>
 
-          <div className="space-y-2">
-            <Label className="text-slate-400">Cidade</Label>
+          <div className="flex flex-col space-y-2">
+            <span className="text-slate-400 text-xs mb-1 ml-1">Cidade</span>
             <Input
               value={filters.city || ""}
               onChange={(e) => handleChange("city", e.target.value)}
@@ -100,8 +100,8 @@ export default function ReportFilters({ filters, onChange, departments, onClear,
             />
           </div>
 
-          <div className="space-y-2">
-            <Label className="text-slate-400">Admissão De</Label>
+          <div className="flex flex-col space-y-2">
+            <span className="text-slate-400 text-xs mb-1 ml-1">Admissão De</span>
             <Input
               type="date"
               value={filters.hire_date_from || ""}
@@ -110,8 +110,8 @@ export default function ReportFilters({ filters, onChange, departments, onClear,
             />
           </div>
 
-          <div className="space-y-2">
-            <Label className="text-slate-400">Admissão Até</Label>
+          <div className="flex flex-col space-y-2">
+            <span className="text-slate-400 text-xs mb-1 ml-1">Admissão Até</span>
             <Input
               type="date"
               value={filters.hire_date_to || ""}

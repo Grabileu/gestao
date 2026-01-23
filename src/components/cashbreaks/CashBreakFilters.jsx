@@ -42,8 +42,8 @@ export default function CashBreakFilters({ filters, onChange, stores, cashiers, 
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-          <div className="space-y-2">
-            <Label className="text-slate-400 text-sm">Data De</Label>
+          <div className="flex flex-col space-y-2">
+            <span className="text-slate-400 text-xs mb-1 ml-1">Data De</span>
             <Input
               type="date"
               value={filters.date_from || ""}
@@ -52,8 +52,8 @@ export default function CashBreakFilters({ filters, onChange, stores, cashiers, 
             />
           </div>
 
-          <div className="space-y-2">
-            <Label className="text-slate-400 text-sm">Data Até</Label>
+          <div className="flex flex-col space-y-2">
+            <span className="text-slate-400 text-xs mb-1 ml-1">Data Até</span>
             <Input
               type="date"
               value={filters.date_to || ""}
@@ -62,8 +62,8 @@ export default function CashBreakFilters({ filters, onChange, stores, cashiers, 
             />
           </div>
 
-          <div className="space-y-2">
-            <Label className="text-slate-400 text-sm">Loja</Label>
+          <div className="flex flex-col space-y-2">
+            <span className="text-slate-400 text-xs mb-1 ml-1">Loja</span>
             <Select value={filters.store} onValueChange={(v) => handleChange("store", v)}>
               <SelectTrigger className="bg-slate-800 border-slate-600 text-white">
                 <SelectValue placeholder="Todas" />
@@ -79,8 +79,8 @@ export default function CashBreakFilters({ filters, onChange, stores, cashiers, 
             </Select>
           </div>
 
-          <div className="space-y-2">
-            <Label className="text-slate-400 text-sm">Operador</Label>
+          <div className="flex flex-col space-y-2">
+            <span className="text-slate-400 text-xs mb-1 ml-1">Operador</span>
             <Select value={filters.cashier} onValueChange={(v) => handleChange("cashier", v)}>
               <SelectTrigger className="bg-slate-800 border-slate-600 text-white">
                 <SelectValue placeholder="Todos" />
@@ -96,8 +96,8 @@ export default function CashBreakFilters({ filters, onChange, stores, cashiers, 
             </Select>
           </div>
 
-          <div className="space-y-2">
-            <Label className="text-slate-400 text-sm">Tipo</Label>
+          <div className="flex flex-col space-y-2">
+            <span className="text-slate-400 text-xs mb-1 ml-1">Tipo</span>
             <Select value={filters.type} onValueChange={(v) => handleChange("type", v)}>
               <SelectTrigger className="bg-slate-800 border-slate-600 text-white">
                 <SelectValue placeholder="Todos" />
@@ -110,8 +110,8 @@ export default function CashBreakFilters({ filters, onChange, stores, cashiers, 
             </Select>
           </div>
 
-          <div className="space-y-2">
-            <Label className="text-slate-400 text-sm">Status Vale</Label>
+          <div className="flex flex-col space-y-2">
+            <span className="text-slate-400 text-xs mb-1 ml-1">Status Vale</span>
             <Select value={filters.status} onValueChange={(v) => handleChange("status", v)}>
               <SelectTrigger className="bg-slate-800 border-slate-600 text-white">
                 <SelectValue placeholder="Todos" />
