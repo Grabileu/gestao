@@ -269,8 +269,8 @@ export default function Vacations() {
             <div>
               <Label className="text-slate-300">Funcionário *</Label>
               <Select value={form.employee_id} onValueChange={handleEmployeeChange}>
-                <SelectTrigger className="w-44 bg-slate-800 border-slate-600 text-white"><SelectValue placeholder="Selecione" /></SelectTrigger>
-                <SelectContent side="bottom" className="bg-slate-800 border-slate-600 text-white z-50 max-h-64 overflow-y-auto">
+                <SelectTrigger className="min-w-[20rem] bg-slate-800 border-slate-600 text-white"><SelectValue placeholder="Selecione" /></SelectTrigger>
+                <SelectContent side="bottom" className="bg-slate-800 border-slate-600 text-white z-50 max-h-64 overflow-y-auto min-w-[20rem]">
                   {employees.filter(e => e.status === "active").map(emp => (
                     <SelectItem key={emp.id} value={String(emp.id)} className="text-white hover:bg-slate-700 cursor-pointer">{emp.full_name}</SelectItem>
                   ))}
@@ -321,8 +321,8 @@ export default function Vacations() {
                 <div>
                   <Label className="text-slate-300">Status</Label>
                   <Select value={form.status} onValueChange={(v) => setForm(p => ({ ...p, status: v }))}>
-                    <SelectTrigger className="bg-slate-800 border-slate-600 text-white"><SelectValue /></SelectTrigger>
-                    <SelectContent>
+                    <SelectTrigger className="bg-slate-800 border-slate-600 text-white cursor-pointer"><SelectValue placeholder="Selecione" /></SelectTrigger>
+                    <SelectContent className="bg-slate-800 border-slate-600 text-white z-50">
                       <SelectItem value="pending">Pendente</SelectItem>
                       <SelectItem value="scheduled">Agendada</SelectItem>
                       <SelectItem value="in_progress">Em Gozo</SelectItem>
