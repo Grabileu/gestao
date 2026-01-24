@@ -31,10 +31,10 @@ export default function VacationForm({ onSave, onCancel, vacation = {}, employee
         <div>
           <label className="block text-sm text-slate-300 mb-1">Funcionário</label>
           <Select value={String(formData.employee_id || "")} onValueChange={handleEmployeeChange}>
-            <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
+            <SelectTrigger className="w-44 bg-slate-800 border-slate-600 text-white">
               <SelectValue placeholder="Selecione" />
             </SelectTrigger>
-            <SelectContent side="bottom" className="bg-slate-800 border-slate-700 text-white z-50">
+            <SelectContent side="bottom" className="bg-slate-800 border-slate-600 text-white z-50">
               {employees.filter(e => e.status === "active").map(emp => (
                 <SelectItem key={emp.id} value={String(emp.id)} className="text-white hover:bg-slate-700 cursor-pointer">{emp.full_name}</SelectItem>
               ))}
@@ -46,7 +46,7 @@ export default function VacationForm({ onSave, onCancel, vacation = {}, employee
           <input
             type="text"
             value={formData.period || ""}
-            onChange={e => setFormData(prev => ({ ...prev, period: e.target.value }))
+            onChange={e => setFormData(prev => ({ ...prev, period: e.target.value }))}
             className="w-full rounded bg-slate-800 border-slate-700 text-white px-3 py-2"
           />
         </div>
@@ -56,7 +56,7 @@ export default function VacationForm({ onSave, onCancel, vacation = {}, employee
             <input
               type="number"
               value={formData.days || ""}
-              onChange={e => setFormData(prev => ({ ...prev, days: e.target.value }))
+              onChange={e => setFormData(prev => ({ ...prev, days: e.target.value }))}
               className="w-full rounded bg-slate-800 border-slate-700 text-white px-3 py-2"
             />
           </div>
@@ -65,7 +65,7 @@ export default function VacationForm({ onSave, onCancel, vacation = {}, employee
             <input
               type="date"
               value={formData.start_date || ""}
-              onChange={e => setFormData(prev => ({ ...prev, start_date: e.target.value }))
+              onChange={e => setFormData(prev => ({ ...prev, start_date: e.target.value }))}
               className="w-full rounded bg-slate-800 border-slate-700 text-white px-3 py-2"
             />
           </div>
@@ -75,7 +75,7 @@ export default function VacationForm({ onSave, onCancel, vacation = {}, employee
           <input
             type="number"
             value={formData.value || ""}
-            onChange={e => setFormData(prev => ({ ...prev, value: e.target.value }))
+            onChange={e => setFormData(prev => ({ ...prev, value: e.target.value }))}
             className="w-full rounded bg-slate-800 border-slate-700 text-white px-3 py-2"
           />
         </div>
@@ -83,7 +83,7 @@ export default function VacationForm({ onSave, onCancel, vacation = {}, employee
           <label className="block text-sm text-slate-300 mb-1">Status</label>
           <select
             value={formData.status || ""}
-            onChange={e => setFormData(prev => ({ ...prev, status: e.target.value }))
+            onChange={e => setFormData(prev => ({ ...prev, status: e.target.value }))}
             className="w-full rounded bg-slate-800 border-slate-700 text-white px-3 py-2"
           >
             <option value="pendente">Pendente</option>
@@ -92,7 +92,7 @@ export default function VacationForm({ onSave, onCancel, vacation = {}, employee
           </select>
         </div>
         <div className="flex justify-end gap-3 pt-4">
-          <Button type="button" variant="outline" onClick={onCancel} className="border-slate-600 text-slate-300 hover:bg-slate-800">
+          <Button type="button" variant="outline" size="default" onClick={onCancel} className="border-slate-600 text-white hover:bg-slate-700">
             Cancelar
           </Button>
           <Button type="submit" className="bg-green-600 hover:bg-green-700 text-white">Salvar</Button>

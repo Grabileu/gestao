@@ -44,24 +44,24 @@ export default function EmployeeDetails({ employee, open, onClose }) {
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl bg-slate-900 border-slate-700 text-white">
+      <DialogContent className="max-w-xl bg-slate-900 border-slate-700 text-white p-4">
         <DialogHeader>
-          <DialogTitle className="text-xl">Detalhes do Funcionário</DialogTitle>
+          <DialogTitle className="text-lg">Detalhes do Funcionário</DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-6">
+        <div className="space-y-4">
           {/* Header com foto e info básica */}
-          <div className="flex items-center gap-6 p-4 rounded-xl bg-linear-to-r from-slate-800 to-slate-800/50">
-            <Avatar className="h-20 w-20 border-4 border-slate-600">
+          <div className="flex items-center gap-4 p-2 rounded-lg bg-slate-800/60">
+            <Avatar className="h-12 w-12 border-2 border-slate-600">
               <AvatarImage src={employee.photo_url} />
-              <AvatarFallback className="bg-blue-500/20 text-blue-400 text-xl">
+              <AvatarFallback className="bg-blue-500/20 text-blue-400 text-base">
                 {employee.full_name?.split(' ').map(n => n[0]).slice(0, 2).join('')}
               </AvatarFallback>
             </Avatar>
             <div className="flex-1">
-              <h3 className="text-2xl font-bold text-white">{employee.full_name}</h3>
-              <p className="text-slate-400">{employee.position}</p>
-              <div className="flex gap-2 mt-2">
+              <h3 className="text-base font-bold text-white">{employee.full_name}</h3>
+              <p className="text-slate-400 text-xs">{employee.position}</p>
+              <div className="flex gap-2 mt-1">
                 <Badge className={statusColors[employee.status]}>
                   {statusLabels[employee.status]}
                 </Badge>
@@ -76,8 +76,8 @@ export default function EmployeeDetails({ employee, open, onClose }) {
 
           {/* Informações de contato */}
           <div>
-            <h4 className="text-sm font-medium text-slate-400 uppercase tracking-wider mb-4">Contato</h4>
-            <div className="grid grid-cols-2 gap-4">
+            <h4 className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-2">Contato</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               <InfoItem icon={Mail} label="Email" value={employee.email} />
               <InfoItem icon={Phone} label="Telefone" value={employee.phone} />
               <InfoItem icon={User} label="CPF" value={employee.cpf} />
@@ -89,8 +89,8 @@ export default function EmployeeDetails({ employee, open, onClose }) {
 
           {/* Informações profissionais */}
           <div>
-            <h4 className="text-sm font-medium text-slate-400 uppercase tracking-wider mb-4">Profissional</h4>
-            <div className="grid grid-cols-2 gap-4">
+            <h4 className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-2">Profissional</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               <InfoItem icon={Building2} label="Departamento" value={employee.department_name} />
               <InfoItem icon={FileText} label="Cargo" value={employee.position} />
               <InfoItem icon={Calendar} label="Admissão" value={employee.hire_date && employee.hire_date.split('T')[0].split('-').reverse().join('/')} />
@@ -102,7 +102,7 @@ export default function EmployeeDetails({ employee, open, onClose }) {
             <>
               <Separator className="bg-slate-700" />
               <div>
-                <h4 className="text-sm font-medium text-slate-400 uppercase tracking-wider mb-4">Endereço</h4>
+                <h4 className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-2">Endereço</h4>
                 <InfoItem 
                   icon={MapPin} 
                   label="Endereço completo" 
@@ -116,8 +116,8 @@ export default function EmployeeDetails({ employee, open, onClose }) {
             <>
               <Separator className="bg-slate-700" />
               <div>
-                <h4 className="text-sm font-medium text-slate-400 uppercase tracking-wider mb-4">Observações</h4>
-                <p className="text-slate-300 bg-slate-800/50 p-4 rounded-lg">{employee.notes}</p>
+                <h4 className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-2">Observações</h4>
+                <p className="text-slate-300 bg-slate-800/50 p-2 rounded-lg text-xs">{employee.notes}</p>
               </div>
             </>
           )}
