@@ -133,15 +133,20 @@ export default function Vacations() {
   const handleSave = async (e) => {
     e.preventDefault();
     calculateVacationPay();
-    await base44.entities.Vacation.create(form);
-    queryClient.invalidateQueries({ queryKey: ["vacations"] });
-    setShowForm(false);
-    setForm({
-      employee_id: "", employee_name: "", acquisition_period_start: "", acquisition_period_end: "",
-      concession_period_end: "", days_entitled: 30, days_taken: 0, days_sold: 0, start_date: "",
-      end_date: "", return_date: "", vacation_pay: 0, vacation_bonus: 0, sold_days_pay: 0,
-      total_pay: 0, status: "pending", observations: ""
-    });
+    try {
+      await base44.entities.Vacation.create(form);
+      queryClient.invalidateQueries({ queryKey: ["vacations"] });
+      setShowForm(false);
+      setForm({
+        employee_id: "", employee_name: "", acquisition_period_start: "", acquisition_period_end: "",
+        concession_period_end: "", days_entitled: 30, days_taken: 0, days_sold: 0, start_date: "",
+        end_date: "", return_date: "", vacation_pay: 0, vacation_bonus: 0, sold_days_pay: 0,
+        total_pay: 0, status: "pending", observations: ""
+      });
+    } catch (err) {
+      console.error("Erro ao salvar férias:", err);
+      alert("Erro ao salvar férias: " + (err?.message || "Verifique os campos obrigatórios e tente novamente."));
+    }
   };
 
   const filteredVacations = vacations.filter(v =>
