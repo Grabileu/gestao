@@ -21,7 +21,12 @@ export default function CeasaPurchases() {
   const [showForm, setShowForm] = useState(false);
   const [viewPurchase, setViewPurchase] = useState(null);
   const [deletePurchase, setDeletePurchase] = useState(null);
-  const [filters, setFilters] = useState({ search: "", month: "", supplier: "all" });
+  const [filters, setFilters] = useState({
+    search: "",
+    month: moment().format("YYYY-MM"),
+    supplier: "all",
+    store: "all"
+  });
   const [openDates, setOpenDates] = useState({}); // controla expansão por data
   const [openSuppliers, setOpenSuppliers] = useState({}); // controla expansão por fornecedor (chave data|supplier)
 
@@ -268,7 +273,8 @@ export default function CeasaPurchases() {
     const searchMatch = !filters.search || p.supplier_name?.toLowerCase().includes(filters.search.toLowerCase());
     const monthMatch = !filters.month || p.date?.startsWith(filters.month);
     const supplierMatch = filters.supplier === "all" || p.supplier_id === filters.supplier;
-    return searchMatch && monthMatch && supplierMatch;
+    const storeMatch = !filters.store || filters.store === "all" || p.store_id === filters.store;
+    return searchMatch && monthMatch && supplierMatch && storeMatch;
   });
 
   const supplierProducts = products.filter(p => String(p.supplier_id) === String(form.supplier_id) && p.status === "active");
@@ -302,7 +308,7 @@ export default function CeasaPurchases() {
       acc[dateKey].suppliers[supplierKey].purchases.push(purchase);
       return acc;
     }, {})
-  ).sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
+  ).sort((a, b) => new Date(b.date) - new Date(a.date));
 
   const toggleDate = (dateKey) => setOpenDates(prev => ({ ...prev, [dateKey]: !prev[dateKey] }));
   const toggleSupplier = (dateKey, supplierKey) => {
@@ -367,6 +373,19 @@ export default function CeasaPurchases() {
                 <SelectContent side="bottom" className="bg-slate-800 border-slate-600 text-white z-50">
                   <SelectItem value="all" className="text-white hover:bg-slate-700 cursor-pointer">Todos fornecedores</SelectItem>
                   {suppliers.map(s => <SelectItem key={s.id} value={String(s.id)} className="text-white hover:bg-slate-700 cursor-pointer">{s.name}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="w-50">
+              <Select value={filters.store || "all"} onValueChange={v => setFilters(p => ({ ...p, store: v }))}>
+                <SelectTrigger className="bg-slate-900 border-slate-600 text-white w-full">
+                  <SelectValue placeholder="Filtrar Loja" />
+                </SelectTrigger>
+                <SelectContent side="bottom" className="bg-slate-900 border-slate-600 text-white z-50">
+                  <SelectItem value="all" className="text-white hover:bg-slate-700 cursor-pointer">Todas as Lojas</SelectItem>
+                  {stores.map(store => (
+                    <SelectItem key={store.id} value={String(store.id)} className="text-white hover:bg-slate-700 cursor-pointer">{store.name}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
