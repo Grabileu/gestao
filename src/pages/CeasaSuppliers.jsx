@@ -243,7 +243,7 @@ export default function CeasaSuppliers() {
             </div>
             <div className="flex justify-end gap-3">
               <Button type="button" variant="outline" onClick={() => setShowForm(false)} className="border-slate-600 text-slate-300 hover:bg-slate-800">Cancelar</Button>
-              <Button type="submit" className="bg-blue-600 hover:bg-blue-700">Salvar</Button>
+              <Button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white">Salvar</Button>
             </div>
           </form>
         </DialogContent>

@@ -195,7 +195,7 @@ export default function OvertimeForm({ open, onClose, overtime, employees, onSav
             <Button type="button" variant="outline" onClick={onClose} className="border-slate-600 text-slate-300 hover:bg-slate-800">
               Cancelar
             </Button>
-            <Button type="submit" disabled={loading} className="bg-blue-600 hover:bg-blue-700">
+            <Button type="submit" disabled={loading} className="bg-blue-600 hover:bg-blue-700 text-white">
               {loading ? "Salvando..." : "Salvar"}
             </Button>
           </div>

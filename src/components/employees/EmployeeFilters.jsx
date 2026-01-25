@@ -70,6 +70,7 @@ export default function EmployeeFilters({ filters, onChange, departments, onClea
             <SelectItem value="pj" className="text-white hover:bg-slate-700 cursor-pointer">PJ</SelectItem>
             <SelectItem value="temporary" className="text-white hover:bg-slate-700 cursor-pointer">Temporário</SelectItem>
             <SelectItem value="intern" className="text-white hover:bg-slate-700 cursor-pointer">Estagiário</SelectItem>
+            <SelectItem value="casual" className="text-white hover:bg-slate-700 cursor-pointer">Avulso</SelectItem>
           </SelectContent>
         </Select>
       </div>
