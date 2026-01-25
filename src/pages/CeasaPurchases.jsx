@@ -36,6 +36,13 @@ export default function CeasaPurchases() {
     }
   });
 
+
+  // Carregar lojas
+  const { data: stores = [] } = useQuery({
+    queryKey: ["stores"],
+    queryFn: () => base44.entities.Store.list()
+  });
+
   const { data: suppliers = [] } = useQuery({
     queryKey: ["ceasa-suppliers"],
     queryFn: () => base44.entities.CeasaSupplier.list()
@@ -50,6 +57,8 @@ export default function CeasaPurchases() {
     date: moment().format("YYYY-MM-DD"),
     supplier_id: "",
     supplier_name: "",
+    store_id: "",
+    store_name: "",
     items: [],
     total_amount: 0,
     payment_method: "cash",
@@ -73,23 +82,33 @@ export default function CeasaPurchases() {
     setNewItem({ product_id: "", product_name: "", quantity: "", unit_type: "kg", unit_price: "", total_price: 0 });
   };
 
+  const handleStoreChange = (storeId) => {
+    const store = stores.find(s => String(s.id) === String(storeId));
+    setForm(prev => ({ ...prev, store_id: storeId, store_name: store?.name || "" }));
+  };
+
   const handleProductChange = (productId) => {
     const product = products.find(p => String(p.id) === String(productId));
     if (product) {
-      // Mapear price_type para unit_type compatível
       const unitMap = { per_kg: "kg", per_box: "box", per_unit: "unit", per_dozen: "dozen" };
+      let unit_custom = product.unit_custom || (product.unit_type === 'box' ? 'CX' : product.unit_type === 'fardo' ? 'FD' : null);
+      // Se for caixa/fardo, sempre inicializa unit_custom corretamente
+      if (product.unit_type === 'box' || product.unit_type === 'fardo' || product.price_type === 'per_box') {
+        unit_custom = unit_custom || 'CX';
+      }
       setNewItem({
         product_id: productId,
         product_name: product.name,
         price_type: product.price_type,
         box_weight_kg: product.box_weight_kg || "",
-        unit_type: unitMap[product.price_type] || "kg",
+        unit_type: product.unit_type === 'box' || product.unit_type === 'fardo' ? 'box' : (unitMap[product.price_type] || "kg"),
         quantity: "",
         unit_price: product.default_price?.toString() || "",
         boxes: "",
         price_per_box: "",
         cost_per_kg: "",
-        total_price: 0
+        total_price: 0,
+        unit_custom: unit_custom
       });
     }
   };
@@ -147,7 +166,6 @@ export default function CeasaPurchases() {
         total_price: itemTotal
       };
     }
-    
     // Cenário 2: Preço por caixa COM peso fixo
     else if (product.price_type === "per_box" && product.box_weight_kg) {
       if (!newItem.boxes || !newItem.price_per_box) return;
@@ -156,7 +174,6 @@ export default function CeasaPurchases() {
       const boxWeight = parseFloat(product.box_weight_kg);
       const costPerKg = pricePerBox / boxWeight;
       const totalKg = boxes * boxWeight;
-      
       itemData = {
         product_id: newItem.product_id,
         product_name: newItem.product_name,
@@ -169,10 +186,10 @@ export default function CeasaPurchases() {
         unit_type: "box",
         quantity: boxes,
         unit_price: pricePerBox,
-        total_price: itemTotal
+        total_price: itemTotal,
+        unit_custom: newItem.unit_custom || "CX"
       };
     }
-    
     // Cenário 3: Preço por caixa SEM peso fixo
     else if (product.price_type === "per_box") {
       if (!newItem.boxes || !newItem.price_per_box) return;
@@ -184,22 +201,24 @@ export default function CeasaPurchases() {
         unit_type: "box",
         quantity: parseFloat(newItem.boxes),
         unit_price: parseFloat(newItem.price_per_box),
-        total_price: itemTotal
+        total_price: itemTotal,
+        unit_custom: newItem.unit_custom || "CX"
       };
     }
-    
     // Outros tipos
     else {
       if (!newItem.quantity || !newItem.unit_price) return;
       const unitMap = { per_unit: "unit", per_dozen: "dozen" };
+      // Se o produto não for per_box, mas tiver unit_custom preenchido, priorizar unit_custom
       itemData = {
         product_id: newItem.product_id,
         product_name: newItem.product_name,
         price_type: product.price_type,
         quantity: parseFloat(newItem.quantity),
-        unit_type: unitMap[product.price_type] || "unit",
+        unit_type: unitMap[product.price_type] || (newItem.unit_custom ? newItem.unit_custom : "unit"),
         unit_price: parseFloat(newItem.unit_price),
-        total_price: itemTotal
+        total_price: itemTotal,
+        ...(newItem.unit_custom ? { unit_custom: newItem.unit_custom } : {})
       };
     }
     
@@ -218,7 +237,10 @@ export default function CeasaPurchases() {
 
   const handleSave = async (e) => {
     e.preventDefault();
-    if (form.items.length === 0) return;
+    if (form.items.length === 0 || !form.store_id) {
+      alert("Selecione a loja e adicione pelo menos um item.");
+      return;
+    }
     try {
       const result = await base44.entities.CeasaPurchase.create(form);
       console.log("[DEBUG] Resultado do create:", result);
@@ -232,6 +254,8 @@ export default function CeasaPurchases() {
       date: moment().format("YYYY-MM-DD"),
       supplier_id: "",
       supplier_name: "",
+      store_id: "",
+      store_name: "",
       items: [],
       total_amount: 0,
       payment_method: "cash",
@@ -318,7 +342,7 @@ export default function CeasaPurchases() {
       <Card className="bg-slate-800/50 border-slate-700">
         <CardContent className="p-4">
           <div className="flex flex-wrap gap-4">
-            <div className="flex-1 min-w-[200px]">
+            <div className="flex-1 min-w-50">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                 <Input
@@ -329,7 +353,7 @@ export default function CeasaPurchases() {
                 />
               </div>
             </div>
-            <div className="w-[180px]">
+            <div className="w-45">
               <Input
                 type="month"
                 value={filters.month}
@@ -337,7 +361,7 @@ export default function CeasaPurchases() {
                 className="bg-slate-900 border-slate-600 text-white"
               />
             </div>
-            <div className="w-[200px]">
+            <div className="w-50">
               <Select value={filters.supplier} onValueChange={(v) => setFilters(p => ({ ...p, supplier: v }))}>
                 <SelectTrigger className="bg-slate-900 border-slate-600 text-white"><SelectValue placeholder="Fornecedor" /></SelectTrigger>
                 <SelectContent side="bottom" className="bg-slate-800 border-slate-600 text-white z-50">
@@ -397,7 +421,12 @@ export default function CeasaPurchases() {
                               {sup.purchases.map(purchase => (
                                 <div key={purchase.id} className="bg-slate-800/60 rounded-lg border border-slate-700">
                                   <div className="flex flex-wrap items-center justify-between gap-3 px-3 py-2 border-b border-slate-700">
-                                    <div className="text-slate-300 text-sm">Pagamento: {paymentLabels[purchase.payment_method]}</div>
+                                    <div className="flex flex-col gap-1 text-slate-300 text-sm">
+                                      <span>Pagamento: {paymentLabels[purchase.payment_method]}</span>
+                                      {purchase.store_name && (
+                                        <span className="text-xs text-blue-300">Loja: {purchase.store_name}</span>
+                                      )}
+                                    </div>
                                     <div className="flex items-center gap-2">
                                       <Badge className={purchase.paid ? "bg-green-500/20 text-green-300" : "bg-yellow-500/20 text-yellow-300"}>
                                         {purchase.paid ? "Pago" : "Pendente"}
@@ -470,10 +499,19 @@ export default function CeasaPurchases() {
             <DialogTitle className="text-white">Nova Compra</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSave} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-3 gap-4">
               <div>
                 <Label className="text-slate-300">Data *</Label>
                 <Input type="date" value={form.date} onChange={(e) => setForm(p => ({ ...p, date: e.target.value }))} className="bg-slate-800 border-slate-600 text-white" required />
+              </div>
+              <div>
+                <Label className="text-slate-300">Loja *</Label>
+                <Select value={form.store_id} onValueChange={handleStoreChange}>
+                  <SelectTrigger className="bg-slate-800 border-slate-600 text-white"><SelectValue placeholder="Selecione" /></SelectTrigger>
+                  <SelectContent side="bottom" className="bg-slate-800 border-slate-600 text-white z-50">
+                    {stores.filter(s => s.status === "active").map(s => <SelectItem key={s.id} value={String(s.id)} className="text-white hover:bg-slate-700 cursor-pointer">{s.name}</SelectItem>)}
+                  </SelectContent>
+                </Select>
               </div>
               <div>
                 <Label className="text-slate-300">Fornecedor *</Label>
@@ -490,69 +528,92 @@ export default function CeasaPurchases() {
             {form.supplier_id && (
               <div className="p-4 bg-slate-800/50 rounded-lg border border-slate-700 space-y-3">
                 <Label className="text-slate-300">Adicionar Item</Label>
-                <div className="grid grid-cols-5 gap-2">
-                  <div className="col-span-2">
+                <div className="flex gap-2 items-end">
+                  <div className="flex-1">
                     <Select value={newItem.product_id} onValueChange={handleProductChange}>
                       <SelectTrigger className="bg-slate-800 border-slate-600 text-white"><SelectValue placeholder="Produto" /></SelectTrigger>
                       <SelectContent side="bottom" className="bg-slate-800 border-slate-600 text-white z-50">
-                        {supplierProducts.map(p => <SelectItem key={p.id} value={String(p.id)} className="text-white hover:bg-slate-700 cursor-pointer">{p.name}</SelectItem>)}
+                        {supplierProducts.map(p => {
+                          // Para categoria 'other', nunca mostrar costTypeLabel nem 'kg'
+                          if (p.category === 'other') {
+                            let unitLabel = '';
+                            if (p.price_type === 'per_box') unitLabel = 'Fardo/Caixa';
+                            else if (p.unit_type === 'box') unitLabel = 'Cx';
+                            else if (p.unit_type === 'unit') unitLabel = 'Un';
+                            else if (p.unit_type === 'dozen') unitLabel = 'Dz';
+                            else unitLabel = p.unit_type;
+                            return (
+                              <SelectItem key={p.id} value={String(p.id)} className="text-white hover:bg-slate-700 cursor-pointer flex items-center justify-between">
+                                <span>{p.name}</span>
+                                {unitLabel && <span className="ml-2 text-xs text-slate-400 whitespace-nowrap">{unitLabel}</span>}
+                              </SelectItem>
+                            );
+                          } else {
+                            let costTypeLabel = '';
+                            if (p.cost_type === 'per_kg') costTypeLabel = 'Kg';
+                            else if (p.cost_type === 'per_box') costTypeLabel = 'Caixa';
+                            else if (p.cost_type === 'fixed') costTypeLabel = 'Fixo';
+                            else costTypeLabel = p.cost_type;
+                            let unitLabel = '';
+                            if (p.unit_type === 'kg') unitLabel = 'Kg';
+                            else if (p.unit_type === 'box') unitLabel = 'Cx';
+                            else if (p.unit_type === 'unit') unitLabel = 'Un';
+                            else if (p.unit_type === 'dozen') unitLabel = 'Dz';
+                            else unitLabel = p.unit_type;
+                            return (
+                              <SelectItem key={p.id} value={String(p.id)} className="text-white hover:bg-slate-700 cursor-pointer flex items-center justify-between">
+                                <span>{p.name}</span>
+                                <span className="ml-2 text-xs text-slate-400 whitespace-nowrap">{costTypeLabel} | {unitLabel}</span>
+                              </SelectItem>
+                            );
+                          }
+                        })}
                       </SelectContent>
                     </Select>
                   </div>
-                  
-                  {/* Cenário 1: Preço por kg */}
-                  {newItem.price_type === "per_kg" && (
-                    <>
-                      <div>
-                        <Input type="number" step="0.01" placeholder="Qtd (kg)" value={newItem.quantity} onChange={(e) => setNewItem(p => ({ ...p, quantity: e.target.value }))} className="bg-slate-800 border-slate-600 text-white" />
-                      </div>
-                      <div>
-                        <Input type="number" step="0.01" placeholder="R$/kg" value={newItem.unit_price} onChange={(e) => setNewItem(p => ({ ...p, unit_price: e.target.value }))} className="bg-slate-800 border-slate-600 text-white" />
-                      </div>
-                    </>
-                  )}
-                  
-                  {/* Cenário 2: Caixa com peso fixo */}
-                  {newItem.price_type === "per_box" && newItem.box_weight_kg && (
-                    <>
-                      <div>
-                        <Input type="number" step="1" placeholder="Caixas" value={newItem.boxes} onChange={(e) => setNewItem(p => ({ ...p, boxes: e.target.value }))} className="bg-slate-800 border-slate-600 text-white" />
-                      </div>
-                      <div>
-                        <Input type="number" step="0.01" placeholder="R$/caixa" value={newItem.price_per_box} onChange={(e) => setNewItem(p => ({ ...p, price_per_box: e.target.value }))} className="bg-slate-800 border-slate-600 text-white" />
-                      </div>
-                    </>
-                  )}
-
-                  {/* Cenário 3: Caixa sem peso fixo (usa R$/caixa) */}
-                  {newItem.price_type === "per_box" && !newItem.box_weight_kg && (
-                    <>
-                      <div>
-                        <Input type="number" step="1" placeholder="Caixas" value={newItem.boxes} onChange={(e) => setNewItem(p => ({ ...p, boxes: e.target.value }))} className="bg-slate-800 border-slate-600 text-white" />
-                      </div>
-                      <div>
-                        <Input type="number" step="0.01" placeholder="R$/caixa" value={newItem.price_per_box} onChange={(e) => setNewItem(p => ({ ...p, price_per_box: e.target.value }))} className="bg-slate-800 border-slate-600 text-white" />
-                      </div>
-                    </>
-                  )}
-                  
-                  {/* Outros tipos (per_unit, per_dozen) */}
-                  {newItem.price_type && newItem.price_type !== "per_kg" && newItem.price_type !== "per_box" && (
-                    <>
-                      <div>
-                        <Input type="number" step="0.01" placeholder="Qtd (kg)" value={newItem.quantity} onChange={(e) => setNewItem(p => ({ ...p, quantity: e.target.value }))} className="bg-slate-800 border-slate-600 text-white" />
-                      </div>
-                      <div>
-                        <Input type="number" step="0.01" placeholder="Preço" value={newItem.unit_price} onChange={(e) => setNewItem(p => ({ ...p, unit_price: e.target.value }))} className="bg-slate-800 border-slate-600 text-white" />
-                      </div>
-                    </>
-                  )}
-                  
-                  <div>
-                    <Button type="button" onClick={handleAddItem} className="w-full bg-blue-600 hover:bg-blue-700">
-                      <Plus className="h-4 w-4" />
-                    </Button>
-                  </div>
+                  {/* Campos dinâmicos para quantidade/unidade/preço */}
+                  {(() => {
+                    const product = products.find(p => String(p.id) === String(newItem.product_id));
+                    if (!product) return null;
+                    // Fruta: sempre KG
+                    if (product.category === "fruit") {
+                      return <>
+                        <Input type="number" step="0.01" placeholder="Qtd (kg)" value={newItem.quantity} onChange={e => setNewItem(p => ({ ...p, quantity: e.target.value }))} className="bg-slate-800 border-slate-600 text-white w-28" />
+                        <Input type="number" step="0.01" placeholder="R$/kg" value={newItem.unit_price} onChange={e => setNewItem(p => ({ ...p, unit_price: e.target.value }))} className="bg-slate-800 border-slate-600 text-white w-28" />
+                      </>;
+                    }
+                    // Outros: permite escolher unidade
+                    if (product.category === "other" && newItem.price_type === "per_box") {
+                      return <>
+                        <div className="flex items-center gap-2">
+                          <Input type="number" step="1" placeholder="Qtd" value={newItem.boxes} onChange={e => setNewItem(p => ({ ...p, boxes: e.target.value }))} className="bg-slate-800 border-slate-600 text-white w-20" />
+                          <Select value={newItem.unit_custom || "CX"} onValueChange={v => setNewItem(p => ({ ...p, unit_custom: v }))}>
+                            <SelectTrigger className="bg-slate-800 border-slate-600 text-white w-24"><SelectValue /></SelectTrigger>
+                            <SelectContent side="bottom" className="bg-slate-800 border-slate-600 text-white z-50">
+                              <SelectItem value="CX" className="text-white hover:bg-slate-700 cursor-pointer">Caixa (CX)</SelectItem>
+                              <SelectItem value="FD" className="text-white hover:bg-slate-700 cursor-pointer">Fardo (FD)</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          {/* Exibe unidade selecionada ao lado da quantidade, sempre por extenso */}
+                          <span className="text-xs text-slate-400 min-w-10">
+                            {newItem.unit_custom === 'FD' ? 'Fardo' : 'Caixa'}
+                          </span>
+                        </div>
+                        <Input type="number" step="0.01" placeholder="R$/unidade" value={newItem.price_per_box} onChange={e => setNewItem(p => ({ ...p, price_per_box: e.target.value }))} className="bg-slate-800 border-slate-600 text-white w-28" />
+                      </>;
+                    }
+                    // Outros tipos (per_unit, per_dozen, etc)
+                    if (newItem.price_type && newItem.price_type !== "per_kg" && newItem.price_type !== "per_box") {
+                      return <>
+                        <Input type="number" step="0.01" placeholder="Qtd" value={newItem.quantity} onChange={e => setNewItem(p => ({ ...p, quantity: e.target.value }))} className="bg-slate-800 border-slate-600 text-white w-28" />
+                        <Input type="number" step="0.01" placeholder="Preço" value={newItem.unit_price} onChange={e => setNewItem(p => ({ ...p, unit_price: e.target.value }))} className="bg-slate-800 border-slate-600 text-white w-28" />
+                      </>;
+                    }
+                    return null;
+                  })()}
+                  <Button type="button" onClick={handleAddItem} className="bg-blue-600 hover:bg-blue-700 ml-2 h-10 w-10 flex items-center justify-center">
+                    <Plus className="h-4 w-4" />
+                  </Button>
                 </div>
                 
                 {/* Mostrar informações calculadas para caixa com peso fixo */}
@@ -601,13 +662,13 @@ export default function CeasaPurchases() {
                         </TableCell>
                         <TableCell className="text-slate-300">
                           {item.price_type === "per_box_fixed" || item.price_type === "per_box" 
-                            ? `${item.boxes} caixas`
-                            : `${item.quantity} ${item.unit_type === "unit" ? "kg" : unitLabels[item.unit_type] || ""}`
+                            ? `${item.boxes} ${item.unit_custom === "FD" ? "Fardo" : item.unit_custom === "CX" ? "Caixa" : (item.unit_custom ? item.unit_custom : "Caixa")}`
+                            : `${item.quantity} ${item.unit_custom === 'FD' ? 'Fardo' : item.unit_custom === 'CX' ? 'Caixa' : (item.unit_type === 'kg' ? 'kg' : item.unit_type === 'box' ? 'Caixa' : unitLabels[item.unit_type] || '')}`
                           }
                         </TableCell>
                         <TableCell className="text-slate-300">
                           {item.price_type === "per_box_fixed" || item.price_type === "per_box"
-                            ? formatCurrency(item.unit_price) + "/cx"
+                            ? formatCurrency(item.unit_price) + `/${item.unit_custom === 'FD' ? 'Fardo' : 'Caixa'}`
                             : formatCurrency(item.unit_price)
                           }
                         </TableCell>
@@ -695,7 +756,12 @@ export default function CeasaPurchases() {
                     {viewPurchase.items?.map((item, index) => (
                       <TableRow key={index} className="border-slate-700">
                         <TableCell className="text-white">{item.product_name}</TableCell>
-                        <TableCell className="text-slate-300">{item.quantity} {unitLabels[item.unit_type]}</TableCell>
+                        <TableCell className="text-slate-300">
+                          {item.price_type === "per_box_fixed" || item.price_type === "per_box"
+                            ? `${item.boxes} ${item.unit_custom === "FD" ? "Fardo" : item.unit_custom === "CX" ? "Caixa" : (item.unit_custom ? item.unit_custom : "Caixa")}`
+                            : `${item.quantity} ${item.unit_custom === 'FD' ? 'Fardo' : item.unit_custom === 'CX' ? 'Caixa' : (item.unit_type === 'kg' ? 'kg' : item.unit_type === 'box' ? 'Caixa' : unitLabels[item.unit_type] || '')}`
+                          }
+                        </TableCell>
                         <TableCell className="text-slate-300">{formatCurrency(item.unit_price)}</TableCell>
                         <TableCell className="text-green-400">{formatCurrency(item.total_price)}</TableCell>
                       </TableRow>

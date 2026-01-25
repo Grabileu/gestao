@@ -1,3 +1,4 @@
+const unitLabels = { kg: "Kg", unit: "Un", box: "Cx", dozen: "Dz", caixa: "CX", fardo: "FD" };
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44SupabaseClient";
@@ -43,10 +44,23 @@ export default function CeasaReports() {
   filteredPurchases.forEach(p => {
     p.items?.forEach(item => {
       if (!productsSummary[item.product_name]) {
-        productsSummary[item.product_name] = { name: item.product_name, quantity: 0, total: 0 };
+        productsSummary[item.product_name] = {
+          name: item.product_name,
+          quantity: 0,
+          total: 0,
+          unit_custom: item.unit_custom,
+          price_type: item.price_type,
+        };
       }
       productsSummary[item.product_name].quantity += item.quantity || 0;
       productsSummary[item.product_name].total += item.total_price || 0;
+      // Atualiza unit_custom e price_type se não estiverem definidos
+      if (!productsSummary[item.product_name].unit_custom && item.unit_custom) {
+        productsSummary[item.product_name].unit_custom = item.unit_custom;
+      }
+      if (!productsSummary[item.product_name].price_type && item.price_type) {
+        productsSummary[item.product_name].price_type = item.price_type;
+      }
     });
   });
   const productsData = Object.values(productsSummary).sort((a, b) => b.total - a.total);
@@ -210,13 +224,25 @@ export default function CeasaReports() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {productsData.slice(0, 10).map((product, index) => (
-                  <TableRow key={index} className="border-slate-700">
-                    <TableCell className="text-white font-medium">{product.name}</TableCell>
-                    <TableCell className="text-slate-300">{product.quantity.toFixed(2)}</TableCell>
-                    <TableCell className="text-green-400 font-bold">{formatCurrency(product.total)}</TableCell>
-                  </TableRow>
-                ))}
+                {productsData.slice(0, 10).map((product, index) => {
+                  let unidade = 'kg';
+                  if (product.unit_custom) {
+                    unidade = unitLabels[product.unit_custom] || product.unit_custom;
+                  } else if (product.price_type === 'per_kg') {
+                    unidade = unitLabels.kg;
+                  } else if (product.price_type && product.price_type !== 'per_kg') {
+                    unidade = '';
+                  } else {
+                    unidade = unitLabels.kg;
+                  }
+                  return (
+                    <TableRow key={index} className="border-slate-700">
+                      <TableCell className="text-white font-medium">{product.name}</TableCell>
+                      <TableCell className="text-slate-300">{product.quantity.toFixed(2)} {unidade}</TableCell>
+                      <TableCell className="text-green-400 font-bold">{formatCurrency(product.total)}</TableCell>
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
           </div>

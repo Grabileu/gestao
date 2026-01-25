@@ -12,7 +12,8 @@ import { AlertCircle } from "lucide-react";
 const absenceTypes = [
   { value: "absence", label: "Falta" },
   { value: "medical_certificate", label: "Atestado Médico" },
-  { value: "justified", label: "Falta Justificada" }
+  { value: "justified", label: "Falta Justificada" },
+  { value: "delay", label: "Atraso" }
 ];
 
 export default function AbsenceForm({ open, onClose, absence, employees, onSave }) {
@@ -34,6 +35,7 @@ export default function AbsenceForm({ open, onClose, absence, employees, onSave 
     status: "pending",
     observations: ""
   });
+  const [employeeSearch, setEmployeeSearch] = useState("");
   const [loading, setLoading] = useState(false);
   const [validationError, setValidationError] = useState("");
 
@@ -145,9 +147,26 @@ export default function AbsenceForm({ open, onClose, absence, employees, onSave 
                   <SelectValue placeholder="Selecione" />
                 </SelectTrigger>
                 <SelectContent side="bottom" className="bg-slate-800 border-slate-600 text-white z-50">
-                  {employees.filter(e => e.status === "active").map(emp => (
-                    <SelectItem key={emp.id} value={String(emp.id)} className="text-white hover:bg-slate-700 cursor-pointer">{emp.full_name}</SelectItem>
-                  ))}
+                  <div className="px-2 pb-2 sticky top-0 bg-slate-800 z-10" onClick={e => e.stopPropagation()} onMouseDown={e => e.stopPropagation()}>
+                    <input
+                      type="text"
+                      placeholder="Buscar funcionário..."
+                      value={employeeSearch}
+                      onChange={e => setEmployeeSearch(e.target.value)}
+                      className="w-full px-2 py-1 rounded bg-slate-700 text-white border border-slate-600 focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm"
+                      autoFocus
+                    />
+                  </div>
+                  {employees
+                    .filter(e => e.status === "active")
+                    .filter(e =>
+                      !employeeSearch ||
+                      e.full_name.toLowerCase().includes(employeeSearch.toLowerCase())
+                    )
+                    .sort((a, b) => a.full_name.localeCompare(b.full_name, 'pt-BR'))
+                    .map(emp => (
+                      <SelectItem key={emp.id} value={String(emp.id)} className="text-white hover:bg-slate-700 cursor-pointer">{emp.full_name}</SelectItem>
+                    ))}
                 </SelectContent>
               </Select>
             </div>
@@ -163,51 +182,70 @@ export default function AbsenceForm({ open, onClose, absence, employees, onSave 
               />
             </div>
             
-            <div>
-              <Label className="text-slate-300">Tipo *</Label>
-              <Select value={formData.type} onValueChange={(v) => setFormData(prev => ({ ...prev, type: v }))}>
-                <SelectTrigger className="bg-slate-800 border-slate-600 text-white">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent side="bottom" className="bg-slate-800 border-slate-600 text-white z-50">
-                  {absenceTypes.map(t => (
-                    <SelectItem key={t.value} value={t.value} className="text-white hover:bg-slate-700 cursor-pointer">{t.label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <div className="flex gap-2 items-end">
+              <div style={{ minWidth: 0, flex: '1 1 0%' }}>
+                <Label className="text-slate-300">Tipo *</Label>
+                <Select value={formData.type} onValueChange={(v) => setFormData(prev => ({ ...prev, type: v }))}>
+                  <SelectTrigger className="bg-slate-800 border-slate-600 text-white w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent side="bottom" className="bg-slate-800 border-slate-600 text-white z-50">
+                    {absenceTypes.map(t => (
+                      <SelectItem key={t.value} value={t.value} className="text-white hover:bg-slate-700 cursor-pointer">{t.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              {formData.type === "delay" && (
+                <div style={{ width: 140 }}>
+                  <Label className="text-slate-300">Horas ausente</Label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    min="0.01"
+                    placeholder="Horas ausente"
+                    value={formData.hours}
+                    onChange={(e) => setFormData(prev => ({ ...prev, hours: e.target.value }))}
+                    className="bg-slate-800 border-slate-600 text-white"
+                  />
+                </div>
+              )}
             </div>
             
-            <div>
-              <Label className="text-slate-300">Dias de Afastamento</Label>
-              <Input
-                type="number"
-                min="1"
-                value={formData.days_off}
-                onChange={(e) => setFormData(prev => ({ ...prev, days_off: e.target.value }))}
-                className="bg-slate-800 border-slate-600 text-white"
-              />
-            </div>
+            {formData.type === "medical_certificate" && (
+              <div>
+                <Label className="text-slate-300">Dias de Afastamento</Label>
+                <Input
+                  type="number"
+                  min="1"
+                  value={formData.days_off}
+                  onChange={(e) => setFormData(prev => ({ ...prev, days_off: e.target.value }))}
+                  className="bg-slate-800 border-slate-600 text-white"
+                />
+              </div>
+            )}
           </div>
           
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <Checkbox
-                id="full_day"
-                checked={formData.full_day}
-                onCheckedChange={(checked) => setFormData(prev => ({ ...prev, full_day: checked }))}
-              />
-              <Label htmlFor="full_day" className="text-slate-300">Dia inteiro</Label>
+          {formData.type !== "medical_certificate" && (
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  id="full_day"
+                  checked={formData.full_day}
+                  onCheckedChange={(checked) => setFormData(prev => ({ ...prev, full_day: checked }))}
+                />
+                <Label htmlFor="full_day" className="text-slate-300">Dia inteiro</Label>
+              </div>
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  id="discount_salary"
+                  checked={formData.discount_salary}
+                  onCheckedChange={(checked) => setFormData(prev => ({ ...prev, discount_salary: checked }))}
+                />
+                <Label htmlFor="discount_salary" className="text-slate-300">Desconta do salário</Label>
+              </div>
             </div>
-            
-            <div className="flex items-center gap-2">
-              <Checkbox
-                id="discount_salary"
-                checked={formData.discount_salary}
-                onCheckedChange={(checked) => setFormData(prev => ({ ...prev, discount_salary: checked }))}
-              />
-              <Label htmlFor="discount_salary" className="text-slate-300">Desconta do salário</Label>
-            </div>
-          </div>
+          )}
           
           {!formData.full_day && (
             <div className="w-1/2">
@@ -276,7 +314,7 @@ export default function AbsenceForm({ open, onClose, absence, employees, onSave 
             <Button type="button" variant="outline" onClick={onClose} className="border-slate-600 text-slate-300 hover:bg-slate-800">
               Cancelar
             </Button>
-            <Button type="submit" disabled={loading} className="bg-blue-600 hover:bg-blue-700">
+            <Button type="submit" disabled={loading} className="bg-blue-600 hover:bg-blue-700 text-white">
               {loading ? "Salvando..." : "Salvar"}
             </Button>
           </div>

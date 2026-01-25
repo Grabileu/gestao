@@ -76,8 +76,18 @@ export default function CeasaSuppliers() {
 
   const handleSaveProduct = async (e) => {
     e.preventDefault();
+    // Determinar unit_type para salvar corretamente
+    let unit_type = "kg";
+    if (productForm.category === "fruit") {
+      unit_type = "kg";
+    } else if (productForm.category === "other") {
+      unit_type = productForm.unit_custom === "fardo" ? "fardo" : "box";
+    } else {
+      unit_type = "kg";
+    }
     const data = { 
       ...productForm, 
+      unit_type,
       default_price: 0,
       box_weight_kg: productForm.price_type === "per_box" ? parseFloat(productForm.box_weight_kg) || 0 : null
     };
@@ -101,7 +111,21 @@ export default function CeasaSuppliers() {
     s.name?.toLowerCase().includes(search.toLowerCase())
   );
 
-  const supplierProducts = products.filter(p => p.supplier_id === showProducts?.id);
+  // Não alterar a ordem dos produtos ao salvar, manter ordem de cadastro
+  const supplierProducts = products
+    .filter(p => p.supplier_id === showProducts?.id)
+    .sort((a, b) => {
+      // Se houver campo created_at, usar para garantir ordem de cadastro
+      if (a.created_at && b.created_at) {
+        return new Date(a.created_at) - new Date(b.created_at);
+      }
+      // Fallback: ordenar por id numérico crescente, se possível
+      if (!isNaN(Number(a.id)) && !isNaN(Number(b.id))) {
+        return Number(a.id) - Number(b.id);
+      }
+      // Senão, não altera ordem
+      return 0;
+    });
 
   const priceTypeLabels = { per_box: "Por Caixa (quantidade fixa)", per_unit: "Por Unidade", per_kg: "Por Kg (legado)", per_dozen: "Por Dúzia (legado)" };
   const categoryLabels = { fruit: "Fruta", vegetable: "Legume", greens: "Verdura", other: "Outro" };
@@ -235,13 +259,14 @@ export default function CeasaSuppliers() {
             <Button onClick={() => { setProductForm(p => ({ ...p, supplier_id: showProducts?.id, supplier_name: showProducts?.name })); setShowProductForm(true); }} className="bg-blue-600 hover:bg-blue-700 text-white">
               <Plus className="h-4 w-4 mr-2" /> Adicionar Produto
             </Button>
-            <div className="bg-slate-800/50 rounded-lg border border-slate-700 overflow-hidden">
+            <div className="bg-slate-800/50 rounded-lg border border-slate-700 overflow-hidden" style={{ maxHeight: 340, overflowY: 'auto' }}>
               <Table>
                 <TableHeader>
                   <TableRow className="border-slate-700">
                     <TableHead className="text-slate-300">Produto</TableHead>
                     <TableHead className="text-slate-300">Categoria</TableHead>
                     <TableHead className="text-slate-300">Tipo de Custo</TableHead>
+                    <TableHead className="text-slate-300">Unidade de Medida</TableHead>
                     <TableHead className="text-slate-300 text-right">Ações</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -258,6 +283,22 @@ export default function CeasaSuppliers() {
                           {product.price_type === "per_box" && product.box_weight_kg && (
                             <span className="text-xs text-slate-500 block">({product.box_weight_kg}kg)</span>
                           )}
+                        </TableCell>
+                        <TableCell className="text-slate-300">
+                          {/* Unidade de Medida + sigla */}
+                          {(() => {
+                            // Preferir unit_type, depois unit_custom, depois fallback
+                            const unit = product.unit_type || product.unit_custom || (product.category === 'fruit' ? 'kg' : 'caixa');
+                            let nome = '';
+                            let sigla = '';
+                            if (unit === 'kg') { nome = 'Quilo'; sigla = 'KG'; }
+                            else if (unit === 'box' || unit === 'caixa') { nome = 'Caixa'; sigla = 'CX'; }
+                            else if (unit === 'fardo') { nome = 'Fardo'; sigla = 'FD'; }
+                            else if (unit === 'unit' || unit === 'unidade') { nome = 'Unidade'; sigla = 'UN'; }
+                            else if (unit === 'dozen' || unit === 'dúzia') { nome = 'Dúzia'; sigla = 'DZ'; }
+                            else { nome = unit; sigla = unit.toUpperCase(); }
+                            return <><span>{nome}</span><br /><span className="text-xs text-slate-500">{sigla}</span></>;
+                          })()}
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex justify-end gap-2">
@@ -298,7 +339,7 @@ export default function CeasaSuppliers() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label className="text-slate-300">Categoria</Label>
-                <Select value={productForm.category} onValueChange={(v) => setProductForm(p => ({ ...p, category: v }))}>
+                <Select value={productForm.category} onValueChange={(v) => setProductForm(p => ({ ...p, category: v, unit_custom: v === 'other' ? (productForm.unit_custom || 'caixa') : undefined }))}>
                   <SelectTrigger className="bg-slate-800 border-slate-600 text-white"><SelectValue /></SelectTrigger>
                   <SelectContent side="bottom" className="bg-slate-800 border-slate-600 text-white z-50">
                     <SelectItem value="fruit" className="text-white hover:bg-slate-700 cursor-pointer">Fruta</SelectItem>
@@ -319,6 +360,18 @@ export default function CeasaSuppliers() {
                 </Select>
               </div>
             </div>
+            {productForm.category === 'other' && (
+              <div>
+                <Label className="text-slate-300">Unidade de Medida</Label>
+                <Select value={productForm.unit_custom || 'caixa'} onValueChange={v => setProductForm(p => ({ ...p, unit_custom: v }))}>
+                  <SelectTrigger className="bg-slate-800 border-slate-600 text-white"><SelectValue /></SelectTrigger>
+                  <SelectContent side="bottom" className="bg-slate-800 border-slate-600 text-white z-50">
+                    <SelectItem value="caixa" className="text-white hover:bg-slate-700 cursor-pointer">Caixa</SelectItem>
+                    <SelectItem value="fardo" className="text-white hover:bg-slate-700 cursor-pointer">Fardo</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
             {productForm.price_type === "per_box" && (
               <div className="p-3 bg-slate-800/50 rounded-lg border border-slate-600">
                 <Label className="text-slate-300">Peso da Caixa (kg)</Label>

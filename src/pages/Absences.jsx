@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import moment from "moment";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44SupabaseClient";
 import { Button } from "@/components/ui/button";
@@ -50,13 +51,27 @@ export default function Absences() {
     setEditingAbsence(null);
   };
 
-  const filteredAbsences = absences.filter(a => {
+  // Expande registros de atestados/faltas para cada dia de afastamento
+  const expandedAbsences = absences.flatMap(a => {
+    // Se for mais de um dia, cria um registro para cada dia
+    if (a.days_off && a.days_off > 1) {
+      return Array.from({ length: a.days_off }, (_, i) => ({
+        ...a,
+        date: moment(a.date).add(i, 'days').format('YYYY-MM-DD'),
+        original_date: a.date,
+        day_index: i + 1
+      }));
+    }
+    return [a];
+  });
+
+  const filteredAbsences = expandedAbsences.filter(a => {
     const searchMatch = !filters.search || 
       a.employee_name?.toLowerCase().includes(filters.search.toLowerCase());
     const typeMatch = filters.type === "all" || a.type === filters.type;
     const monthMatch = !filters.month || a.month_reference === filters.month;
     return searchMatch && typeMatch && monthMatch;
-  });
+  }).sort((a, b) => moment(b.date).valueOf() - moment(a.date).valueOf());
 
   // Stats
   const totalAbsences = absences.filter(a => a.type === "absence").length;
