@@ -77,6 +77,7 @@ export default function Absences() {
   const totalAbsences = absences.filter(a => a.type === "absence").length;
   const totalCertificates = absences.filter(a => a.type === "medical_certificate").length;
   const totalJustified = absences.filter(a => a.type === "justified").length;
+  const totalDelays = absences.filter(a => a.type === "delay").length;
 
   return (
     <div className="p-6 space-y-6">
@@ -92,7 +93,7 @@ export default function Absences() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card className="bg-slate-800/50 border-slate-700">
           <CardContent className="p-4 flex items-center gap-4">
             <div className="p-3 bg-red-500/20 rounded-lg">
@@ -112,6 +113,17 @@ export default function Absences() {
             <div>
               <p className="text-slate-400 text-sm">Atestados</p>
               <p className="text-2xl font-bold text-white">{totalCertificates}</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="bg-slate-800/50 border-slate-700">
+          <CardContent className="p-4 flex items-center gap-4">
+            <div className="p-3 bg-orange-500/20 rounded-lg">
+              <AlertCircle className="h-6 w-6 text-orange-400" />
+            </div>
+            <div>
+              <p className="text-slate-400 text-sm">Atrasos</p>
+              <p className="text-2xl font-bold text-white">{totalDelays}</p>
             </div>
           </CardContent>
         </Card>

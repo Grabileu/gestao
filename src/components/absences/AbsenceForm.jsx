@@ -226,7 +226,19 @@ export default function AbsenceForm({ open, onClose, absence, employees, onSave 
             )}
           </div>
           
-          {formData.type !== "medical_certificate" && (
+          {/* Para atraso, mostrar apenas desconta do salário. Para outros, manter Dia inteiro + desconta */}
+          {formData.type === "delay" ? (
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  id="discount_salary"
+                  checked={formData.discount_salary}
+                  onCheckedChange={(checked) => setFormData(prev => ({ ...prev, discount_salary: checked }))}
+                />
+                <Label htmlFor="discount_salary" className="text-slate-300">Desconta do salário</Label>
+              </div>
+            </div>
+          ) : formData.type !== "medical_certificate" && (
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
                 <Checkbox

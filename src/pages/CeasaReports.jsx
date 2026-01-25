@@ -98,17 +98,19 @@ export default function CeasaReports() {
       <Card className="bg-slate-800/50 border-slate-700">
         <CardContent className="p-4">
           <div className="flex gap-4">
-            <div className="w-[180px]">
+            <div className="flex flex-col">
+              <label className="text-xs text-slate-500 mb-1 block">Mês</label>
               <Input
                 type="month"
                 value={filters.month}
                 onChange={(e) => setFilters(p => ({ ...p, month: e.target.value }))}
-                className="bg-slate-900 border-slate-600 text-white"
+                className="bg-slate-800 border-slate-600 text-white h-10"
               />
             </div>
-            <div className="w-[200px]">
+            <div className="flex flex-col">
+              <label className="text-xs text-slate-500 mb-1 block">Fornecedor</label>
               <Select value={filters.supplier} onValueChange={(v) => setFilters(p => ({ ...p, supplier: v }))}>
-                <SelectTrigger className="bg-slate-900 border-slate-600 text-white"><SelectValue placeholder="Fornecedor" /></SelectTrigger>
+                <SelectTrigger className="bg-slate-800 border-slate-600 text-white h-10"><SelectValue placeholder="Fornecedor" /></SelectTrigger>
                 <SelectContent side="bottom" className="bg-slate-800 border-slate-600 text-white z-50">
                   <SelectItem value="all" className="text-white hover:bg-slate-700 cursor-pointer">Todos fornecedores</SelectItem>
                   {suppliers.map(s => <SelectItem key={s.id} value={String(s.id)} className="text-white hover:bg-slate-700 cursor-pointer">{s.name}</SelectItem>)}

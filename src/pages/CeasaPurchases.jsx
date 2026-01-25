@@ -347,47 +347,61 @@ export default function CeasaPurchases() {
       {/* Filters */}
       <Card className="bg-slate-800/50 border-slate-700">
         <CardContent className="p-4">
-          <div className="flex flex-wrap gap-4">
-            <div className="flex-1 min-w-50">
-              <div className="relative">
+          <div className="flex flex-wrap gap-2 items-end justify-between">
+            {/* Filtro de busca à esquerda */}
+            <div className="flex flex-col flex-1 min-w-0">
+              <span className="text-slate-400 text-xs mb-1 ml-1">Buscar</span>
+              <div className="relative w-full min-w-[180px]">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                 <Input
                   placeholder="Buscar..."
                   value={filters.search}
                   onChange={(e) => setFilters(p => ({ ...p, search: e.target.value }))}
-                  className="pl-10 bg-slate-900 border-slate-600 text-white"
+                  className="pl-10 bg-slate-800 border-slate-600 text-white h-10 w-full"
                 />
               </div>
             </div>
-            <div className="w-45">
-              <Input
-                type="month"
-                value={filters.month}
-                onChange={(e) => setFilters(p => ({ ...p, month: e.target.value }))}
-                className="bg-slate-900 border-slate-600 text-white"
-              />
-            </div>
-            <div className="w-50">
-              <Select value={filters.supplier} onValueChange={(v) => setFilters(p => ({ ...p, supplier: v }))}>
-                <SelectTrigger className="bg-slate-900 border-slate-600 text-white"><SelectValue placeholder="Fornecedor" /></SelectTrigger>
-                <SelectContent side="bottom" className="bg-slate-800 border-slate-600 text-white z-50">
-                  <SelectItem value="all" className="text-white hover:bg-slate-700 cursor-pointer">Todos fornecedores</SelectItem>
-                  {suppliers.map(s => <SelectItem key={s.id} value={String(s.id)} className="text-white hover:bg-slate-700 cursor-pointer">{s.name}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="w-50">
-              <Select value={filters.store || "all"} onValueChange={v => setFilters(p => ({ ...p, store: v }))}>
-                <SelectTrigger className="bg-slate-900 border-slate-600 text-white w-full">
-                  <SelectValue placeholder="Filtrar Loja" />
-                </SelectTrigger>
-                <SelectContent side="bottom" className="bg-slate-900 border-slate-600 text-white z-50">
-                  <SelectItem value="all" className="text-white hover:bg-slate-700 cursor-pointer">Todas as Lojas</SelectItem>
-                  {stores.map(store => (
-                    <SelectItem key={store.id} value={String(store.id)} className="text-white hover:bg-slate-700 cursor-pointer">{store.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            {/* Filtros agrupados à direita: mês, fornecedor, loja */}
+            <div className="flex gap-2 items-end">
+              <div className="flex flex-col">
+                <span className="text-slate-400 text-xs mb-1 ml-1">Mês</span>
+                <div className="w-40 min-w-[120px]">
+                  <Input
+                    type="month"
+                    value={filters.month}
+                    onChange={(e) => setFilters(p => ({ ...p, month: e.target.value }))}
+                    className="bg-slate-800 border-slate-600 text-white h-10"
+                  />
+                </div>
+              </div>
+              <div className="flex flex-col">
+                <span className="text-slate-400 text-xs mb-1 ml-1">Fornecedor</span>
+                <div className="w-48 min-w-[160px]">
+                  <Select value={filters.supplier} onValueChange={(v) => setFilters(p => ({ ...p, supplier: v }))}>
+                    <SelectTrigger className="bg-slate-800 border-slate-600 text-white w-full h-10"><SelectValue placeholder="Fornecedor" /></SelectTrigger>
+                    <SelectContent side="bottom" className="bg-slate-800 border-slate-600 text-white z-50">
+                      <SelectItem value="all" className="text-white hover:bg-slate-700 cursor-pointer">Todos fornecedores</SelectItem>
+                      {suppliers.map(s => <SelectItem key={s.id} value={String(s.id)} className="text-white hover:bg-slate-700 cursor-pointer">{s.name}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="flex flex-col">
+                <span className="text-slate-400 text-xs mb-1 ml-1">Loja</span>
+                <div className="w-48 min-w-[160px]">
+                  <Select value={filters.store || "all"} onValueChange={v => setFilters(p => ({ ...p, store: v }))}>
+                    <SelectTrigger className="bg-slate-800 border-slate-600 text-white w-full h-10">
+                      <SelectValue placeholder="Loja" />
+                    </SelectTrigger>
+                    <SelectContent side="bottom" className="bg-slate-800 border-slate-600 text-white z-50">
+                      <SelectItem value="all" className="text-white hover:bg-slate-700 cursor-pointer">Todas</SelectItem>
+                      {stores.map(store => (
+                        <SelectItem key={store.id} value={String(store.id)} className="text-white hover:bg-slate-700 cursor-pointer">{store.code ? `${store.code} - ` : ""}{store.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
             </div>
           </div>
         </CardContent>

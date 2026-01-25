@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44SupabaseClient";
+import { supabase } from "@/lib/supabaseClient";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Receipt, Plus, Loader2 } from "lucide-react";
@@ -31,16 +32,44 @@ export default function CashBreaks() {
     queryFn: () => base44.entities.Store.list()
   });
 
-  const { data: cashiers = [], isLoading: loadingCashiers } = useQuery({
-    queryKey: ['cashiers'],
-    queryFn: () => base44.entities.Cashier.list()
-  });
+  // Busca operadores de caixa ativos do departamento CAIXAS
+  const [cashiers, setCashiers] = useState([]);
+  const [loadingCashiers, setLoadingCashiers] = useState(true);
+
+  useEffect(() => {
+    async function fetchCashiers() {
+      setLoadingCashiers(true);
+      // Busca departamento CAIXAS
+      let deptId = null;
+      const { data: depts } = await supabase.from("department").select("id, name");
+      const dept = depts?.find(d => d.name && d.name.toLowerCase() === "caixas");
+      if (dept) deptId = dept.id;
+      if (!deptId) {
+        setCashiers([]);
+        setLoadingCashiers(false);
+        return;
+      }
+      // Busca funcionários ativos do departamento CAIXAS
+      let { data: employees } = await supabase
+        .from("employee")
+        .select("id, full_name, status, department_id")
+        .eq("department_id", deptId)
+        .eq("status", "active");
+      employees = employees || [];
+      setCashiers(
+        employees.map(e => ({ id: e.id, name: e.full_name }))
+      );
+      setLoadingCashiers(false);
+    }
+    fetchCashiers();
+  }, []);
 
   const isLoading = loadingBreaks || loadingStores || loadingCashiers;
 
   const filteredBreaks = cashBreaks.filter(item => {
     const matchesStore = filters.store === "all" || item.store_id === filters.store;
-    const matchesCashier = filters.cashier === "all" || item.cashier_id === filters.cashier;
+    // Corrigir: comparar cashier_id do filtro com employee_id OU cashier_id do registro
+    const matchesCashier = filters.cashier === "all" || String(item.employee_id || item.cashier_id) === String(filters.cashier);
     const matchesType = filters.type === "all" || item.type === filters.type;
     const matchesStatus = filters.status === "all" || item.voucher_status === filters.status;
     
@@ -107,10 +136,13 @@ export default function CashBreaks() {
           </Button>
         </div>
 
-        {/* Stats */}
-        <CashBreakStats cashBreaks={filteredBreaks} />
 
         {/* Filters */}
+        {cashiers.length === 0 && (
+          <div className="mb-4 p-3 bg-yellow-900/80 border-l-4 border-yellow-500 text-yellow-200 rounded">
+            <strong>Atenção:</strong> Nenhum operador de caixa encontrado no departamento "CAIXAS". Verifique se há funcionários ativos cadastrados corretamente.
+          </div>
+        )}
         <CashBreakFilters 
           filters={filters}
           onChange={setFilters}
@@ -118,6 +150,9 @@ export default function CashBreaks() {
           cashiers={cashiers}
           onClear={handleClearFilters}
         />
+
+        {/* Stats - contagens de faltas, sobras, etc */}
+        <CashBreakStats cashBreaks={filteredBreaks} />
 
         {/* Results count */}
         <p className="text-slate-400 text-sm">

@@ -11,7 +11,7 @@ import { AlertCircle, FileText, Calendar, Users, Printer, Filter, X } from "luci
 import moment from "moment";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from "recharts";
 
-const COLORS = ["#ef4444", "#f59e0b", "#3b82f6"];
+const COLORS = ["#ef4444", "#f59e0b", "#f97316", "#3b82f6"];
 const typeLabels = { absence: "Falta", medical_certificate: "Atestado", justified: "Justificada" };
 
 export default function AbsenceReports() {
@@ -120,12 +120,12 @@ export default function AbsenceReports() {
               <div class="label">ATESTADOS</div>
             </div>
             <div class="stat-box">
-              <div class="number">${totalJustified}</div>
-              <div class="label">JUSTIFICADAS</div>
+              <div class="number">${totalDelays}</div>
+              <div class="label">ATRASOS</div>
             </div>
             <div class="stat-box">
-              <div class="number">${totalDays}</div>
-              <div class="label">TOTAL DIAS</div>
+              <div class="number">${totalJustified}</div>
+              <div class="label">JUSTIFICADAS</div>
             </div>
           </div>
 
@@ -136,8 +136,8 @@ export default function AbsenceReports() {
                 <th>Funcionário</th>
                 <th style="text-align:center">Faltas</th>
                 <th style="text-align:center">Atestados</th>
+                <th style="text-align:center">Atrasos</th>
                 <th style="text-align:center">Justificadas</th>
-                <th style="text-align:center">Total Dias</th>
               </tr>
             </thead>
             <tbody>
@@ -146,8 +146,8 @@ export default function AbsenceReports() {
                   <td>${emp.name}</td>
                   <td style="text-align:center"><span class="badge badge-red">${emp.absences}</span></td>
                   <td style="text-align:center"><span class="badge badge-yellow">${emp.certificates}</span></td>
+                  <td style="text-align:center"><span class="badge badge-orange">${emp.delays || 0}</span></td>
                   <td style="text-align:center"><span class="badge badge-blue">${emp.justified}</span></td>
-                  <td style="text-align:center"><strong>${emp.days}</strong></td>
                 </tr>
               `).join("")}
             </tbody>
@@ -160,7 +160,6 @@ export default function AbsenceReports() {
                 <th>Data</th>
                 <th>Funcionário</th>
                 <th>Tipo</th>
-                <th>Dias</th>
                 <th>Motivo</th>
               </tr>
             </thead>
@@ -168,9 +167,8 @@ export default function AbsenceReports() {
               ${filteredAbsences.slice(0, 100).map(a => `
                 <tr>
                   <td>${moment(a.date).format("DD/MM/YYYY")}</td>
-                  <td>${a.employee_name || '-'}</td>
-                  <td><span class="badge ${a.type === 'absence' ? 'badge-red' : a.type === 'medical_certificate' ? 'badge-yellow' : 'badge-blue'}">${typeLabels[a.type]}</span></td>
-                  <td style="text-align:center">${a.days_off || 1}</td>
+                  <td>${a.employee_name && a.employee_name.trim().toLowerCase() === 'casual' ? 'Avulso' : a.employee_name || '-'}</td>
+                  <td><span class="badge ${a.type === 'absence' ? 'badge-red' : a.type === 'medical_certificate' ? 'badge-yellow' : a.type === 'delay' ? 'badge-orange' : 'badge-blue'}">${a.type === 'delay' ? 'Atraso' : typeLabels[a.type]}</span></td>
                   <td>${a.reason || '-'}</td>
                 </tr>
               `).join("")}
@@ -191,12 +189,14 @@ export default function AbsenceReports() {
   const totalAbsences = filteredAbsences.filter(a => a.type === "absence").length;
   const totalCertificates = filteredAbsences.filter(a => a.type === "medical_certificate").length;
   const totalJustified = filteredAbsences.filter(a => a.type === "justified").length;
+  const totalDelays = filteredAbsences.filter(a => a.type === "delay").length;
   const totalDays = filteredAbsences.reduce((sum, a) => sum + (a.days_off || 1), 0);
 
   // By type chart
   const typeData = [
     { name: "Faltas", value: totalAbsences },
     { name: "Atestados", value: totalCertificates },
+    { name: "Atrasos", value: totalDelays },
     { name: "Justificadas", value: totalJustified }
   ].filter(d => d.value > 0);
 
@@ -204,14 +204,20 @@ export default function AbsenceReports() {
   const employeeSummary = {};
   filteredAbsences.forEach(a => {
     if (!employeeSummary[a.employee_name]) {
-      employeeSummary[a.employee_name] = { name: a.employee_name, absences: 0, certificates: 0, justified: 0, days: 0 };
+      employeeSummary[a.employee_name] = { name: a.employee_name, absences: 0, certificates: 0, justified: 0, delays: 0, absenceDays: 0 };
     }
-    if (a.type === "absence") employeeSummary[a.employee_name].absences += 1;
-    if (a.type === "medical_certificate") employeeSummary[a.employee_name].certificates += 1;
+    if (a.type === "absence") {
+      employeeSummary[a.employee_name].absences += 1;
+      employeeSummary[a.employee_name].absenceDays += a.days_off || 1;
+    }
+    if (a.type === "medical_certificate") {
+      employeeSummary[a.employee_name].certificates += 1;
+      employeeSummary[a.employee_name].absenceDays += a.days_off || 1;
+    }
     if (a.type === "justified") employeeSummary[a.employee_name].justified += 1;
-    employeeSummary[a.employee_name].days += a.days_off || 1;
+    if (a.type === "delay") employeeSummary[a.employee_name].delays += 1;
   });
-  const employeeData = Object.values(employeeSummary).sort((a, b) => b.days - a.days);
+  const employeeData = Object.values(employeeSummary).sort((a, b) => b.absenceDays - a.absenceDays);
 
   return (
     <div className="p-6 space-y-6">
@@ -246,25 +252,26 @@ export default function AbsenceReports() {
                 type="month"
                 value={filters.month}
                 onChange={(e) => setFilters(p => ({ ...p, month: e.target.value }))}
-                className="bg-slate-900 border-slate-600 text-white h-9"
+                className="bg-slate-800 border-slate-600 text-white h-10"
               />
             </div>
             <div>
               <label className="text-xs text-slate-500 mb-1 block">Tipo</label>
               <Select value={filters.type} onValueChange={(v) => setFilters(p => ({ ...p, type: v }))}>
-                <SelectTrigger className="bg-slate-900 border-slate-600 text-white h-9"><SelectValue /></SelectTrigger>
+                <SelectTrigger className="bg-slate-800 border-slate-600 text-white h-10"><SelectValue /></SelectTrigger>
                 <SelectContent side="bottom" className="bg-slate-800 border-slate-600 text-white z-50">
                   <SelectItem value="all" className="text-white hover:bg-slate-700 cursor-pointer">Todos</SelectItem>
                   <SelectItem value="absence" className="text-white hover:bg-slate-700 cursor-pointer">Faltas</SelectItem>
                   <SelectItem value="medical_certificate" className="text-white hover:bg-slate-700 cursor-pointer">Atestados</SelectItem>
                   <SelectItem value="justified" className="text-white hover:bg-slate-700 cursor-pointer">Justificadas</SelectItem>
+                  <SelectItem value="delay" className="text-white hover:bg-slate-700 cursor-pointer">Atrasos</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div>
               <label className="text-xs text-slate-500 mb-1 block">Funcionário</label>
               <Select value={filters.employee} onValueChange={(v) => setFilters(p => ({ ...p, employee: v }))}>
-                <SelectTrigger className="bg-slate-900 border-slate-600 text-white h-9"><SelectValue /></SelectTrigger>
+                <SelectTrigger className="bg-slate-800 border-slate-600 text-white h-10"><SelectValue /></SelectTrigger>
                 <SelectContent side="bottom" className="bg-slate-800 border-slate-600 text-white z-50">
                   <SelectItem value="all" className="text-white hover:bg-slate-700 cursor-pointer">Todos</SelectItem>
                   {employees.map(emp => (
@@ -276,7 +283,7 @@ export default function AbsenceReports() {
             <div>
               <label className="text-xs text-slate-500 mb-1 block">Departamento</label>
               <Select value={filters.department} onValueChange={(v) => setFilters(p => ({ ...p, department: v }))}>
-                <SelectTrigger className="bg-slate-900 border-slate-600 text-white h-9"><SelectValue /></SelectTrigger>
+                <SelectTrigger className="bg-slate-800 border-slate-600 text-white h-10"><SelectValue /></SelectTrigger>
                 <SelectContent side="bottom" className="bg-slate-800 border-slate-600 text-white z-50">
                   <SelectItem value="all" className="text-white hover:bg-slate-700 cursor-pointer">Todos</SelectItem>
                   {departments.map(dept => (
@@ -291,7 +298,7 @@ export default function AbsenceReports() {
                 type="date"
                 value={filters.dateFrom}
                 onChange={(e) => setFilters(p => ({ ...p, dateFrom: e.target.value }))}
-                className="bg-slate-900 border-slate-600 text-white h-9"
+                className="bg-slate-800 border-slate-600 text-white h-10"
               />
             </div>
             <div>
@@ -300,7 +307,7 @@ export default function AbsenceReports() {
                 type="date"
                 value={filters.dateTo}
                 onChange={(e) => setFilters(p => ({ ...p, dateTo: e.target.value }))}
-                className="bg-slate-900 border-slate-600 text-white h-9"
+                className="bg-slate-800 border-slate-600 text-white h-10"
               />
             </div>
           </div>
@@ -333,15 +340,16 @@ export default function AbsenceReports() {
         </Card>
         <Card className="bg-slate-800/50 border-slate-700">
           <CardContent className="p-4 flex items-center gap-4">
-            <div className="p-3 bg-blue-500/20 rounded-lg">
-              <Calendar className="h-6 w-6 text-blue-400" />
+            <div className="p-3 bg-orange-500/20 rounded-lg">
+              <AlertCircle className="h-6 w-6 text-orange-400" />
             </div>
             <div>
-              <p className="text-slate-400 text-sm">Total Dias</p>
-              <p className="text-xl font-bold text-white">{totalDays}</p>
+              <p className="text-slate-400 text-sm">Atrasos</p>
+              <p className="text-xl font-bold text-white">{totalDelays}</p>
             </div>
           </CardContent>
         </Card>
+        {/* Removido o card de Total Dias */}
         <Card className="bg-slate-800/50 border-slate-700">
           <CardContent className="p-4 flex items-center gap-4">
             <div className="p-3 bg-purple-500/20 rounded-lg">
@@ -377,7 +385,6 @@ export default function AbsenceReports() {
             </div>
           </CardContent>
         </Card>
-
         <Card className="bg-slate-800/50 border-slate-700">
           <CardHeader>
             <CardTitle className="text-white">Dias de Ausência por Funcionário</CardTitle>
@@ -388,15 +395,26 @@ export default function AbsenceReports() {
                 <BarChart data={employeeData.slice(0, 8)} layout="vertical">
                   <XAxis type="number" stroke="#94a3b8" fontSize={12} />
                   <YAxis dataKey="name" type="category" stroke="#94a3b8" fontSize={12} width={100} />
-                  <Tooltip contentStyle={{ backgroundColor: "#1e293b", border: "1px solid #334155" }} />
-                  <Bar dataKey="days" fill="#ef4444" radius={[0, 4, 4, 0]} />
+                  <Tooltip 
+                    contentStyle={{ backgroundColor: "#1e293b", border: "1px solid #334155", color: '#fff' }}
+                    formatter={(value, name, props) => {
+                      if (name === 'absenceDays') {
+                        return [
+                          `${value} ${value === 1 ? 'Dia' : 'Dias'}`,
+                          'Dias de ausência'
+                        ];
+                      }
+                      return value;
+                    }}
+                    labelStyle={{ color: '#fff' }}
+                  />
+                  <Bar dataKey="absenceDays" fill="#ef4444" radius={[0, 4, 4, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
           </CardContent>
         </Card>
       </div>
-
       {/* Employee Table */}
       <Card className="bg-slate-800/50 border-slate-700">
         <CardHeader>
@@ -410,8 +428,8 @@ export default function AbsenceReports() {
                   <TableHead className="text-slate-300">Funcionário</TableHead>
                   <TableHead className="text-slate-300">Faltas</TableHead>
                   <TableHead className="text-slate-300">Atestados</TableHead>
+                  <TableHead className="text-slate-300">Atrasos</TableHead>
                   <TableHead className="text-slate-300">Justificadas</TableHead>
-                  <TableHead className="text-slate-300">Total Dias</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -420,11 +438,11 @@ export default function AbsenceReports() {
                 ) : (
                   employeeData.map((emp, index) => (
                     <TableRow key={index} className="border-slate-700">
-                      <TableCell className="text-white font-medium">{emp.name}</TableCell>
+                      <TableCell className="text-white font-medium">{emp.name && emp.name.trim().toLowerCase() === 'casual' ? 'Avulso' : emp.name}</TableCell>
                       <TableCell><Badge className="bg-red-500/20 text-red-400">{emp.absences}</Badge></TableCell>
                       <TableCell><Badge className="bg-yellow-500/20 text-yellow-400">{emp.certificates}</Badge></TableCell>
+                      <TableCell><Badge className="bg-orange-500/20 text-orange-400">{emp.delays}</Badge></TableCell>
                       <TableCell><Badge className="bg-blue-500/20 text-blue-400">{emp.justified}</Badge></TableCell>
-                      <TableCell className="text-white font-bold">{emp.days}</TableCell>
                     </TableRow>
                   ))
                 )}

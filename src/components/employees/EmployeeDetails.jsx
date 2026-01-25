@@ -65,9 +65,24 @@ export default function EmployeeDetails({ employee, open, onClose }) {
                 <Badge className={statusColors[employee.status]}>
                   {statusLabels[employee.status]}
                 </Badge>
-                <Badge variant="outline" className="border-slate-600 text-slate-300">
-                  {contractLabels[employee.contract_type]}
-                </Badge>
+                {/* Exibe o tipo do funcionário ao lado, mas nunca junto do status */}
+                {(() => {
+                  const contract = (employee.contract_type || "").trim().toLowerCase();
+                  if (contract === "clt") {
+                    return (
+                      <Badge variant="outline" className="border-slate-600 text-slate-300">CLT</Badge>
+                    );
+                  } else if (contract === "casual" || contract === "avulso") {
+                    return (
+                      <Badge variant="outline" className="border-slate-600 text-slate-300">Avulso</Badge>
+                    );
+                  } else if (contractLabels[employee.contract_type]) {
+                    return (
+                      <Badge variant="outline" className="border-slate-600 text-slate-300">{contractLabels[employee.contract_type]}</Badge>
+                    );
+                  }
+                  return null;
+                })()}
               </div>
             </div>
           </div>
