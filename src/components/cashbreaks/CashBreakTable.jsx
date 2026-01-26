@@ -22,7 +22,7 @@ export const typeLabels = {
 
 export const statusColors = {
   not_delivered: "bg-amber-500/20 text-amber-400 border-amber-500/30",
-  delivered: "bg-blue-500/20 text-blue-400 border-blue-500/30",
+  delivered: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
   discounted: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30"
 };
 
@@ -51,10 +51,10 @@ function CashBreakTable({ cashBreaks, onEdit, onRefresh }) {
     onRefresh();
   };
 
-  const handleMarkAsPaid = async (item) => {
+  const handleMarkAsDelivered = async (item) => {
     await base44.entities.CashBreak.update(item.id, {
       ...item,
-      voucher_status: "discounted",
+      voucher_status: "delivered",
       payment_date: new Date().toISOString().split('T')[0]
     });
     onRefresh();
@@ -67,15 +67,14 @@ function CashBreakTable({ cashBreaks, onEdit, onRefresh }) {
         <Table>
           <TableHeader>
             <TableRow className="border-slate-700/50 hover:bg-transparent">
-              <TableHead className="text-slate-400">Data</TableHead>
-              <TableHead className="text-slate-400">Loja</TableHead>
-              <TableHead className="text-slate-400">Funcionário</TableHead>
-              <TableHead className="text-slate-400">Forma de Pagamento</TableHead>
-              <TableHead className="text-slate-400">Tipo</TableHead>
-              <TableHead className="text-slate-400">Valor</TableHead>
-              <TableHead className="text-slate-400">Vale</TableHead>
-              <TableHead className="text-slate-400">Status</TableHead>
-              <TableHead className="text-slate-400 text-right">Ações</TableHead>
+              <TableHead className="text-slate-400 text-center align-middle w-[120px]">Data</TableHead>
+              <TableHead className="text-slate-400 text-center align-middle w-[180px]">Loja</TableHead>
+              <TableHead className="text-slate-400 text-center align-middle w-[180px]">Funcionário</TableHead>
+              <TableHead className="text-slate-400 text-center align-middle w-[160px]">Forma de Pagamento</TableHead>
+              <TableHead className="text-slate-400 text-center align-middle w-[100px]">Tipo</TableHead>
+              <TableHead className="text-slate-400 text-center align-middle w-[120px]">Valor</TableHead>
+              <TableHead className="text-slate-400 text-center align-middle w-[120px]">Status</TableHead>
+              <TableHead className="text-slate-400 text-center align-middle w-[120px]">Ações</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -88,12 +87,12 @@ function CashBreakTable({ cashBreaks, onEdit, onRefresh }) {
             ) : (
               cashBreaks.map((item) => (
                 <TableRow key={item.id} className="border-slate-700/50 hover:bg-slate-800/50">
-                  <TableCell className="text-white font-medium">
+                  <TableCell className="text-white font-medium text-center align-middle w-[120px]">
                     {item.date && format(new Date(item.date), "dd/MM/yyyy", { locale: ptBR })}
                   </TableCell>
-                  <TableCell className="text-slate-300">{item.store_name || "-"}</TableCell>
-                  <TableCell className="text-slate-300">{item.cashier_name || item.employee_name || "-"}</TableCell>
-                  <TableCell className="text-slate-300">{
+                  <TableCell className="text-slate-300 text-center align-middle w-[180px]">{item.store_name || "-"}</TableCell>
+                  <TableCell className="text-slate-300 text-center align-middle w-[180px]">{item.cashier_name || item.employee_name || "-"}</TableCell>
+                  <TableCell className="text-slate-300 text-center align-middle w-[160px]">{
                     item.payment_method === 'cash' ? 'Dinheiro' :
                     item.payment_method === 'credit' ? 'Cartão Crédito' :
                     item.payment_method === 'debit' ? 'Cartão Débito' :
@@ -103,21 +102,18 @@ function CashBreakTable({ cashBreaks, onEdit, onRefresh }) {
                     item.payment_method === 'client_credit' ? 'Cliente a Prazo' :
                     item.payment_method === 'other' ? 'Outro' : '-'
                   }</TableCell>
-                  <TableCell>
+                  <TableCell className="text-center align-middle w-[100px]">
                     <Badge className={typeColors[item.type]}>
                       {typeLabels[item.type]}
                     </Badge>
                   </TableCell>
-                  <TableCell className={`font-semibold ${item.type === 'shortage' ? 'text-rose-400' : 'text-emerald-400'}`}>
-                    R$ {item.amount?.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                  </TableCell>
-                  <TableCell className="text-slate-300">{item.voucher_number || "-"}</TableCell>
-                  <TableCell>
+                  <TableCell className={`font-semibold text-center align-middle w-[120px] ${item.type === 'shortage' ? 'text-rose-400' : 'text-emerald-400'}`}>R$ {item.amount?.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</TableCell>
+                  <TableCell className="text-center align-middle w-[120px]">
                     <Badge className={statusColors[item.voucher_status]}>
                       {statusLabels[item.voucher_status]}
                     </Badge>
                   </TableCell>
-                  <TableCell className="text-right flex gap-2 items-center justify-end">
+                  <TableCell className="text-center align-middle w-[120px] flex gap-2 items-center justify-center">
                     <Button variant="ghost" size="icon" className="text-slate-400 hover:text-white hover:bg-slate-700" onClick={() => setViewItem(item)} title="Visualizar">
                       <Eye className="w-4 h-4" />
                     </Button>
@@ -129,9 +125,9 @@ function CashBreakTable({ cashBreaks, onEdit, onRefresh }) {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="bg-slate-800 border-slate-700">
                         {item.voucher_status === 'not_delivered' && (
-                          <DropdownMenuItem onClick={() => handleMarkAsPaid(item)} className="text-emerald-400 hover:bg-slate-700 cursor-pointer">
+                          <DropdownMenuItem onClick={() => handleMarkAsDelivered(item)} className="text-emerald-400 hover:bg-slate-700 cursor-pointer">
                             <CheckCircle className="w-4 h-4 mr-2" />
-                            Marcar como Descontado
+                            Marcar como Entregue
                           </DropdownMenuItem>
                         )}
                         <DropdownMenuItem onClick={() => onEdit(item)} className="text-slate-300 hover:bg-slate-700 cursor-pointer">

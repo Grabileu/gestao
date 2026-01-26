@@ -183,6 +183,12 @@ export default function EmployeeForm({ open, onClose, employee, departments, sto
       setValidationError("Loja é obrigatória");
       return;
     }
+    // Validação extra: store_id deve existir na lista de lojas
+    const storeExists = stores.some(s => String(s.id) === String(formData.store_id));
+    if (!storeExists) {
+      setValidationError("Loja selecionada é inválida. Por favor, escolha uma loja existente.");
+      return;
+    }
     if (!formData.position.trim()) {
       setValidationError("Cargo é obrigatório");
       return;

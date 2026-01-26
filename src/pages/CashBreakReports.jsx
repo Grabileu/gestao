@@ -38,18 +38,17 @@ export default function CashBreakReports() {
 
   const isLoading = loadingBreaks || loadingStores || loadingCashiers;
 
+  // Desconsidera comprovantes entregues
   const filteredBreaks = cashBreaks.filter(item => {
+    if (item.voucher_status === 'delivered') return false;
     const matchesStore = filters.store === "all" || item.store_id === filters.store;
     const matchesCashier = filters.cashier === "all" || item.cashier_id === filters.cashier;
     const matchesType = filters.type === "all" || item.type === filters.type;
     const matchesStatus = filters.status === "all" || item.voucher_status === filters.status;
-    
     const matchesDateFrom = !filters.date_from || 
       (item.date && new Date(item.date) >= new Date(filters.date_from));
-    
     const matchesDateTo = !filters.date_to || 
       (item.date && new Date(item.date) <= new Date(filters.date_to));
-
     return matchesStore && matchesCashier && matchesType && matchesStatus && matchesDateFrom && matchesDateTo;
   });
 

@@ -44,8 +44,14 @@ export default function CashBreakViewDialog({ open, onClose, cashBreak }) {
             } />
             <InfoItem icon={FileText} label="Tipo" badge={<Badge className={typeColors[cashBreak.type]}>{typeLabels[cashBreak.type]}</Badge>} />
             <InfoItem icon={BadgeDollarSign} label="Valor" value={`R$ ${Number(cashBreak.amount).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`} />
-            <InfoItem icon={ClipboardList} label="Número do Vale" value={cashBreak.voucher_number} />
+            {cashBreak.voucher_lost_value > 0 && (
+              <InfoItem icon={BadgeDollarSign} label="Valor do comprovante perdido" value={`R$ ${Number(cashBreak.voucher_lost_value).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`} />
+            )}
+            {/* Número do Vale removido */}
             <InfoItem icon={BadgeDollarSign} label="Status do Vale" badge={<Badge className={statusColors[cashBreak.voucher_status]}>{statusLabels[cashBreak.voucher_status]}</Badge>} />
+            {cashBreak.voucher_status === 'delivered' && (
+              <InfoItem icon={Calendar} label="Data de Entrega" value={cashBreak.payment_date ? format(new Date(cashBreak.payment_date), "dd/MM/yyyy", { locale: ptBR }) : "-"} />
+            )}
           </div>
 
           <Separator className="bg-slate-700" />

@@ -118,9 +118,8 @@ export default function CashBreakFilters({ filters, onChange, stores, cashiers, 
               </SelectTrigger>
               <SelectContent side="bottom" className="bg-slate-800 border-slate-600 text-white z-50">
                 <SelectItem value="all" className="text-white hover:bg-slate-700 cursor-pointer">Todos</SelectItem>
-                <SelectItem value="pending" className="text-white hover:bg-slate-700 cursor-pointer">Pendente</SelectItem>
-                <SelectItem value="paid" className="text-white hover:bg-slate-700 cursor-pointer">Pago</SelectItem>
-                <SelectItem value="cancelled" className="text-white hover:bg-slate-700 cursor-pointer">Cancelado</SelectItem>
+                <SelectItem value="not_delivered" className="text-white hover:bg-slate-700 cursor-pointer">Não entregue</SelectItem>
+                <SelectItem value="delivered" className="text-white hover:bg-slate-700 cursor-pointer">Entregue</SelectItem>
               </SelectContent>
             </Select>
           </div>

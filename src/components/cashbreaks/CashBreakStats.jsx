@@ -2,10 +2,12 @@ import { Card, CardContent } from "@/components/ui/card";
 import { TrendingDown, TrendingUp, AlertCircle, CheckCircle } from "lucide-react";
 
 export default function CashBreakStats({ cashBreaks }) {
-  const shortages = cashBreaks.filter(c => c.type === 'shortage');
-  const surpluses = cashBreaks.filter(c => c.type === 'surplus');
-  const pending = cashBreaks.filter(c => c.voucher_status === 'pending');
-  
+  // Desconsidera comprovantes entregues
+  const contabilizados = cashBreaks.filter(c => c.voucher_status !== 'delivered');
+  const shortages = contabilizados.filter(c => c.type === 'shortage');
+  const surpluses = contabilizados.filter(c => c.type === 'surplus');
+  const pending = contabilizados.filter(c => c.voucher_status === 'not_delivered' || c.voucher_status === 'pending');
+
   const totalShortage = shortages.reduce((sum, c) => sum + (c.amount || 0), 0);
   const totalSurplus = surpluses.reduce((sum, c) => sum + (c.amount || 0), 0);
   const totalPending = pending.reduce((sum, c) => sum + (c.amount || 0), 0);

@@ -35,13 +35,14 @@ export default function CashBreakForm({ open, onClose, cashBreak, stores, cashie
     cashier_name: "",
     type: "shortage",
     amount: "",
+    voucher_lost_value: "", // novo campo
     reason: "",
     voucher_number: "",
     voucher_status: "",
     payment_date: "",
     observations: "",
     shift: "",
-    payment_method: "cash" // novo campo
+    payment_method: "cash"
   });
   const [saving, setSaving] = useState(false);
   const [filteredCashiers, setFilteredCashiers] = useState([]);
@@ -49,7 +50,11 @@ export default function CashBreakForm({ open, onClose, cashBreak, stores, cashie
 
   useEffect(() => {
     if (cashBreak) {
-      setFormData({ ...cashBreak, amount: cashBreak.amount?.toString() || "" });
+      setFormData({
+        ...cashBreak,
+        amount: cashBreak.amount?.toString() || "",
+        voucher_lost_value: cashBreak.voucher_lost_value?.toString() || ""
+      });
     } else {
       const today = new Date().toISOString().split('T')[0];
       setFormData({
@@ -70,6 +75,18 @@ export default function CashBreakForm({ open, onClose, cashBreak, stores, cashie
       });
     }
   }, [cashBreak, open]);
+
+  // Sempre que mudar o método de pagamento, já define voucher_status corretamente (apenas ao adicionar)
+  useEffect(() => {
+    if (!cashBreak) {
+      if (formData.payment_method !== "cash" && formData.voucher_status !== "not_delivered") {
+        setFormData(prev => ({ ...prev, voucher_status: "not_delivered" }));
+      }
+      if (formData.payment_method === "cash" && formData.voucher_status !== "") {
+        setFormData(prev => ({ ...prev, voucher_status: "" }));
+      }
+    }
+  }, [formData.payment_method, cashBreak]);
 
   useEffect(() => {
     async function fetchEmployees() {
@@ -167,10 +184,11 @@ export default function CashBreakForm({ open, onClose, cashBreak, stores, cashie
     const selectedEmployee = filteredCashiers.find(e => String(e.id) === String(formData.cashier_id));
 
     let amount = formData.amount ? parseFloat(formData.amount) : 0;
-    // Se for comprovante perdido, sempre R$5 para todas as formas de pagamento exceto dinheiro
+    // Se for comprovante perdido (cartão/pix/outros), amount sempre R$5
     const formasDesconta5 = [
       "credit", "debit", "food", "pix", "pos", "client_credit", "other"
     ];
+    let voucher_lost_value = formData.voucher_lost_value ? parseFloat(formData.voucher_lost_value) : 0;
     if (formasDesconta5.includes(formData.payment_method)) {
       amount = 5;
     }
@@ -180,6 +198,7 @@ export default function CashBreakForm({ open, onClose, cashBreak, stores, cashie
     const data = {
       ...formData,
       amount,
+      voucher_lost_value,
       store_name: store?.name || "",
       cashier_name: selectedEmployee?.name || "",
       date: fixDate(formData.date),
@@ -215,7 +234,7 @@ export default function CashBreakForm({ open, onClose, cashBreak, stores, cashie
           </DialogTitle>
         </DialogHeader>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
           {/* Data */}
           <div className="space-y-2">
             <Label className="text-slate-300">Data *</Label>
@@ -235,28 +254,10 @@ export default function CashBreakForm({ open, onClose, cashBreak, stores, cashie
                 <SelectValue placeholder="Selecione a loja" />
               </SelectTrigger>
               <SelectContent side="bottom" className="bg-slate-800 border-slate-600 text-white z-50">
-                {/* Sempre mostra a loja salva, mesmo se inativa */}
+                {/* ...existing code... */}
                 {(() => {
                   let storeList = stores.filter(s => s.status === 'active');
-                  // Garante que a loja selecionada esteja na lista e no topo
-                  if (formData.store_id) {
-                    let selected = storeList.find(s => String(s.id) === String(formData.store_id));
-                    if (!selected) {
-                      selected = stores.find(s => String(s.id) === String(formData.store_id));
-                      if (!selected && formData.store_name) selected = { id: formData.store_id, code: '', name: formData.store_name };
-                      if (selected) storeList = [selected, ...storeList];
-                    } else {
-                      // Move para o topo
-                      storeList = [selected, ...storeList.filter(s => String(s.id) !== String(formData.store_id))];
-                    }
-                  }
-                  // Remove duplicatas
-                  const seen = new Set();
-                  storeList = storeList.filter(s => {
-                    if (seen.has(String(s.id))) return false;
-                    seen.add(String(s.id));
-                    return true;
-                  });
+                  // ...existing code...
                   return storeList.map(store => (
                     <SelectItem key={store.id} value={String(store.id)} className="text-white hover:bg-slate-700 cursor-pointer">
                       {store.code ? `${store.code} - ` : ''}{store.name}
@@ -289,22 +290,10 @@ export default function CashBreakForm({ open, onClose, cashBreak, stores, cashie
                 />
               </SelectTrigger>
               <SelectContent side="bottom" className="bg-slate-800 border-slate-600 text-white z-50">
-                {/* Sempre mostra o funcionário salvo, mesmo se não estiver no filtro */}
+                {/* ...existing code... */}
                 {(() => {
                   let cashierList = filteredCashiers;
-                  // Garante que o funcionário selecionado esteja no topo
-                  if (formData.cashier_id) {
-                    let selected = filteredCashiers.find(c => String(c.id) === String(formData.cashier_id));
-                    if (!selected) selected = { id: formData.cashier_id, name: formData.cashier_name || "Funcionário salvo" };
-                    cashierList = [selected, ...filteredCashiers.filter(c => String(c.id) !== String(formData.cashier_id))];
-                  }
-                  // Remove duplicatas
-                  const seen = new Set();
-                  cashierList = cashierList.filter(c => {
-                    if (seen.has(String(c.id))) return false;
-                    seen.add(String(c.id));
-                    return true;
-                  });
+                  // ...existing code...
                   return cashierList.map(cashier => (
                     <SelectItem key={cashier.id} value={String(cashier.id)} className="text-white hover:bg-slate-700 cursor-pointer">
                       {cashier.name}
@@ -354,18 +343,19 @@ export default function CashBreakForm({ open, onClose, cashBreak, stores, cashie
             </div>
           )}
 
-          {/* Valor do comprovante perdido (apenas para cartão/pix/outros) */}
+          {/* Valor do comprovante perdido (apenas informativo, para cartão/pix/outros) */}
           {formData.payment_method !== "cash" && (
             <div className="space-y-2">
-              <Label className="text-slate-300">Valor do comprovante perdido</Label>
+              <Label className="text-slate-300">Valor do comprovante perdido (informativo)</Label>
               <Input
                 type="number"
                 step="0.01"
-                value={formData.amount}
-                onChange={(e) => handleChange("amount", e.target.value)}
+                value={formData.voucher_lost_value}
+                onChange={(e) => handleChange("voucher_lost_value", e.target.value)}
                 className="bg-slate-800 border-slate-600 text-white"
                 placeholder="0.00"
               />
+              <span className="text-xs text-slate-400">O valor do vale descontado será sempre R$5,00</span>
             </div>
           )}
 
@@ -384,35 +374,9 @@ export default function CashBreakForm({ open, onClose, cashBreak, stores, cashie
             </div>
           )}
 
-          {/* Número do Vale */}
-          <div className="space-y-2">
-            <Label className="text-slate-300">Número do Vale</Label>
-            <Input
-              value={formData.voucher_number}
-              onChange={(e) => handleChange("voucher_number", e.target.value)}
-              className="bg-slate-800 border-slate-600 text-white"
-              placeholder="Ex: V001234"
-            />
-          </div>
+          {/* Número do Vale removido para alinhamento */}
 
-          {/* Status do Vale (apenas para cartão/pix/outros) */}
-          {formData.payment_method !== "cash" && (
-            <div className="space-y-2">
-              <Label className="text-slate-300">Status do Vale</Label>
-              <Select value={formData.voucher_status} onValueChange={(v) => handleChange("voucher_status", v)}>
-                <SelectTrigger className="bg-slate-800 border-slate-600 text-white">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent side="bottom" className="bg-slate-800 border-slate-600 text-white z-50">
-                  {statusOptions.map(opt => (
-                    <SelectItem key={opt.value} value={opt.value} className="text-white hover:bg-slate-700 cursor-pointer">
-                      {opt.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
+          {/* Status do Vale removido: agora sempre será 'Não entregue' ao adicionar, sem opção para o usuário. */}
 
           {formData.voucher_status === "paid" && (
             <div className="space-y-2">
@@ -451,9 +415,15 @@ export default function CashBreakForm({ open, onClose, cashBreak, stores, cashie
           <Button variant="outline" onClick={onClose} className="border-slate-600 text-slate-300 hover:bg-slate-800">
             Cancelar
           </Button>
-          <Button 
-            onClick={handleSubmit} 
-            disabled={saving || !formData.date || !formData.store_id || !formData.cashier_id || !formData.amount} 
+          <Button
+            onClick={handleSubmit}
+            disabled={
+              saving ||
+              !formData.date ||
+              !formData.store_id ||
+              !formData.cashier_id ||
+              (formData.payment_method === 'cash' ? !formData.amount : false)
+            }
             className="bg-blue-600 hover:bg-blue-700"
           >
             {saving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
