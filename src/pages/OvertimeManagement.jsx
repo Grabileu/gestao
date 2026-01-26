@@ -103,8 +103,8 @@ export default function OvertimeManagement() {
 
       {/* Filters */}
       <Card className="bg-slate-800/50 border-slate-700">
-        <CardContent className="p-4">
-          <div className="flex flex-wrap gap-4">
+        <CardContent className="p-4 flex items-end justify-between gap-4">
+          <div className="flex flex-wrap gap-4 flex-1">
             <div className="flex-1 min-w-[200px]">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
@@ -136,6 +136,11 @@ export default function OvertimeManagement() {
                 className="bg-slate-900 border-slate-600 text-white"
               />
             </div>
+          </div>
+          <div className="flex flex-col justify-end ml-auto">
+            <Button variant="ghost" onClick={() => setFilters({ search: '', type: 'all', month: '' })} className="text-slate-400 hover:text-white hover:bg-slate-700">
+              <span className="flex items-center"><svg xmlns='http://www.w3.org/2000/svg' className='h-4 w-4 mr-1' fill='none' viewBox='0 0 24 24' stroke='currentColor'><path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M6 18L18 6M6 6l12 12' /></svg>Limpar</span>
+            </Button>
           </div>
         </CardContent>
       </Card>

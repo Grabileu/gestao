@@ -11,7 +11,7 @@ export default function Reports() {
     department: "all",
     status: "all",
     contract_type: "all",
-    city: "",
+    store: "all",
     hire_date_from: "",
     hire_date_to: "",
     salary_min: "",
@@ -28,31 +28,27 @@ export default function Reports() {
     queryFn: () => base44.entities.Department.list()
   });
 
-  const isLoading = loadingEmployees || loadingDepartments;
+  const { data: stores = [], isLoading: loadingStores } = useQuery({
+    queryKey: ['stores'],
+    queryFn: () => base44.entities.Store.list()
+  });
+
+  const isLoading = loadingEmployees || loadingDepartments || loadingStores;
 
   const filteredEmployees = employees.filter(employee => {
     const matchesDepartment = filters.department === "all" || employee.department_id === filters.department;
     const matchesStatus = filters.status === "all" || employee.status === filters.status;
     const matchesContract = filters.contract_type === "all" || employee.contract_type === filters.contract_type;
-    
-    const matchesCity = !filters.city || 
-      employee.city?.toLowerCase().includes(filters.city.toLowerCase());
-    
+    const matchesStore = filters.store === "all" || String(employee.store_id) === String(filters.store);
     const matchesHireDateFrom = !filters.hire_date_from || 
       (employee.hire_date && new Date(employee.hire_date) >= new Date(filters.hire_date_from));
-    
     const matchesHireDateTo = !filters.hire_date_to || 
       (employee.hire_date && new Date(employee.hire_date) <= new Date(filters.hire_date_to));
-    
     const matchesSalaryMin = !filters.salary_min || 
       (employee.salary && employee.salary >= parseFloat(filters.salary_min));
-    
     const matchesSalaryMax = !filters.salary_max || 
       (employee.salary && employee.salary <= parseFloat(filters.salary_max));
-
-    return matchesDepartment && matchesStatus && matchesContract && 
-           matchesCity && matchesHireDateFrom && matchesHireDateTo && 
-           matchesSalaryMin && matchesSalaryMax;
+    return matchesDepartment && matchesStatus && matchesContract && matchesStore && matchesHireDateFrom && matchesHireDateTo && matchesSalaryMin && matchesSalaryMax;
   });
 
   const handleClearFilters = () => {
@@ -60,7 +56,7 @@ export default function Reports() {
       department: "all",
       status: "all",
       contract_type: "all",
-      city: "",
+      store: "all",
       hire_date_from: "",
       hire_date_to: "",
       salary_min: "",
@@ -144,6 +140,7 @@ export default function Reports() {
           filters={filters}
           onChange={setFilters}
           departments={departments}
+          stores={stores}
           onClear={handleClearFilters}
           onExport={handleExport}
         />

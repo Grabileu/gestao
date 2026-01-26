@@ -22,9 +22,9 @@ export default function Stores() {
     queryFn: () => base44.entities.Store.list()
   });
 
-  const { data: cashiers = [] } = useQuery({
-    queryKey: ['cashiers'],
-    queryFn: () => base44.entities.Cashier.list()
+  const { data: employees = [] } = useQuery({
+    queryKey: ['employees'],
+    queryFn: () => base44.entities.Employee.list()
   });
 
   const isLoading = loadingStores;
@@ -43,8 +43,8 @@ export default function Stores() {
     setEditingStore(null);
   };
 
-  const getCashierCount = (storeId) => {
-    return cashiers.filter(c => c.store_id === storeId && c.status === 'active').length;
+  const getEmployeeCount = (storeId) => {
+    return employees.filter(e => e.status === 'active' && String(e.store_id) === String(storeId)).length;
   };
 
   if (isLoading) {
@@ -140,8 +140,8 @@ export default function Stores() {
                       </div>
                       <div className="flex items-center gap-2 pt-3 border-t border-slate-700/50">
                         <Users className="w-4 h-4 text-blue-400" />
-                        <span className="text-white font-semibold">{getCashierCount(store.id)}</span>
-                        <span className="text-slate-400 text-sm">operador(es)</span>
+                        <span className="text-white font-semibold">{getEmployeeCount(store.id)}</span>
+                        <span className="text-slate-400 text-sm">Funcionário(s)</span>
                       </div>
                     </CardContent>
                   </Card>

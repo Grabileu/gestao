@@ -143,8 +143,10 @@ export default function Absences() {
       {/* Filters */}
       <Card className="bg-slate-800/50 border-slate-700">
         <CardContent className="p-4">
-          <div className="flex flex-wrap gap-4">
+          <div className="flex flex-wrap gap-4 items-end justify-between">
+            {/* Busca por funcionário */}
             <div className="flex-1 min-w-50">
+              <label className="text-xs text-slate-500 mb-1 block">Funcionário</label>
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                 <Input
@@ -155,7 +157,39 @@ export default function Absences() {
                 />
               </div>
             </div>
+            {/* Data Inicial */}
+            <div className="w-40">
+              <label className="text-xs text-slate-500 mb-1 block">Data Inicial</label>
+              <Input
+                type="date"
+                value={filters.dateFrom || ''}
+                onChange={e => setFilters(prev => ({ ...prev, dateFrom: e.target.value }))}
+                className="bg-slate-900 border-slate-600 text-white"
+              />
+            </div>
+            {/* Data Final */}
+            <div className="w-40">
+              <label className="text-xs text-slate-500 mb-1 block">Data Final</label>
+              <Input
+                type="date"
+                value={filters.dateTo || ''}
+                onChange={e => setFilters(prev => ({ ...prev, dateTo: e.target.value }))}
+                className="bg-slate-900 border-slate-600 text-white"
+              />
+            </div>
+            {/* Mês Referência */}
             <div className="w-45">
+              <label className="text-xs text-slate-500 mb-1 block">Mês Referência</label>
+              <Input
+                type="month"
+                value={filters.month}
+                onChange={(e) => setFilters(prev => ({ ...prev, month: e.target.value }))}
+                className="bg-slate-900 border-slate-600 text-white"
+              />
+            </div>
+            {/* Tipo */}
+            <div className="w-45">
+              <label className="text-xs text-slate-500 mb-1 block">Tipo</label>
               <Select value={filters.type} onValueChange={(v) => setFilters(prev => ({ ...prev, type: v }))}>
                 <SelectTrigger className="bg-slate-900 border-slate-600 text-white">
                   <SelectValue placeholder="Tipo" />
@@ -168,13 +202,16 @@ export default function Absences() {
                 </SelectContent>
               </Select>
             </div>
-            <div className="w-45">
-              <Input
-                type="month"
-                value={filters.month}
-                onChange={(e) => setFilters(prev => ({ ...prev, month: e.target.value }))}
-                className="bg-slate-900 border-slate-600 text-white"
-              />
+            {/* Botão Limpar */}
+            <div className="flex-1 flex justify-end min-w-40">
+              <Button
+                variant="ghost"
+                className="text-slate-400 hover:text-white hover:bg-slate-700"
+                onClick={() => setFilters({ search: '', type: 'all', month: '', dateFrom: '', dateTo: '' })}
+                type="button"
+              >
+                <span className="flex items-center"><svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>Limpar</span>
+              </Button>
             </div>
           </div>
         </CardContent>

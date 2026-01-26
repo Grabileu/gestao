@@ -31,8 +31,8 @@ export default function CashBreakForm({ open, onClose, cashBreak, stores, cashie
     date: "",
     store_id: "",
     store_name: "",
-    cashier_id: "",
-    cashier_name: "",
+    employee_id: "",
+    employee_name: "",
     type: "shortage",
     amount: "",
     voucher_lost_value: "", // novo campo
@@ -61,8 +61,8 @@ export default function CashBreakForm({ open, onClose, cashBreak, stores, cashie
         date: today,
         store_id: "",
         store_name: "",
-        cashier_id: "",
-        cashier_name: "",
+        employee_id: "",
+        employee_name: "",
         type: "shortage",
         amount: "",
         reason: "",
@@ -121,12 +121,12 @@ export default function CashBreakForm({ open, onClose, cashBreak, stores, cashie
         .eq("status", "active");
       employees = employees || [];
       // Se estiver editando, garante que o funcionário salvo está na lista
-      if (cashBreak && cashBreak.cashier_id && !employees.find(e => String(e.id) === String(cashBreak.cashier_id))) {
+      if (cashBreak && cashBreak.employee_id && !employees.find(e => String(e.id) === String(cashBreak.employee_id))) {
         // Busca o funcionário pelo id
         const { data: emp } = await supabase
           .from("employee")
           .select("id, full_name, store_id, status, department_id")
-          .eq("id", cashBreak.cashier_id)
+          .eq("id", cashBreak.employee_id)
           .single();
         if (emp) employees.push(emp);
       }
@@ -147,16 +147,16 @@ export default function CashBreakForm({ open, onClose, cashBreak, stores, cashie
           ...next,
           store_id: value,
           store_name: store?.name || "",
-          cashier_id: "",
-          cashier_name: ""
+          employee_id: "",
+          employee_name: ""
         };
       }
-      if (field === "cashier_id") {
+      if (field === "cashier_id" || field === "employee_id") {
         const cashier = cashiers.find(c => String(c.id) === String(value));
         next = {
           ...next,
-          cashier_id: value,
-          cashier_name: cashier?.name || ""
+          employee_id: value,
+          employee_name: cashier?.name || ""
         };
       }
       // Corrige textarea de observações
@@ -181,7 +181,7 @@ export default function CashBreakForm({ open, onClose, cashBreak, stores, cashie
     // Busca os nomes corretos antes de salvar
     const store = stores.find(s => String(s.id) === String(formData.store_id));
     // Busca o funcionário selecionado na lista de filteredCashiers
-    const selectedEmployee = filteredCashiers.find(e => String(e.id) === String(formData.cashier_id));
+    const selectedEmployee = filteredCashiers.find(e => String(e.id) === String(formData.employee_id));
 
     let amount = formData.amount ? parseFloat(formData.amount) : 0;
     // Se for comprovante perdido (cartão/pix/outros), amount sempre R$5
@@ -200,7 +200,7 @@ export default function CashBreakForm({ open, onClose, cashBreak, stores, cashie
       amount,
       voucher_lost_value,
       store_name: store?.name || "",
-      cashier_name: selectedEmployee?.name || "",
+      employee_name: selectedEmployee?.name || "",
       date: fixDate(formData.date),
       payment_date: fixDate(formData.payment_date)
     };
@@ -272,8 +272,8 @@ export default function CashBreakForm({ open, onClose, cashBreak, stores, cashie
           <div className="space-y-2">
             <Label className="text-slate-300">Operador de Caixa *</Label>
             <Select 
-              value={formData.cashier_id} 
-              onValueChange={(v) => handleChange("cashier_id", v)}
+              value={formData.employee_id} 
+              onValueChange={(v) => handleChange("employee_id", v)}
               disabled={!formData.store_id || loadingEmployees}
             >
               <SelectTrigger className="bg-slate-800 border-slate-600 text-white">
@@ -421,7 +421,7 @@ export default function CashBreakForm({ open, onClose, cashBreak, stores, cashie
               saving ||
               !formData.date ||
               !formData.store_id ||
-              !formData.cashier_id ||
+              !formData.employee_id ||
               (formData.payment_method === 'cash' ? !formData.amount : false)
             }
             className="bg-blue-600 hover:bg-blue-700"

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Filter, X, Download } from "lucide-react";
 
-export default function ReportFilters({ filters, onChange, departments, onClear, onExport }) {
+export default function ReportFilters({ filters, onChange, departments, stores = [], onClear, onExport }) {
   const handleChange = (field, value) => {
     onChange({ ...filters, [field]: value });
   };
@@ -13,6 +13,7 @@ export default function ReportFilters({ filters, onChange, departments, onClear,
   const hasFilters = filters.department !== "all" || 
                      filters.status !== "all" || 
                      filters.contract_type !== "all" ||
+                     filters.store !== "all" ||
                      filters.hire_date_from ||
                      filters.hire_date_to ||
                      filters.salary_min ||
@@ -27,12 +28,9 @@ export default function ReportFilters({ filters, onChange, departments, onClear,
             <h3 className="text-white font-semibold">Filtros do Relatório</h3>
           </div>
           <div className="flex gap-2">
-            {hasFilters && (
-              <Button variant="ghost" onClick={onClear} className="text-slate-400 hover:text-white hover:bg-slate-700">
-                <X className="w-4 h-4 mr-2" />
-                Limpar Filtros
-              </Button>
-            )}
+            <Button variant="ghost" onClick={onClear} className="text-slate-400 hover:text-white hover:bg-slate-700">
+              <span className="flex items-center"><X className="w-4 h-4 mr-2" />Limpar</span>
+            </Button>
             <Button onClick={onExport} className="bg-emerald-600 hover:bg-emerald-700">
               <Download className="w-4 h-4 mr-2" />
               Exportar CSV
@@ -91,13 +89,20 @@ export default function ReportFilters({ filters, onChange, departments, onClear,
           </div>
 
           <div className="flex flex-col space-y-2">
-            <span className="text-slate-400 text-xs mb-1 ml-1">Cidade</span>
-            <Input
-              value={filters.city || ""}
-              onChange={(e) => handleChange("city", e.target.value)}
-              className="bg-slate-800 border-slate-600 text-white placeholder:text-slate-500"
-              placeholder="Filtrar por cidade"
-            />
+            <span className="text-slate-400 text-xs mb-1 ml-1">Loja</span>
+            <Select value={filters.store} onValueChange={(v) => handleChange("store", v)}>
+              <SelectTrigger className="bg-slate-800 border-slate-600 text-white">
+                <SelectValue placeholder="Todas" />
+              </SelectTrigger>
+              <SelectContent side="bottom" className="bg-slate-800 border-slate-600 text-white z-50">
+                <SelectItem value="all" className="text-white hover:bg-slate-700 cursor-pointer">Todas</SelectItem>
+                {stores.map(store => (
+                  <SelectItem key={store.id} value={String(store.id)} className="text-white hover:bg-slate-700 cursor-pointer">
+                    {store.code} - {store.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="flex flex-col space-y-2">

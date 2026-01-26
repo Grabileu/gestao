@@ -31,18 +31,18 @@ export default function CashBreakReports() {
     queryFn: () => base44.entities.Store.list()
   });
 
-  const { data: cashiers = [], isLoading: loadingCashiers } = useQuery({
-    queryKey: ['cashiers'],
-    queryFn: () => base44.entities.Cashier.list()
+  const { data: employees = [], isLoading: loadingEmployees } = useQuery({
+    queryKey: ['employees'],
+    queryFn: () => base44.entities.Employee.list()
   });
 
-  const isLoading = loadingBreaks || loadingStores || loadingCashiers;
+  const isLoading = loadingBreaks || loadingStores || loadingEmployees;
 
   // Desconsidera comprovantes entregues
   const filteredBreaks = cashBreaks.filter(item => {
     if (item.voucher_status === 'delivered') return false;
     const matchesStore = filters.store === "all" || item.store_id === filters.store;
-    const matchesCashier = filters.cashier === "all" || item.cashier_id === filters.cashier;
+    const matchesCashier = filters.cashier === "all" || item.employee_id === filters.cashier;
     const matchesType = filters.type === "all" || item.type === filters.type;
     const matchesStatus = filters.status === "all" || item.voucher_status === filters.status;
     const matchesDateFrom = !filters.date_from || 
@@ -65,18 +65,25 @@ export default function CashBreakReports() {
     };
   }).filter(d => d.faltas > 0 || d.sobras > 0);
 
-  // Dados por operador
-  const cashierData = cashiers.map(cashier => {
-    const cashierBreaks = filteredBreaks.filter(b => String(b.cashier_id) === String(cashier.id));
-    const shortages = cashierBreaks.filter(b => b.type === 'shortage');
-    return {
-      name: cashier.name,
-      store: cashier.store_name,
-      count: cashierBreaks.length,
-      shortageAmount: shortages.reduce((sum, b) => sum + (b.amount || 0), 0),
-      shortageCount: shortages.length
-    };
-  }).filter(d => d.count > 0).sort((a, b) => b.shortageAmount - a.shortageAmount);
+  // Dados por operador (caixas reais)
+  const cashierData = employees
+    .filter(emp => emp.status === 'active')
+    .map(emp => {
+      const cashierBreaks = filteredBreaks.filter(b => String(b.employee_id) === String(emp.id));
+      const totalLoss = cashierBreaks.filter(b => b.type === 'shortage').reduce((sum, b) => sum + (b.amount || 0), 0);
+      const totalSurplus = cashierBreaks.filter(b => b.type === 'surplus').reduce((sum, b) => sum + (b.amount || 0), 0);
+      const totalAmount = cashierBreaks.reduce((sum, b) => sum + (b.amount || 0), 0);
+      return {
+        name: emp.full_name,
+        store: emp.store_name,
+        count: cashierBreaks.length,
+        totalLoss,
+        totalSurplus,
+        totalAmount
+      };
+    })
+    .filter(d => d.count > 0)
+    .sort((a, b) => b.totalAmount - a.totalAmount);
 
   // Dados para pie chart por tipo
   const typeData = [
@@ -107,7 +114,7 @@ export default function CashBreakReports() {
     const rows = filteredBreaks.map(b => [
       b.date || "",
       b.store_name || "",
-      b.cashier_name || "",
+      b.employee_name || "",
       shiftLabels[b.shift] || "",
       typeLabels[b.type] || "",
       b.amount || 0,
@@ -157,7 +164,13 @@ export default function CashBreakReports() {
           filters={filters}
           onChange={setFilters}
           stores={stores}
-          cashiers={cashiers}
+          cashiers={employees.filter(e => {
+            if (!e || e.status !== 'active') return false;
+            return (
+              (e.department_name && e.department_name.toUpperCase() === 'CAIXAS') ||
+              (e.position && e.position.toLowerCase().includes('operador') && e.position.toLowerCase().includes('caixa'))
+            );
+          })}
           onClear={handleClearFilters}
           onExport={handleExport}
           showExport={true}
@@ -250,8 +263,9 @@ export default function CashBreakReports() {
                   <TableHead className="text-slate-400">Operador</TableHead>
                   <TableHead className="text-slate-400">Loja</TableHead>
                   <TableHead className="text-slate-400">Ocorrências</TableHead>
-                  <TableHead className="text-slate-400">Faltas</TableHead>
-                  <TableHead className="text-slate-400">Total Faltas</TableHead>
+                  <TableHead className="text-slate-400">Total Perdas</TableHead>
+                  <TableHead className="text-slate-400">Total Sobras</TableHead>
+                  <TableHead className="text-slate-400">Total Vale</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -272,13 +286,14 @@ export default function CashBreakReports() {
                           {item.count}
                         </Badge>
                       </TableCell>
-                      <TableCell>
-                        <Badge className="bg-rose-500/20 text-rose-400 border-rose-500/30">
-                          {item.shortageCount}
-                        </Badge>
-                      </TableCell>
                       <TableCell className="text-rose-400 font-semibold">
-                        R$ {item.shortageAmount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                        R$ {item.totalLoss.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                      </TableCell>
+                      <TableCell className="text-green-400 font-semibold">
+                        R$ {item.totalSurplus.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                      </TableCell>
+                      <TableCell className="text-blue-400 font-semibold">
+                        R$ {item.totalAmount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                       </TableCell>
                     </TableRow>
                   ))

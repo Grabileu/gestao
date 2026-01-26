@@ -246,6 +246,27 @@ export default function AbsenceReports() {
         </CardHeader>
         <CardContent className="pt-2">
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+            {/* Data Inicial */}
+            <div>
+              <label className="text-xs text-slate-500 mb-1 block">Data Inicial</label>
+              <Input
+                type="date"
+                value={filters.dateFrom}
+                onChange={(e) => setFilters(p => ({ ...p, dateFrom: e.target.value }))}
+                className="bg-slate-800 border-slate-600 text-white h-10"
+              />
+            </div>
+            {/* Data Final */}
+            <div>
+              <label className="text-xs text-slate-500 mb-1 block">Data Final</label>
+              <Input
+                type="date"
+                value={filters.dateTo}
+                onChange={(e) => setFilters(p => ({ ...p, dateTo: e.target.value }))}
+                className="bg-slate-800 border-slate-600 text-white h-10"
+              />
+            </div>
+            {/* Mês Referência */}
             <div>
               <label className="text-xs text-slate-500 mb-1 block">Mês Referência</label>
               <Input
@@ -255,6 +276,7 @@ export default function AbsenceReports() {
                 className="bg-slate-800 border-slate-600 text-white h-10"
               />
             </div>
+            {/* Tipo */}
             <div>
               <label className="text-xs text-slate-500 mb-1 block">Tipo</label>
               <Select value={filters.type} onValueChange={(v) => setFilters(p => ({ ...p, type: v }))}>
@@ -268,6 +290,7 @@ export default function AbsenceReports() {
                 </SelectContent>
               </Select>
             </div>
+            {/* Funcionário */}
             <div>
               <label className="text-xs text-slate-500 mb-1 block">Funcionário</label>
               <Select value={filters.employee} onValueChange={(v) => setFilters(p => ({ ...p, employee: v }))}>
@@ -280,6 +303,7 @@ export default function AbsenceReports() {
                 </SelectContent>
               </Select>
             </div>
+            {/* Departamento */}
             <div>
               <label className="text-xs text-slate-500 mb-1 block">Departamento</label>
               <Select value={filters.department} onValueChange={(v) => setFilters(p => ({ ...p, department: v }))}>
@@ -291,24 +315,6 @@ export default function AbsenceReports() {
                   ))}
                 </SelectContent>
               </Select>
-            </div>
-            <div>
-              <label className="text-xs text-slate-500 mb-1 block">Data Inicial</label>
-              <Input
-                type="date"
-                value={filters.dateFrom}
-                onChange={(e) => setFilters(p => ({ ...p, dateFrom: e.target.value }))}
-                className="bg-slate-800 border-slate-600 text-white h-10"
-              />
-            </div>
-            <div>
-              <label className="text-xs text-slate-500 mb-1 block">Data Final</label>
-              <Input
-                type="date"
-                value={filters.dateTo}
-                onChange={(e) => setFilters(p => ({ ...p, dateTo: e.target.value }))}
-                className="bg-slate-800 border-slate-600 text-white h-10"
-              />
             </div>
           </div>
         </CardContent>

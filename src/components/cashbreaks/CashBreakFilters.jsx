@@ -28,8 +28,7 @@ export default function CashBreakFilters({ filters, onChange, stores, cashiers, 
           <div className="flex gap-2">
             {hasFilters && (
               <Button variant="ghost" onClick={onClear} className="text-slate-400 hover:text-white hover:bg-slate-700">
-                <X className="w-4 h-4 mr-2" />
-                Limpar
+                <span className="flex items-center"><X className="w-4 h-4 mr-2" />Limpar</span>
               </Button>
             )}
             {showExport && (
@@ -89,7 +88,7 @@ export default function CashBreakFilters({ filters, onChange, stores, cashiers, 
                 <SelectItem value="all" className="text-white hover:bg-slate-700 cursor-pointer">Todos</SelectItem>
                 {cashiers.map(cashier => (
                   <SelectItem key={cashier.id} value={String(cashier.id)} className="text-white hover:bg-slate-700 cursor-pointer">
-                    {cashier.name}
+                    {cashier.full_name || cashier.name}
                   </SelectItem>
                 ))}
               </SelectContent>

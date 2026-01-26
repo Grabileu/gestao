@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44SupabaseClient";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ShoppingCart, TrendingUp, Package, Users } from "lucide-react";
@@ -14,6 +15,8 @@ const COLORS = ["#10b981", "#3b82f6", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899"
 
 export default function CeasaReports() {
   const [filters, setFilters] = useState({
+    date_start: "",
+    date_end: "",
     month: moment().format("YYYY-MM"),
     supplier: "all"
   });
@@ -31,7 +34,9 @@ export default function CeasaReports() {
   const filteredPurchases = purchases.filter(p => {
     const monthMatch = !filters.month || p.date?.startsWith(filters.month);
     const supplierMatch = filters.supplier === "all" || p.supplier_id === filters.supplier;
-    return monthMatch && supplierMatch;
+    const startMatch = !filters.date_start || moment(p.date).isSameOrAfter(filters.date_start);
+    const endMatch = !filters.date_end || moment(p.date).isSameOrBefore(filters.date_end);
+    return monthMatch && supplierMatch && startMatch && endMatch;
   });
 
   // Stats
@@ -97,7 +102,25 @@ export default function CeasaReports() {
       {/* Filters */}
       <Card className="bg-slate-800/50 border-slate-700">
         <CardContent className="p-4">
-          <div className="flex gap-4">
+          <div className="flex gap-4 flex-wrap items-end justify-between">
+            <div className="flex flex-col">
+              <label className="text-xs text-slate-500 mb-1 block">Data Início</label>
+              <Input
+                type="date"
+                value={filters.date_start}
+                onChange={(e) => setFilters(p => ({ ...p, date_start: e.target.value }))}
+                className="bg-slate-800 border-slate-600 text-white h-10"
+              />
+            </div>
+            <div className="flex flex-col">
+              <label className="text-xs text-slate-500 mb-1 block">Data Fim</label>
+              <Input
+                type="date"
+                value={filters.date_end}
+                onChange={(e) => setFilters(p => ({ ...p, date_end: e.target.value }))}
+                className="bg-slate-800 border-slate-600 text-white h-10"
+              />
+            </div>
             <div className="flex flex-col">
               <label className="text-xs text-slate-500 mb-1 block">Mês</label>
               <Input
@@ -116,6 +139,12 @@ export default function CeasaReports() {
                   {suppliers.map(s => <SelectItem key={s.id} value={String(s.id)} className="text-white hover:bg-slate-700 cursor-pointer">{s.name}</SelectItem>)}
                 </SelectContent>
               </Select>
+            </div>
+            {/* Botão Limpar */}
+            <div className="flex flex-col justify-end ml-auto">
+              <Button variant="ghost" onClick={() => setFilters({ date_start: '', date_end: '', month: '', supplier: 'all' })} className="text-slate-400 hover:text-white hover:bg-slate-700">
+                <span className="flex items-center"><svg xmlns='http://www.w3.org/2000/svg' className='h-4 w-4 mr-1' fill='none' viewBox='0 0 24 24' stroke='currentColor'><path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M6 18L18 6M6 6l12 12' /></svg>Limpar</span>
+              </Button>
             </div>
           </div>
         </CardContent>

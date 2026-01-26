@@ -3,15 +3,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button";
 import { Search, X } from "lucide-react";
 
-export default function EmployeeFilters({ filters, onChange, departments, onClear }) {
+export default function EmployeeFilters({ filters, onChange, stores, onClear }) {
   const handleChange = (field, value) => {
     onChange({ ...filters, [field]: value });
   };
 
-  const hasFilters = filters.search || filters.department || filters.status || filters.contract_type;
+  const hasFilters = filters.search || filters.store || filters.status || filters.contract_type;
 
   return (
-    <div className="flex flex-wrap gap-4 items-end">
+    <div className="flex flex-wrap gap-4 items-end justify-between">
       <div className="flex flex-col min-w-64 flex-1">
         <label className="text-slate-400 text-xs mb-1 ml-1">Busca</label>
         <div className="relative">
@@ -26,16 +26,20 @@ export default function EmployeeFilters({ filters, onChange, departments, onClea
       </div>
 
       <div className="flex flex-col">
-        <label className="text-slate-400 text-xs mb-1 ml-1">Departamento</label>
-        <Select value={filters.department} onValueChange={(v) => handleChange("department", v)}>
+        <label className="text-slate-400 text-xs mb-1 ml-1">Loja</label>
+        <Select
+          key={filters.store} // força re-render ao limpar
+          value={filters.store}
+          onValueChange={(v) => handleChange("store", v)}
+        >
           <SelectTrigger className="w-44 bg-slate-800 border-slate-600 text-white">
-            <SelectValue placeholder="Departamento" />
+            <SelectValue placeholder="Loja" />
           </SelectTrigger>
           <SelectContent side="bottom" className="bg-slate-800 border-slate-600 text-white z-50">
-            <SelectItem value="all" className="text-white hover:bg-slate-700 cursor-pointer">Todos</SelectItem>
-            {departments.map(dept => (
-              <SelectItem key={dept.id} value={String(dept.id)} className="text-white hover:bg-slate-700 cursor-pointer">
-                {dept.name}
+            <SelectItem value="all" className="text-white hover:bg-slate-700 cursor-pointer">Todas</SelectItem>
+            {stores.map(store => (
+              <SelectItem key={store.id} value={String(store.id)} className="text-white hover:bg-slate-700 cursor-pointer">
+                {store.code} - {store.name}
               </SelectItem>
             ))}
           </SelectContent>
@@ -75,12 +79,11 @@ export default function EmployeeFilters({ filters, onChange, departments, onClea
         </Select>
       </div>
 
-      {hasFilters && (
-        <Button variant="ghost" onClick={onClear} className="text-slate-400 hover:text-white hover:bg-slate-700 mb-1">
-          <X className="w-4 h-4 mr-2" />
-          Limpar
+      <div className="flex flex-col justify-end ml-auto">
+        <Button variant="ghost" onClick={onClear} className="text-slate-400 hover:text-white hover:bg-slate-700">
+          <span className="flex items-center"><X className="w-4 h-4 mr-2" />Limpar</span>
         </Button>
-      )}
+      </div>
     </div>
   );
 }

@@ -13,6 +13,8 @@ export default function CashBreakStats({ cashBreaks }) {
   const totalPending = pending.reduce((sum, c) => sum + (c.amount || 0), 0);
   const balance = totalSurplus - totalShortage;
 
+  const totalVales = totalShortage + totalSurplus;
+  const totalValesCount = shortages.length + surpluses.length;
   const stats = [
     {
       icon: TrendingDown,
@@ -40,11 +42,11 @@ export default function CashBreakStats({ cashBreaks }) {
     },
     {
       icon: CheckCircle,
-      label: "Saldo",
-      value: `R$ ${Math.abs(balance).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
-      count: balance >= 0 ? "Positivo" : "Negativo",
-      color: balance >= 0 ? "text-emerald-400" : "text-rose-400",
-      bgColor: balance >= 0 ? "bg-emerald-500/20" : "bg-rose-500/20"
+      label: "Total de Vales",
+      value: `R$ ${totalVales.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
+      count: `${totalValesCount} vale(s)`,
+      color: "text-blue-400",
+      bgColor: "bg-blue-500/20"
     }
   ];
 

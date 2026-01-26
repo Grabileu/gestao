@@ -15,7 +15,7 @@ export default function Employees() {
   const [viewingEmployee, setViewingEmployee] = useState(null);
   const [filters, setFilters] = useState({
     search: "",
-    department: "all",
+    store: "all",
     status: "all",
     contract_type: "all"
   });
@@ -44,11 +44,11 @@ export default function Employees() {
       employee.email?.toLowerCase().includes(searchLower) ||
       employee.position?.toLowerCase().includes(searchLower);
 
-    const matchesDepartment = filters.department === "all" || String(employee.department_id) === String(filters.department);
+    const matchesStore = filters.store === "all" || String(employee.store_id) === String(filters.store);
     const matchesStatus = filters.status === "all" || employee.status === filters.status;
     const matchesContract = filters.contract_type === "all" || employee.contract_type === filters.contract_type;
 
-    return matchesSearch && matchesDepartment && matchesStatus && matchesContract;
+    return matchesSearch && matchesStore && matchesStatus && matchesContract;
   });
 
   const handleOpenForm = (employee = null) => {
@@ -69,7 +69,7 @@ export default function Employees() {
   const handleClearFilters = () => {
     setFilters({
       search: "",
-      department: "all",
+      store: "all",
       status: "all",
       contract_type: "all"
     });
@@ -98,7 +98,7 @@ export default function Employees() {
         <EmployeeFilters 
           filters={filters}
           onChange={setFilters}
-          departments={departments}
+          stores={stores}
           onClear={handleClearFilters}
         />
 
