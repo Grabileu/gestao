@@ -1,3 +1,11 @@
+// Função utilitária para parse seguro de números, aceita vírgula ou ponto
+function safeNumber(v) {
+  if (typeof v === 'string') {
+    v = v.replace(',', '.');
+  }
+  const n = parseFloat(v);
+  return isNaN(n) ? 0 : n;
+}
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44SupabaseClient";
@@ -106,12 +114,12 @@ export default function CeasaPurchases() {
         product_name: product.name,
         price_type: product.price_type,
         box_weight_kg: product.box_weight_kg || "",
-        unit_type: product.unit_type === 'box' || product.unit_type === 'fardo' ? 'box' : (unitMap[product.price_type] || "kg"),
+        unit_type: product.unit_type,
         quantity: "",
         unit_price: product.default_price?.toString() || "",
-        boxes: "",
-        price_per_box: "",
-        cost_per_kg: "",
+        boxes: product.price_type === 'per_box' ? "" : undefined,
+        price_per_box: product.price_type === 'per_box' ? "" : undefined,
+        cost_per_kg: product.price_type === 'per_box' && product.box_weight_kg ? "" : undefined,
         total_price: 0,
         unit_custom: unit_custom
       });
@@ -124,59 +132,52 @@ export default function CeasaPurchases() {
 
     // Cenário 1: Preço por kg (compra direto em kg)
     if (product.price_type === "per_kg") {
-      const kg = parseFloat(newItem.quantity) || 0;
-      const priceKg = parseFloat(newItem.unit_price) || 0;
+      const kg = safeNumber(newItem.quantity);
+      const priceKg = safeNumber(newItem.unit_price);
       return kg * priceKg;
     }
 
     // Cenário 2: Preço por caixa COM peso fixo (ex: tomate 25kg/caixa)
     if (product.price_type === "per_box" && product.box_weight_kg) {
-      const boxes = parseFloat(newItem.boxes) || 0;
-      const pricePerBox = parseFloat(newItem.price_per_box) || 0;
+      const boxes = safeNumber(newItem.boxes);
+      const pricePerBox = safeNumber(newItem.price_per_box);
       return boxes * pricePerBox;
     }
 
     // Cenário 3: Preço por caixa SEM peso fixo
     if (product.price_type === "per_box" && !product.box_weight_kg) {
-      const boxes = parseFloat(newItem.boxes) || 0;
-      const pricePerBox = parseFloat(newItem.price_per_box) || 0;
+      const boxes = safeNumber(newItem.boxes);
+      const pricePerBox = safeNumber(newItem.price_per_box);
       return boxes * pricePerBox;
     }
 
     // Outros tipos (unidade, dúzia)
     const qty = parseFloat(newItem.quantity) || 0;
-    const price = parseFloat(newItem.unit_price) || 0;
+    const price = safeNumber(newItem.unit_price);
     return qty * price;
   };
 
   const handleAddItem = () => {
-    if (!newItem.product_id) return;
-    
+    if (!newItem.product_id) {
+      alert("Selecione o produto.");
+      return;
+    }
     const product = products.find(p => String(p.id) === String(newItem.product_id));
-    if (!product) return;
-
+    if (!product) {
+      alert("Produto não encontrado.");
+      return;
+    }
     let itemData = {};
     const itemTotal = calculateItemTotal();
-
-    // Cenário 1: Preço por kg
-    if (product.price_type === "per_kg") {
-      if (!newItem.quantity || !newItem.unit_price) return;
-      itemData = {
-        product_id: newItem.product_id,
-        product_name: newItem.product_name,
-        price_type: "per_kg",
-        quantity: parseFloat(newItem.quantity),
-        unit_type: "kg",
-        unit_price: parseFloat(newItem.unit_price),
-        total_price: itemTotal
-      };
-    }
     // Cenário 2: Preço por caixa COM peso fixo
-    else if (product.price_type === "per_box" && product.box_weight_kg) {
-      if (!newItem.boxes || !newItem.price_per_box) return;
-      const boxes = parseFloat(newItem.boxes);
-      const pricePerBox = parseFloat(newItem.price_per_box);
+    if (product.price_type === "per_box" && product.box_weight_kg) {
+      const boxes = safeNumber(newItem.boxes);
+      const pricePerBox = safeNumber(newItem.price_per_box);
       const boxWeight = parseFloat(product.box_weight_kg);
+      if (!boxWeight || boxWeight <= 0) {
+        alert("Peso da caixa inválido no cadastro do produto.");
+        return;
+      }
       const costPerKg = pricePerBox / boxWeight;
       const totalKg = boxes * boxWeight;
       itemData = {
@@ -197,39 +198,42 @@ export default function CeasaPurchases() {
     }
     // Cenário 3: Preço por caixa SEM peso fixo
     else if (product.price_type === "per_box") {
-      if (!newItem.boxes || !newItem.price_per_box) return;
+      if (!newItem.boxes || !newItem.price_per_box) {
+        alert("Preencha quantidade de caixas e preço por caixa.");
+        return;
+      }
       itemData = {
         product_id: newItem.product_id,
         product_name: newItem.product_name,
         price_type: "per_box",
-        boxes: parseFloat(newItem.boxes),
+        boxes: safeNumber(newItem.boxes),
         unit_type: "box",
-        quantity: parseFloat(newItem.boxes),
-        unit_price: parseFloat(newItem.price_per_box),
+        quantity: safeNumber(newItem.boxes),
+        unit_price: safeNumber(newItem.price_per_box),
         total_price: itemTotal,
         unit_custom: newItem.unit_custom || "CX"
       };
     }
     // Outros tipos
     else {
-      if (!newItem.quantity || !newItem.unit_price) return;
+      if (!newItem.quantity || !newItem.unit_price) {
+        alert("Preencha quantidade e preço.");
+        return;
+      }
       const unitMap = { per_unit: "unit", per_dozen: "dozen" };
-      // Se o produto não for per_box, mas tiver unit_custom preenchido, priorizar unit_custom
       itemData = {
         product_id: newItem.product_id,
         product_name: newItem.product_name,
         price_type: product.price_type,
-        quantity: parseFloat(newItem.quantity),
+        quantity: safeNumber(newItem.quantity),
         unit_type: unitMap[product.price_type] || (newItem.unit_custom ? newItem.unit_custom : "unit"),
-        unit_price: parseFloat(newItem.unit_price),
+        unit_price: safeNumber(newItem.unit_price),
         total_price: itemTotal,
         ...(newItem.unit_custom ? { unit_custom: newItem.unit_custom } : {})
       };
     }
-    
     const newItems = [...form.items, itemData];
     const totalAmount = newItems.reduce((sum, i) => sum + i.total_price, 0);
-    
     setForm(prev => ({ ...prev, items: newItems, total_amount: totalAmount }));
     setNewItem({ product_id: "", product_name: "", price_type: "", box_weight_kg: "", quantity: "", unit_type: "kg", unit_price: "", boxes: "", price_per_box: "", cost_per_kg: "", total_price: 0 });
   };
@@ -494,23 +498,61 @@ export default function CeasaPurchases() {
                                               {item.product_name}
                                               {item.price_type === "per_box_fixed" && item.box_weight_kg && (
                                                 <div className="text-xs text-slate-400 mt-1">
-                                                  {item.total_kg?.toFixed(2)} kg total | {formatCurrency(item.cost_per_kg)}/kg
+                                                  {(() => {
+                                                    const safe = v => v === '' || v === undefined || v === null ? 0 : parseFloat(v);
+                                                    const boxWeight = safe(item.box_weight_kg);
+                                                    const boxes = safe(item.boxes);
+                                                    const pricePerBox = safe(item.price_per_box);
+                                                    const totalKg = boxWeight * boxes;
+                                                    const costPerKg = boxWeight > 0 ? pricePerBox / boxWeight : 0;
+                                                    return `${totalKg.toFixed(2)} kg total | ${formatCurrency(costPerKg)}/kg`;
+                                                  })()}
                                                 </div>
                                               )}
                                             </TableCell>
                                             <TableCell className="text-slate-300">
-                                              {item.price_type === "per_box_fixed" || item.price_type === "per_box" 
-                                                ? `${item.boxes} ${item.boxes === 1 ? "caixa" : "caixas"}`
-                                                : `${item.quantity} kg`
+                                              {item.price_type === "per_box_fixed" || item.price_type === "per_box"
+                                                ? (() => {
+                                                    let n = item.boxes;
+                                                    if (typeof n === 'string') n = n.trim() === '' ? 0 : Number(n);
+                                                    if (typeof n !== 'number' || isNaN(n)) n = 0;
+                                                    return `${n} ${n === 1 ? "caixa" : "caixas"}`;
+                                                  })()
+                                                : (() => {
+                                                    let n = item.quantity;
+                                                    if (typeof n === 'string') n = n.trim() === '' ? 0 : Number(n);
+                                                    if (typeof n !== 'number' || isNaN(n)) n = 0;
+                                                    return `${n} kg`;
+                                                  })()
                                               }
                                             </TableCell>
                                             <TableCell className="text-slate-300">
                                               {item.price_type === "per_box_fixed" || item.price_type === "per_box"
-                                                ? formatCurrency(item.unit_price) + "/cx"
-                                                : formatCurrency(item.unit_price) + "/kg"
+                                                ? (() => {
+                                                    let n = (item.price_per_box !== undefined && item.price_per_box !== null) ? item.price_per_box : item.unit_price;
+                                                    if (typeof n === 'string') n = n.trim() === '' ? 0 : Number(n);
+                                                    if (typeof n !== 'number' || isNaN(n)) n = 0;
+                                                    return formatCurrency(n) + "/caixa";
+                                                  })()
+                                                : (() => {
+                                                    let n = item.unit_price;
+                                                    if (typeof n === 'string') n = n.trim() === '' ? 0 : Number(n);
+                                                    if (typeof n !== 'number' || isNaN(n)) n = 0;
+                                                    return formatCurrency(n) + "/kg";
+                                                  })()
                                               }
                                             </TableCell>
-                                            <TableCell className="text-green-400">{formatCurrency(item.total_price)}</TableCell>
+                                            <TableCell className="text-green-400">{
+                                              (() => {
+                                                if (item.price_type === "per_box_fixed" || item.price_type === "per_box") {
+                                                  const safe = v => v === '' || v === undefined || v === null ? 0 : parseFloat(v);
+                                                  const pricePerBox = safe(item.price_per_box);
+                                                  const boxes = safe(item.boxes);
+                                                  return formatCurrency(pricePerBox * boxes);
+                                                }
+                                                const v = item.total_price; if (v === '' || v === undefined || v === null) return formatCurrency(0); const n = parseFloat(v); return formatCurrency(isNaN(n) ? 0 : n);
+                                              })()
+                                            }</TableCell>
                                           </TableRow>
                                         ))}
                                       </TableBody>
@@ -532,7 +574,24 @@ export default function CeasaPurchases() {
       </div>
 
       {/* Purchase Form */}
-      <Dialog open={showForm} onOpenChange={() => setShowForm(false)}>
+      <Dialog open={showForm} onOpenChange={(open) => {
+        if (!open) {
+          setForm({
+            date: moment().format("YYYY-MM-DD"),
+            supplier_id: "",
+            supplier_name: "",
+            store_id: "",
+            store_name: "",
+            items: [],
+            total_amount: 0,
+            payment_method: "cash",
+            paid: true,
+            observations: ""
+          });
+          setNewItem({ product_id: "", product_name: "", price_type: "", box_weight_kg: "", quantity: "", unit_type: "kg", unit_price: "", boxes: "", price_per_box: "", cost_per_kg: "", total_price: 0 });
+        }
+        setShowForm(open);
+      }}>
         <DialogContent className="max-w-3xl bg-slate-900 border-slate-700 max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-white">Nova Compra</DialogTitle>
@@ -614,31 +673,39 @@ export default function CeasaPurchases() {
                   {(() => {
                     const product = products.find(p => String(p.id) === String(newItem.product_id));
                     if (!product) return null;
-                    // Fruta: sempre KG
-                    if (product.category === "fruit") {
+                    // Fruta: unidade cadastrada
+                    if (product.category === "fruit" || product.price_type === "per_kg") {
                       return <>
-                        <Input type="number" step="0.01" placeholder="Qtd (kg)" value={newItem.quantity} onChange={e => setNewItem(p => ({ ...p, quantity: e.target.value }))} className="bg-slate-800 border-slate-600 text-white w-28" />
-                        <Input type="number" step="0.01" placeholder="R$/kg" value={newItem.unit_price} onChange={e => setNewItem(p => ({ ...p, unit_price: e.target.value }))} className="bg-slate-800 border-slate-600 text-white w-28" />
+                        <Input type="number" step="0.01" placeholder={`Qtd (${unitLabels[product.unit_type] || product.unit_type})`} value={newItem.quantity} onChange={e => setNewItem(p => ({ ...p, quantity: e.target.value }))} className="bg-slate-800 border-slate-600 text-white w-28" />
+                        <Input type="number" step="0.01" placeholder={`R$/${unitLabels[product.unit_type] || product.unit_type}`} value={newItem.unit_price} onChange={e => setNewItem(p => ({ ...p, unit_price: e.target.value }))} className="bg-slate-800 border-slate-600 text-white w-28" />
                       </>;
                     }
-                    // Outros: permite escolher unidade
-                    if (product.category === "other" && newItem.price_type === "per_box") {
+                    // Por caixa (quantidade fixa)
+                    if (product.price_type === "per_box" && product.box_weight_kg) {
                       return <>
                         <div className="flex items-center gap-2">
-                          <Input type="number" step="1" placeholder="Qtd" value={newItem.boxes} onChange={e => setNewItem(p => ({ ...p, boxes: e.target.value }))} className="bg-slate-800 border-slate-600 text-white w-20" />
-                          <Select value={newItem.unit_custom || "CX"} onValueChange={v => setNewItem(p => ({ ...p, unit_custom: v }))}>
-                            <SelectTrigger className="bg-slate-800 border-slate-600 text-white w-24"><SelectValue /></SelectTrigger>
-                            <SelectContent side="bottom" className="bg-slate-800 border-slate-600 text-white z-50">
-                              <SelectItem value="CX" className="text-white hover:bg-slate-700 cursor-pointer">Caixa (CX)</SelectItem>
-                              <SelectItem value="FD" className="text-white hover:bg-slate-700 cursor-pointer">Fardo (FD)</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          {/* Exibe unidade selecionada ao lado da quantidade, sempre por extenso */}
-                          <span className="text-xs text-slate-400 min-w-10">
-                            {newItem.unit_custom === 'FD' ? 'Fardo' : 'Caixa'}
-                          </span>
+                          <Input
+                            type="number"
+                            step="1"
+                            min="1"
+                            placeholder="Qtd (CX)"
+                            value={newItem.boxes === undefined ? '' : newItem.boxes}
+                            onChange={e => setNewItem(p => ({ ...p, boxes: e.target.value === '' ? '' : String(Math.max(0, safeNumber(e.target.value))) }))}
+                            className="bg-slate-800 border-slate-600 text-white w-20"
+                            disabled={false}
+                          />
                         </div>
-                        <Input type="number" step="0.01" placeholder="R$/unidade" value={newItem.price_per_box} onChange={e => setNewItem(p => ({ ...p, price_per_box: e.target.value }))} className="bg-slate-800 border-slate-600 text-white w-28" />
+                        <Input
+                          type="number"
+                          step="0.01"
+                          min="0.01"
+                          placeholder="Preço Unit. (CX)"
+                          value={newItem.price_per_box === undefined ? '' : newItem.price_per_box}
+                          onChange={e => setNewItem(p => ({ ...p, price_per_box: e.target.value === '' ? '' : String(Math.max(0, safeNumber(e.target.value))) }))}
+                          className="bg-slate-800 border-slate-600 text-white w-28"
+                          disabled={false}
+                        />
+                        <span className="text-xs text-slate-400 ml-2">Peso caixa: {product.box_weight_kg} kg</span>
                       </>;
                     }
                     // Outros tipos (per_unit, per_dozen, etc)
@@ -658,9 +725,10 @@ export default function CeasaPurchases() {
                 {/* Mostrar informações calculadas para caixa com peso fixo */}
                 {newItem.price_type === "per_box" && newItem.box_weight_kg && newItem.boxes && newItem.price_per_box && (
                   <p className="text-sm text-slate-400">
-                    Peso total: {(parseFloat(newItem.boxes) * parseFloat(newItem.box_weight_kg)).toFixed(2)} kg | 
+                    Peso total: {(safeNumber(newItem.boxes) * safeNumber(newItem.box_weight_kg)).toFixed(2)} kg | 
                     Custo/kg: {formatCurrency(parseFloat(newItem.price_per_box) / parseFloat(newItem.box_weight_kg))} | 
                     Subtotal: {formatCurrency(calculateItemTotal())}
+                    {(!newItem.boxes || !newItem.price_per_box) && <span className="text-red-400 ml-2">Preencha quantidade e preço por caixa</span>}
                   </p>
                 )}
                 
@@ -694,24 +762,35 @@ export default function CeasaPurchases() {
                         <TableCell className="text-white">
                           {item.product_name}
                           {item.price_type === "per_box_fixed" && item.box_weight_kg && (
+                            <span className="ml-2 text-xs text-blue-300 font-bold">- {Number(item.box_weight_kg)}KG</span>
+                          )}
+                          {item.price_type === "per_box" && item.box_weight_kg && (
+                            <span className="ml-2 text-xs text-blue-300 font-bold">- {Number(item.box_weight_kg)}KG</span>
+                          )}
+                          {(item.price_type === "per_box" && item.box_weight_kg && item.boxes && (item.price_per_box || item.unit_price)) && (
                             <div className="text-xs text-slate-400 mt-1">
-                              {item.total_kg?.toFixed(2)} kg total | {formatCurrency(item.cost_per_kg)}/kg
+                              {`${(Number(item.boxes) * Number(item.box_weight_kg)).toFixed(2)} kg total | ${formatCurrency(Number(item.price_per_box || item.unit_price) / Number(item.box_weight_kg))}/kg`}
+                            </div>
+                          )}
+                          {item.price_type === "per_box_fixed" && item.box_weight_kg && (
+                            <div className="text-xs text-slate-400 mt-1">
+                              {Number(item.total_kg).toFixed(2)} kg total | {formatCurrency(Number(item.cost_per_kg))}/kg
                             </div>
                           )}
                         </TableCell>
                         <TableCell className="text-slate-300">
                           {item.price_type === "per_box_fixed" || item.price_type === "per_box" 
-                            ? `${item.boxes} ${item.unit_custom === "FD" ? "Fardo" : item.unit_custom === "CX" ? "Caixa" : (item.unit_custom ? item.unit_custom : "Caixa")}`
-                            : `${item.quantity} ${item.unit_custom === 'FD' ? 'Fardo' : item.unit_custom === 'CX' ? 'Caixa' : (item.unit_type === 'kg' ? 'kg' : item.unit_type === 'box' ? 'Caixa' : unitLabels[item.unit_type] || '')}`
+                            ? `${Number(item.boxes)} ${item.unit_custom === "FD" ? "Fardo" : item.unit_custom === "CX" ? "Caixa" : (item.unit_custom ? item.unit_custom : "Caixa")}`
+                            : `${Number(item.quantity)} ${item.unit_custom === 'FD' ? 'Fardo' : item.unit_custom === 'CX' ? 'Caixa' : (item.unit_type === 'kg' ? 'kg' : item.unit_type === 'box' ? 'Caixa' : unitLabels[item.unit_type] || '')}`
                           }
                         </TableCell>
                         <TableCell className="text-slate-300">
                           {item.price_type === "per_box_fixed" || item.price_type === "per_box"
-                            ? formatCurrency(item.unit_price) + `/${item.unit_custom === 'FD' ? 'Fardo' : 'Caixa'}`
-                            : formatCurrency(item.unit_price)
+                            ? formatCurrency(Number(item.price_per_box)) + `/${item.unit_custom === 'FD' ? 'Fardo' : 'Caixa'}`
+                            : formatCurrency(Number(item.unit_price))
                           }
                         </TableCell>
-                        <TableCell className="text-green-400">{formatCurrency(item.total_price)}</TableCell>
+                        <TableCell className="text-green-400">{formatCurrency(Number(item.total_price))}</TableCell>
                         <TableCell>
                           <Button size="icon" variant="ghost" onClick={() => handleRemoveItem(index)} className="text-red-400 hover:text-red-300">
                             <X className="h-4 w-4" />
@@ -756,7 +835,22 @@ export default function CeasaPurchases() {
             </div>
 
             <div className="flex justify-end gap-3">
-              <Button type="button" variant="outline" onClick={() => setShowForm(false)} className="border-slate-600 text-slate-300 hover:bg-slate-800">Cancelar</Button>
+              <Button type="button" variant="outline" onClick={() => {
+                setForm({
+                  date: moment().format("YYYY-MM-DD"),
+                  supplier_id: "",
+                  supplier_name: "",
+                  store_id: "",
+                  store_name: "",
+                  items: [],
+                  total_amount: 0,
+                  payment_method: "cash",
+                  paid: true,
+                  observations: ""
+                });
+                setNewItem({ product_id: "", product_name: "", price_type: "", box_weight_kg: "", quantity: "", unit_type: "kg", unit_price: "", boxes: "", price_per_box: "", cost_per_kg: "", total_price: 0 });
+                setShowForm(false);
+              }} className="border-slate-600 text-slate-300 hover:bg-slate-800">Cancelar</Button>
               <Button type="submit" disabled={form.items.length === 0} className="bg-blue-600 hover:bg-blue-700 text-white">Salvar Compra</Button>
             </div>
           </form>
@@ -801,8 +895,13 @@ export default function CeasaPurchases() {
                             : `${item.quantity} ${item.unit_custom === 'FD' ? 'Fardo' : item.unit_custom === 'CX' ? 'Caixa' : (item.unit_type === 'kg' ? 'kg' : item.unit_type === 'box' ? 'Caixa' : unitLabels[item.unit_type] || '')}`
                           }
                         </TableCell>
-                        <TableCell className="text-slate-300">{formatCurrency(item.unit_price)}</TableCell>
-                        <TableCell className="text-green-400">{formatCurrency(item.total_price)}</TableCell>
+                        <TableCell className="text-slate-300">
+                          {item.price_type === "per_box_fixed" || item.price_type === "per_box"
+                            ? formatCurrency(Number(item.price_per_box)) + `/${item.unit_custom === 'FD' ? 'Fardo' : 'Caixa'}`
+                            : formatCurrency(Number(item.unit_price))
+                          }
+                        </TableCell>
+                        <TableCell className="text-green-400">{formatCurrency(Number(item.total_price))}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>

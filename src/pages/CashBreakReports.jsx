@@ -18,7 +18,8 @@ export default function CashBreakReports() {
     type: "all",
     status: "all",
     date_from: "",
-    date_to: ""
+    date_to: "",
+    forma: "funcionario"
   });
 
   const { data: cashBreaks = [], isLoading: loadingBreaks } = useQuery({
@@ -98,7 +99,8 @@ export default function CashBreakReports() {
       type: "all",
       status: "all",
       date_from: "",
-      date_to: ""
+      date_to: "",
+      forma: "funcionario"
     });
   };
 
@@ -174,6 +176,7 @@ export default function CashBreakReports() {
           onClear={handleClearFilters}
           onExport={handleExport}
           showExport={true}
+          onPrint={() => window.print()}
         />
 
         {/* Stats */}

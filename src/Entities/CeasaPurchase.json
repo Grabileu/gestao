@@ -7,7 +7,7 @@
     "supplier_name": { "type": "string", "description": "Nome do fornecedor" },
     "store_id": { "type": "string", "description": "ID da loja" },
     "store_name": { "type": "string", "description": "Nome da loja" },
-    "items": { "type": "array", "description": "Itens da compra", "items": { "type": "object", "properties": { "product_id": { "type": "string" }, "product_name": { "type": "string" }, "quantity": { "type": "number" }, "unit_type": { "type": "string" }, "unit_price": { "type": "number" }, "total_price": { "type": "number" } } } },
+    "items": { "type": "array", "description": "Itens da compra", "items": { "type": "object", "properties": { "product_id": { "type": "string" }, "product_name": { "type": "string" }, "quantity": { "type": "number" }, "unit_type": { "type": "string" }, "unit_price": { "type": "number" }, "total_price": { "type": "number" }, "boxes": { "type": "number" }, "price_per_box": { "type": "number" }, "box_weight_kg": { "type": "number" } } } },
     "total_amount": { "type": "number", "description": "Valor total da compra" },
     "payment_method": { "type": "string", "enum": ["cash", "pix", "credit", "debit", "invoice"], "default": "cash" },
     "paid": { "type": "boolean", "default": true },

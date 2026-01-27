@@ -415,6 +415,27 @@ export default function CashBreakForm({ open, onClose, cashBreak, stores, cashie
           <Button variant="outline" onClick={onClose} className="border-slate-600 text-slate-300 hover:bg-slate-800">
             Cancelar
           </Button>
+          <Button type="button" variant="outline" onClick={() => {
+            const today = new Date().toISOString().split('T')[0];
+            setFormData({
+              date: today,
+              store_id: "",
+              store_name: "",
+              employee_id: "",
+              employee_name: "",
+              type: "shortage",
+              amount: "",
+              reason: "",
+              voucher_number: "",
+              voucher_status: "",
+              payment_date: "",
+              observations: "",
+              shift: "",
+              payment_method: "cash"
+            });
+          }} className="border-slate-600 text-slate-300 hover:bg-slate-800">
+            Limpar
+          </Button>
           <Button
             onClick={handleSubmit}
             disabled={

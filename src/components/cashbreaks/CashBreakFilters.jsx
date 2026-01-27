@@ -4,6 +4,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Filter, X, Download } from "lucide-react";
+import { Printer } from "lucide-react";
 
 export default function CashBreakFilters({ filters, onChange, stores, cashiers, onClear, onExport, showExport = false }) {
   const handleChange = (field, value) => {
@@ -17,6 +18,8 @@ export default function CashBreakFilters({ filters, onChange, stores, cashiers, 
                      filters.date_from ||
                      filters.date_to;
 
+  // Garante que onPrint sempre existe
+  const handlePrint = typeof onPrint === 'function' ? onPrint : () => {};
   return (
     <Card className="bg-slate-900/50 border-slate-700/50">
       <CardContent className="p-4">
@@ -26,17 +29,22 @@ export default function CashBreakFilters({ filters, onChange, stores, cashiers, 
             <h3 className="text-white font-semibold">Filtros</h3>
           </div>
           <div className="flex gap-2">
-            {hasFilters && (
-              <Button variant="ghost" onClick={onClear} className="text-slate-400 hover:text-white hover:bg-slate-700">
-                <span className="flex items-center"><X className="w-4 h-4 mr-2" />Limpar</span>
-              </Button>
-            )}
+            <Button variant="ghost" onClick={onClear} className="text-slate-400 hover:text-white hover:bg-slate-700">
+              <span className="flex items-center"><X className="w-4 h-4 mr-2" />Limpar</span>
+            </Button>
             {showExport && (
               <Button onClick={onExport} className="bg-emerald-600 hover:bg-emerald-700">
                 <Download className="w-4 h-4 mr-2" />
                 Exportar CSV
               </Button>
             )}
+            {/* Botão padrão para imprimir relatórios */}
+            <Button onClick={handlePrint} className="bg-blue-600 hover:bg-blue-700 text-white">
+              <span className="flex items-center">
+                <Printer className="w-4 h-4 mr-2" />
+                Imprimir
+              </span>
+            </Button>
           </div>
         </div>
 
