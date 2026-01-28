@@ -44,7 +44,8 @@ export default function AbsenceForm({ open, onClose, absence, employees, onSave 
       setFormData({
         ...absence,
         hours: absence.hours || "",
-        days_off: absence.days_off || 1
+        days_off: absence.days_off || 1,
+        discount_salary: absence.type === "medical_certificate" ? false : absence.discount_salary
       });
     } else {
       setFormData({
@@ -68,6 +69,12 @@ export default function AbsenceForm({ open, onClose, absence, employees, onSave 
     }
     setValidationError("");
   }, [absence, open]);
+  // Sempre que o tipo for medical_certificate, nunca desconta do salário
+  useEffect(() => {
+    if (formData.type === "medical_certificate" && formData.discount_salary) {
+      setFormData(prev => ({ ...prev, discount_salary: false }));
+    }
+  }, [formData.type]);
 
   const handleEmployeeChange = (employeeId) => {
     const employee = employees.find(e => String(e.id) === String(employeeId));

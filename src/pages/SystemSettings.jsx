@@ -75,9 +75,6 @@ export default function SystemSettings() {
           <TabsTrigger value="basket" className="data-[state=active]:bg-blue-600">
             <Gift className="h-4 w-4 mr-2" />Cesta Bonificação
           </TabsTrigger>
-          <TabsTrigger value="absence" className="data-[state=active]:bg-blue-600">
-            <AlertCircle className="h-4 w-4 mr-2" />Faltas e Férias
-          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="cashbreak">
@@ -171,82 +168,6 @@ export default function SystemSettings() {
                     </div>
                   </div>
                 </>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="absence">
-          <Card className="bg-slate-800/50 border-slate-700">
-            <CardHeader>
-              <CardTitle className="text-white">Configurações de Faltas e Férias</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="grid grid-cols-2 gap-6">
-                <div>
-                  <Label className="text-slate-300">Dias de Férias</Label>
-                  <Input
-                    type="number"
-                    value={form.vacation_days || 30}
-                    onChange={(e) => setForm(p => ({ ...p, vacation_days: parseInt(e.target.value) || 30 }))}
-                    className="bg-slate-900 border-slate-600 text-white"
-                  />
-                </div>
-                <div>
-                  <Label className="text-slate-300">Máximo de Dias para Vender</Label>
-                  <Input
-                    type="number"
-                    value={form.vacation_sell_max_days || 10}
-                    onChange={(e) => setForm(p => ({ ...p, vacation_sell_max_days: parseInt(e.target.value) || 10 }))}
-                    className="bg-slate-900 border-slate-600 text-white"
-                  />
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between p-4 bg-slate-900 rounded-lg">
-                <div>
-                  <Label className="text-slate-300">1/3 de Férias (Abono)</Label>
-                  <p className="text-xs text-slate-500">Habilitar pagamento de 1/3 constitucional</p>
-                </div>
-                <Switch
-                  checked={form.vacation_bonus_enabled}
-                  onCheckedChange={(v) => setForm(p => ({ ...p, vacation_bonus_enabled: v }))}
-                />
-              </div>
-
-              <div className="flex items-center justify-between p-4 bg-slate-900 rounded-lg">
-                <div>
-                  <Label className="text-slate-300">Descontar DSR nas Faltas</Label>
-                  <p className="text-xs text-slate-500">Desconta descanso semanal remunerado</p>
-                </div>
-                <Switch
-                  checked={form.absence_discount_dsr}
-                  onCheckedChange={(v) => setForm(p => ({ ...p, absence_discount_dsr: v }))}
-                />
-              </div>
-
-              <div className="flex items-center justify-between p-4 bg-slate-900 rounded-lg">
-                <div>
-                  <Label className="text-slate-300">Descontar Atestados</Label>
-                  <p className="text-xs text-slate-500">Descontar dias de atestado médico</p>
-                </div>
-                <Switch
-                  checked={form.medical_discount_enabled}
-                  onCheckedChange={(v) => setForm(p => ({ ...p, medical_discount_enabled: v }))}
-                />
-              </div>
-
-              {form.medical_discount_enabled && (
-                <div>
-                  <Label className="text-slate-300">Dias de Atestado sem Desconto</Label>
-                  <Input
-                    type="number"
-                    value={form.medical_max_days_no_discount || 15}
-                    onChange={(e) => setForm(p => ({ ...p, medical_max_days_no_discount: parseInt(e.target.value) || 15 }))}
-                    className="bg-slate-900 border-slate-600 text-white"
-                  />
-                  <p className="text-xs text-slate-500 mt-1">Após esse período, INSS assume o pagamento</p>
-                </div>
               )}
             </CardContent>
           </Card>

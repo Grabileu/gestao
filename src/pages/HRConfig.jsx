@@ -7,7 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Save, Clock, Percent, Receipt, Calculator, Umbrella, AlertCircle, Calendar, DollarSign } from "lucide-react";
+import { Save, Clock, Percent, Receipt, Calculator, Umbrella, AlertCircle, Calendar, DollarSign, Info } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 export default function HRConfig() {
   const queryClient = useQueryClient();
@@ -96,92 +97,363 @@ export default function HRConfig() {
         </Button>
       </div>
 
+      <TooltipProvider>
       <Tabs defaultValue="jornada" className="space-y-6">
         <TabsList className="bg-slate-800 border-slate-700">
           <TabsTrigger value="jornada" className="data-[state=active]:bg-blue-600">Jornada</TabsTrigger>
           <TabsTrigger value="faltas" className="data-[state=active]:bg-blue-600">Faltas</TabsTrigger>
+          <TabsTrigger value="dsr" className="data-[state=active]:bg-blue-600">DSR</TabsTrigger>
           <TabsTrigger value="ferias" className="data-[state=active]:bg-blue-600">Férias</TabsTrigger>
           <TabsTrigger value="adicionais" className="data-[state=active]:bg-blue-600">Adicionais</TabsTrigger>
           <TabsTrigger value="impostos" className="data-[state=active]:bg-blue-600">Impostos</TabsTrigger>
           <TabsTrigger value="beneficios" className="data-[state=active]:bg-blue-600">Benefícios</TabsTrigger>
           <TabsTrigger value="contratos" className="data-[state=active]:bg-blue-600">Contratos</TabsTrigger>
         </TabsList>
+        {/* DSR */}
+        <TabsContent value="dsr">
+          <Card className="bg-slate-800/50 border-slate-700">
+            <CardHeader>
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-green-500/20 rounded-lg">
+                  <Calendar className="h-5 w-5 text-green-400" />
+                </div>
+                <div>
+                  <CardTitle className="text-white">Configurações de DSR</CardTitle>
+                  <CardDescription className="text-slate-400">Descanso Semanal Remunerado</CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between p-4 bg-slate-900 rounded-lg">
+                  <div>
+                    <Label className="text-slate-300 flex items-center gap-1">Descontar DSR em caso de falta?
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="ml-1 cursor-pointer"><Info className="h-4 w-4 text-blue-400 inline" /></span>
+                        </TooltipTrigger>
+                        <TooltipContent className="text-white bg-slate-900">Lei 605/49, art. 7º e CLT art. 131</TooltipContent>
+                      </Tooltip>
+                    </Label>
+                    <p className="text-xs text-slate-500 mt-1">Faltas injustificadas retiram o direito ao DSR.</p>
+                  </div>
+                  <Switch checked={formData.dsr_discount_on_absence} onCheckedChange={v => updateField("dsr_discount_on_absence", v)} />
+                </div>
+                <div className="flex items-center justify-between p-4 bg-slate-900 rounded-lg">
+                  <div>
+                    <Label className="text-slate-300 flex items-center gap-1">Descontar DSR em caso de atraso?
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="ml-1 cursor-pointer"><Info className="h-4 w-4 text-blue-400 inline" /></span>
+                        </TooltipTrigger>
+                        <TooltipContent className="text-white bg-slate-900">CLT e convenções coletivas</TooltipContent>
+                      </Tooltip>
+                    </Label>
+                    <p className="text-xs text-slate-500 mt-1">Atrasos podem ser considerados faltas, conforme política da empresa.</p>
+                  </div>
+                  <Switch checked={formData.dsr_discount_on_late} onCheckedChange={v => updateField("dsr_discount_on_late", v)} />
+                </div>
+                <div className="p-4 bg-slate-900 rounded-lg">
+                  <Label className="text-slate-300 flex items-center gap-1">Limite de minutos de atraso para desconto do DSR
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className="ml-1 cursor-pointer"><Info className="h-4 w-4 text-blue-400 inline" /></span>
+                      </TooltipTrigger>
+                      <TooltipContent className="text-white bg-slate-900">Convenções coletivas</TooltipContent>
+                    </Tooltip>
+                  </Label>
+                  <p className="text-xs text-slate-500 mb-2">Convenções coletivas podem definir tolerância (ex: até 10 minutos).</p>
+                  <Input type="number" value={formData.dsr_late_limit_minutes || 0} onChange={e => updateField("dsr_late_limit_minutes", parseInt(e.target.value))} className="bg-slate-900 border-slate-600 text-white" />
+                </div>
+                <div className="p-4 bg-slate-900 rounded-lg">
+                  <Label className="text-slate-300 flex items-center gap-1">Tipo de cálculo do DSR
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className="ml-1 cursor-pointer"><Info className="h-4 w-4 text-blue-400 inline" /></span>
+                      </TooltipTrigger>
+                      <TooltipContent className="text-white bg-slate-900">CLT art. 130-A</TooltipContent>
+                    </Tooltip>
+                  </Label>
+                  <p className="text-xs text-slate-500 mb-2">DSR proporcional para jornada parcial.</p>
+                  <select value={formData.dsr_calc_type || "automatico"} onChange={e => updateField("dsr_calc_type", e.target.value)} className="bg-slate-900 border-slate-600 text-white rounded px-2 py-1">
+                    <option value="automatico">Automático (baseado em faltas/atrasos)</option>
+                    <option value="manual">Manual (RH informa)</option>
+                    <option value="proporcional">Proporcional (para jornada parcial)</option>
+                  </select>
+                </div>
+                <div className="p-4 bg-slate-900 rounded-lg">
+                  <Label className="text-slate-300 flex items-center gap-1">Escala de trabalho para cálculo do DSR
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className="ml-1 cursor-pointer"><Info className="h-4 w-4 text-blue-400 inline" /></span>
+                      </TooltipTrigger>
+                      <TooltipContent className="text-white bg-slate-900">CLT art. 67</TooltipContent>
+                    </Tooltip>
+                  </Label>
+                  <p className="text-xs text-slate-500 mb-2">DSR preferencialmente aos domingos, conforme escala.</p>
+                  <select value={formData.dsr_work_scale || "5x2"} onChange={e => updateField("dsr_work_scale", e.target.value)} className="bg-slate-900 border-slate-600 text-white rounded px-2 py-1">
+                    <option value="5x2">5x2</option>
+                    <option value="6x1">6x1</option>
+                    <option value="12x36">12x36</option>
+                    <option value="personalizada">Personalizada</option>
+                  </select>
+                </div>
+                <div className="flex items-center justify-between p-4 bg-slate-900 rounded-lg">
+                  <div>
+                    <Label className="text-slate-300 flex items-center gap-1">DSR sobre horas extras
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="ml-1 cursor-pointer"><Info className="h-4 w-4 text-blue-400 inline" /></span>
+                        </TooltipTrigger>
+                        <TooltipContent className="text-white bg-slate-900">Súmula 172 do TST</TooltipContent>
+                      </Tooltip>
+                    </Label>
+                    <p className="text-xs text-slate-500 mt-1">Horas extras integram o cálculo do DSR.</p>
+                  </div>
+                  <Switch checked={formData.dsr_include_overtime} onCheckedChange={v => updateField("dsr_include_overtime", v)} />
+                </div>
+                <div className="flex items-center justify-between p-4 bg-slate-900 rounded-lg">
+                  <div>
+                    <Label className="text-slate-300 flex items-center gap-1">DSR em feriados
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="ml-1 cursor-pointer"><Info className="h-4 w-4 text-blue-400 inline" /></span>
+                        </TooltipTrigger>
+                        <TooltipContent className="text-white bg-slate-900">Lei 605/49</TooltipContent>
+                      </Tooltip>
+                    </Label>
+                    <p className="text-xs text-slate-500 mt-1">DSR é devido também em semanas com feriado.</p>
+                  </div>
+                  <Switch checked={formData.dsr_on_holiday} onCheckedChange={v => updateField("dsr_on_holiday", v)} />
+                </div>
+                <div className="p-4 bg-slate-900 rounded-lg">
+                  <Label className="text-slate-300 flex items-center gap-1">Regras para banco de horas
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className="ml-1 cursor-pointer"><Info className="h-4 w-4 text-blue-400 inline" /></span>
+                      </TooltipTrigger>
+                      <TooltipContent className="text-white bg-slate-900">Acordo/convenção coletiva</TooltipContent>
+                    </Tooltip>
+                  </Label>
+                  <p className="text-xs text-slate-500 mb-2">Depende de acordo/convenção coletiva.</p>
+                  <select value={formData.dsr_bank_hours_rule || "nao_desconta"} onChange={e => updateField("dsr_bank_hours_rule", e.target.value)} className="bg-slate-900 border-slate-600 text-white rounded px-2 py-1">
+                    <option value="desconta">Horas negativas no banco descontam DSR</option>
+                    <option value="nao_desconta">Não descontam</option>
+                  </select>
+                </div>
+                <div className="p-4 bg-slate-900 rounded-lg">
+                  <Label className="text-slate-300">Observações</Label>
+                  <Input value={formData.dsr_obs || ""} onChange={e => updateField("dsr_obs", e.target.value)} className="bg-slate-900 border-slate-600 text-white" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
         {/* Jornada */}
         <TabsContent value="jornada">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card className="bg-slate-800/50 border-slate-700">
-              <CardHeader>
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-blue-500/20 rounded-lg">
-                    <Clock className="h-5 w-5 text-blue-400" />
+          <Card className="bg-slate-800/50 border-slate-700">
+            <CardHeader>
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-blue-500/20 rounded-lg">
+                  <Clock className="h-5 w-5 text-blue-400" />
+                </div>
+                <div>
+                  <CardTitle className="text-white">Configuração de Jornada</CardTitle>
+                  <CardDescription className="text-slate-400">Jornada, escala, banco de horas, extras e tolerâncias</CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between p-4 bg-slate-900 rounded-lg">
+                  <div className="w-full">
+                    <Label className="text-slate-300 flex items-center gap-1">Tipo de Jornada
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="ml-1 cursor-pointer"><Info className="h-4 w-4 text-blue-400 inline" /></span>
+                        </TooltipTrigger>
+                        <TooltipContent className="text-white bg-slate-900">Diária, semanal ou mensal</TooltipContent>
+                      </Tooltip>
+                    </Label>
+                    <p className="text-xs text-slate-500 mt-1">Escolha o tipo de jornada do colaborador.</p>
+                    <div className="flex gap-4 mt-2">
+                      <label className={`flex items-center gap-2 text-white px-4 py-2 rounded-lg border border-slate-600 cursor-pointer transition-all duration-200 shadow-sm mb-2 mr-2 hover:-translate-y-0.5 hover:shadow-lg focus-within:ring-2 focus-within:ring-blue-400 ${formData.jornada_tipo === "diaria" ? 'bg-blue-900/60 font-bold ring-2 ring-blue-500' : 'hover:bg-slate-800'}`}>
+                        <input type="radio" name="jornada_tipo" value="diaria" checked={formData.jornada_tipo === "diaria"} onChange={e => updateField("jornada_tipo", e.target.value)} className="accent-blue-500 w-4 h-4 mr-2" />
+                        Diária
+                      </label>
+                      <label className={`flex items-center gap-2 text-white px-4 py-2 rounded-lg border border-slate-600 cursor-pointer transition-all duration-200 shadow-sm mb-2 mr-2 hover:-translate-y-0.5 hover:shadow-lg focus-within:ring-2 focus-within:ring-blue-400 ${(formData.jornada_tipo === "semanal" || !formData.jornada_tipo) ? 'bg-blue-900/60 font-bold ring-2 ring-blue-500' : 'hover:bg-slate-800'}`}>
+                        <input type="radio" name="jornada_tipo" value="semanal" checked={formData.jornada_tipo === "semanal" || !formData.jornada_tipo} onChange={e => updateField("jornada_tipo", e.target.value)} className="accent-blue-500 w-4 h-4 mr-2" />
+                        Semanal
+                      </label>
+                      <label className={`flex items-center gap-2 text-white px-4 py-2 rounded-lg border border-slate-600 cursor-pointer transition-all duration-200 shadow-sm mb-2 mr-2 hover:-translate-y-0.5 hover:shadow-lg focus-within:ring-2 focus-within:ring-blue-400 ${formData.jornada_tipo === "mensal" ? 'bg-blue-900/60 font-bold ring-2 ring-blue-500' : 'hover:bg-slate-800'}`}>
+                        <input type="radio" name="jornada_tipo" value="mensal" checked={formData.jornada_tipo === "mensal"} onChange={e => updateField("jornada_tipo", e.target.value)} className="accent-blue-500 w-4 h-4 mr-2" />
+                        Mensal
+                      </label>
+                    </div>
                   </div>
+                </div>
+                <div className="p-4 bg-slate-900 rounded-lg">
+                  <Label className="text-slate-300 flex items-center gap-1">
+                    {formData.jornada_tipo === 'diaria' ? 'Carga horária diária' : formData.jornada_tipo === 'mensal' ? 'Carga horária mensal' : 'Carga horária semanal'}
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className="ml-1 cursor-pointer"><Info className="h-4 w-4 text-blue-400 inline" /></span>
+                      </TooltipTrigger>
+                      <TooltipContent className="text-white bg-slate-900">CLT art. 58</TooltipContent>
+                    </Tooltip>
+                  </Label>
+                  <p className="text-xs text-slate-500 mb-2">
+                    {formData.jornada_tipo === 'diaria' ? 'Informe a carga horária diária padrão.' : formData.jornada_tipo === 'mensal' ? 'Informe a carga horária mensal padrão.' : 'Informe a carga horária semanal padrão.'}
+                  </p>
+                  <Input type="number" min={1} max={60} value={formData.carga_horaria_semanal || 44} onChange={e => updateField("carga_horaria_semanal", parseInt(e.target.value))} className="bg-slate-900 border-slate-600 text-white" />
+                </div>
+                <div className="p-4 bg-slate-900 rounded-lg">
+                  <Label className="text-slate-300 flex items-center gap-1">Tipo de Escala
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className="ml-1 cursor-pointer"><Info className="h-4 w-4 text-blue-400 inline" /></span>
+                      </TooltipTrigger>
+                      <TooltipContent className="text-white bg-slate-900">Ex: 5x2, 6x1, 12x36, personalizada</TooltipContent>
+                    </Tooltip>
+                  </Label>
+                  <p className="text-xs text-slate-500 mb-2">Selecione uma ou mais escalas de trabalho.</p>
+                  <div className="flex flex-wrap gap-4 mt-2">
+                    <label className={`flex items-center gap-2 text-white px-4 py-2 rounded-lg border border-slate-600 cursor-pointer transition-all duration-200 shadow-sm mb-2 mr-2 hover:-translate-y-0.5 hover:shadow-lg focus-within:ring-2 focus-within:ring-blue-400 ${formData.escala_tipo?.includes("5x2") ? 'bg-blue-900/60 font-bold ring-2 ring-blue-500' : 'hover:bg-slate-800'}`}>
+                      <input type="checkbox" value="5x2" checked={formData.escala_tipo?.includes("5x2")} onChange={e => {
+                        let val = formData.escala_tipo || [];
+                        if (e.target.checked) val = [...val, "5x2"];
+                        else val = val.filter(v => v !== "5x2");
+                        updateField("escala_tipo", val);
+                      }} className="accent-blue-500 w-4 h-4 mr-2" />
+                      5x2
+                    </label>
+                    <label className={`flex items-center gap-2 text-white px-4 py-2 rounded-lg border border-slate-600 cursor-pointer transition-all duration-200 shadow-sm mb-2 mr-2 hover:-translate-y-0.5 hover:shadow-lg focus-within:ring-2 focus-within:ring-blue-400 ${formData.escala_tipo?.includes("6x1") ? 'bg-blue-900/60 font-bold ring-2 ring-blue-500' : 'hover:bg-slate-800'}`}>
+                      <input type="checkbox" value="6x1" checked={formData.escala_tipo?.includes("6x1")} onChange={e => {
+                        let val = formData.escala_tipo || [];
+                        if (e.target.checked) val = [...val, "6x1"];
+                        else val = val.filter(v => v !== "6x1");
+                        updateField("escala_tipo", val);
+                      }} className="accent-blue-500 w-4 h-4 mr-2" />
+                      6x1
+                    </label>
+                    <label className={`flex items-center gap-2 text-white px-4 py-2 rounded-lg border border-slate-600 cursor-pointer transition-all duration-200 shadow-sm mb-2 mr-2 hover:-translate-y-0.5 hover:shadow-lg focus-within:ring-2 focus-within:ring-blue-400 ${formData.escala_tipo?.includes("12x36") ? 'bg-blue-900/60 font-bold ring-2 ring-blue-500' : 'hover:bg-slate-800'}`}>
+                      <input type="checkbox" value="12x36" checked={formData.escala_tipo?.includes("12x36")} onChange={e => {
+                        let val = formData.escala_tipo || [];
+                        if (e.target.checked) val = [...val, "12x36"];
+                        else val = val.filter(v => v !== "12x36");
+                        updateField("escala_tipo", val);
+                      }} className="accent-blue-500 w-4 h-4 mr-2" />
+                      12x36
+                    </label>
+                    {/* label removido: personalizada */}
+                  </div>
+                </div>
+                <div className="flex items-center justify-between p-4 bg-slate-900 rounded-lg">
                   <div>
-                    <CardTitle className="text-white">Jornada de Trabalho</CardTitle>
-                    <CardDescription className="text-slate-400">Horas e dias de trabalho</CardDescription>
+                    <Label className="text-slate-300">Controle de Ponto?</Label>
+                    <p className="text-xs text-slate-500 mt-1">Obrigatório para empresas com mais de 20 funcionários.</p>
+                  </div>
+                  <Switch checked={formData.controle_ponto || false} onCheckedChange={v => updateField("controle_ponto", v)} />
+                </div>
+                <div className="flex items-center justify-between p-4 bg-slate-900 rounded-lg">
+                  <div className="w-full">
+                    <Label className="text-slate-300">Permite banco de horas?</Label>
+                    <p className="text-xs text-slate-500 mt-1">Necessário acordo coletivo.</p>
+                    <div className="flex gap-4 mt-2">
+                      <label className={`flex items-center gap-2 text-white px-4 py-2 rounded-lg border border-slate-600 cursor-pointer transition-all duration-200 shadow-sm mb-2 mr-2 hover:-translate-y-0.5 hover:shadow-lg focus-within:ring-2 focus-within:ring-blue-400 ${formData.banco_horas === true ? 'bg-blue-900/60 font-bold ring-2 ring-blue-500' : 'hover:bg-slate-800'}`}>
+                        <input type="radio" name="banco_horas" value="true" checked={formData.banco_horas === true} onChange={() => updateField("banco_horas", true)} className="accent-blue-500 w-4 h-4 mr-2" />
+                        Sim
+                      </label>
+                      <label className={`flex items-center gap-2 text-white px-4 py-2 rounded-lg border border-slate-600 cursor-pointer transition-all duration-200 shadow-sm mb-2 mr-2 hover:-translate-y-0.5 hover:shadow-lg focus-within:ring-2 focus-within:ring-blue-400 ${!formData.banco_horas ? 'bg-blue-900/60 font-bold ring-2 ring-blue-500' : 'hover:bg-slate-800'}`}>
+                        <input type="radio" name="banco_horas" value="false" checked={!formData.banco_horas} onChange={() => updateField("banco_horas", false)} className="accent-blue-500 w-4 h-4 mr-2" />
+                        Não
+                      </label>
+                    </div>
                   </div>
                 </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <Label className="text-slate-300">Horas por dia</Label>
-                  <Input type="number" value={formData.work_hours_per_day} onChange={(e) => updateField("work_hours_per_day", parseFloat(e.target.value))} className="bg-slate-900 border-slate-600 text-white" />
-                </div>
-                <div>
-                  <Label className="text-slate-300">Dias úteis por mês</Label>
-                  <Input type="number" value={formData.work_days_per_month} onChange={(e) => updateField("work_days_per_month", parseInt(e.target.value))} className="bg-slate-900 border-slate-600 text-white" />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-slate-800/50 border-slate-700">
-              <CardHeader>
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-purple-500/20 rounded-lg">
-                    <Percent className="h-5 w-5 text-purple-400" />
-                  </div>
-                  <div>
-                    <CardTitle className="text-white">Horas Extras</CardTitle>
-                    <CardDescription className="text-slate-400">Percentuais de hora extra</CardDescription>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <Label className="text-slate-300">Hora Extra Normal (%)</Label>
-                  <Input type="number" value={formData.overtime_50_percent} onChange={(e) => updateField("overtime_50_percent", parseFloat(e.target.value))} className="bg-slate-900 border-slate-600 text-white" />
-                </div>
-                <div>
-                  <Label className="text-slate-300">Hora Extra 100% (%)</Label>
-                  <Input type="number" value={formData.overtime_100_percent} onChange={(e) => updateField("overtime_100_percent", parseFloat(e.target.value))} className="bg-slate-900 border-slate-600 text-white" />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-slate-800/50 border-slate-700">
-              <CardHeader>
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-yellow-500/20 rounded-lg">
-                    <AlertCircle className="h-5 w-5 text-yellow-400" />
-                  </div>
-                  <div>
-                    <CardTitle className="text-white">Tolerâncias</CardTitle>
-                    <CardDescription className="text-slate-400">Atrasos e saídas</CardDescription>
+                <div className="flex items-center justify-between p-4 bg-slate-900 rounded-lg">
+                  <div className="w-full">
+                    <Label className="text-slate-300 flex items-center gap-1">Permite horas extras?
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="ml-1 cursor-pointer"><Info className="h-4 w-4 text-blue-400 inline" /></span>
+                        </TooltipTrigger>
+                        <TooltipContent className="text-white bg-slate-900">CLT art. 59: máximo de 2 horas extras por dia, salvo acordo coletivo.</TooltipContent>
+                      </Tooltip>
+                    </Label>
+                    <p className="text-xs text-slate-500 mt-1">Limite de 2h diárias, salvo acordo.</p>
+                    <div className="flex gap-4 mt-2">
+                      <label className={`flex items-center gap-2 text-white px-4 py-2 rounded-lg border border-slate-600 cursor-pointer transition-all duration-200 shadow-sm mb-2 mr-2 hover:-translate-y-0.5 hover:shadow-lg focus-within:ring-2 focus-within:ring-blue-400 ${formData.permite_horas_extras === true ? 'bg-blue-900/60 font-bold ring-2 ring-blue-500' : 'hover:bg-slate-800'}`}>
+                        <input type="radio" name="permite_horas_extras" value="true" checked={formData.permite_horas_extras === true} onChange={() => updateField("permite_horas_extras", true)} className="accent-blue-500 w-4 h-4 mr-2" />
+                        Sim
+                      </label>
+                      <label className={`flex items-center gap-2 text-white px-4 py-2 rounded-lg border border-slate-600 cursor-pointer transition-all duration-200 shadow-sm mb-2 mr-2 hover:-translate-y-0.5 hover:shadow-lg focus-within:ring-2 focus-within:ring-blue-400 ${!formData.permite_horas_extras ? 'bg-blue-900/60 font-bold ring-2 ring-blue-500' : 'hover:bg-slate-800'}`}>
+                        <input type="radio" name="permite_horas_extras" value="false" checked={!formData.permite_horas_extras} onChange={() => updateField("permite_horas_extras", false)} className="accent-blue-500 w-4 h-4 mr-2" />
+                        Não
+                      </label>
+                    </div>
                   </div>
                 </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <Label className="text-slate-300">Tolerância de Atraso (minutos)</Label>
-                  <Input type="number" value={formData.late_tolerance_minutes} onChange={(e) => updateField("late_tolerance_minutes", parseInt(e.target.value))} className="bg-slate-900 border-slate-600 text-white" />
+                {formData.permite_horas_extras && (
+                  <>
+                    <div className="p-4 bg-slate-900 rounded-lg">
+                      <Label className="text-slate-300 flex items-center gap-1">Limite de horas extras por dia
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span className="ml-1 cursor-pointer"><Info className="h-4 w-4 text-blue-400 inline" /></span>
+                          </TooltipTrigger>
+                          <TooltipContent className="text-white bg-slate-900">CLT art. 59</TooltipContent>
+                        </Tooltip>
+                      </Label>
+                      <p className="text-xs text-slate-500 mb-2">Informe o limite diário de horas extras.</p>
+                      <Input type="number" min={0} max={12} value={formData.limite_horas_extras_dia || 2} onChange={e => updateField("limite_horas_extras_dia", parseInt(e.target.value))} className="bg-slate-900 border-slate-600 text-white" />
+                    </div>
+                    <div className="p-4 bg-slate-900 rounded-lg">
+                      <Label className="text-slate-300 flex items-center gap-1">Limite de horas extras por mês
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span className="ml-1 cursor-pointer"><Info className="h-4 w-4 text-blue-400 inline" /></span>
+                          </TooltipTrigger>
+                          <TooltipContent className="text-white bg-slate-900">Acordo coletivo</TooltipContent>
+                        </Tooltip>
+                      </Label>
+                      <p className="text-xs text-slate-500 mb-2">Informe o limite mensal de horas extras.</p>
+                      <Input type="number" min={0} max={60} value={formData.limite_horas_extras_mes || 40} onChange={e => updateField("limite_horas_extras_mes", parseInt(e.target.value))} className="bg-slate-900 border-slate-600 text-white" />
+                    </div>
+                  </>
+                )}
+                <div className="p-4 bg-slate-900 rounded-lg">
+                  <Label className="text-slate-300 flex items-center gap-1">Tolerância de Atraso (minutos)
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className="ml-1 cursor-pointer"><Info className="h-4 w-4 text-blue-400 inline" /></span>
+                      </TooltipTrigger>
+                      <TooltipContent className="text-white bg-slate-900">Convenção coletiva</TooltipContent>
+                    </Tooltip>
+                  </Label>
+                  <p className="text-xs text-slate-500 mb-2">Tempo de tolerância para atrasos sem desconto.</p>
+                  <Input type="number" min={0} value={formData.late_tolerance_minutes || 0} onChange={e => updateField("late_tolerance_minutes", parseInt(e.target.value))} className="bg-slate-900 border-slate-600 text-white" />
                 </div>
-                <div>
-                  <Label className="text-slate-300">Tolerância Saída Antecipada (minutos)</Label>
-                  <Input type="number" value={formData.early_leave_tolerance_minutes} onChange={(e) => updateField("early_leave_tolerance_minutes", parseInt(e.target.value))} className="bg-slate-900 border-slate-600 text-white" />
+                <div className="p-4 bg-slate-900 rounded-lg">
+                  <Label className="text-slate-300 flex items-center gap-1">Tolerância Saída Antecipada (minutos)
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className="ml-1 cursor-pointer"><Info className="h-4 w-4 text-blue-400 inline" /></span>
+                      </TooltipTrigger>
+                      <TooltipContent className="text-white bg-slate-900">Convenção coletiva</TooltipContent>
+                    </Tooltip>
+                  </Label>
+                  <p className="text-xs text-slate-500 mb-2">Tempo de tolerância para saída antes do horário.</p>
+                  <Input type="number" min={0} value={formData.early_leave_tolerance_minutes || 0} onChange={e => updateField("early_leave_tolerance_minutes", parseInt(e.target.value))} className="bg-slate-900 border-slate-600 text-white" />
                 </div>
-              </CardContent>
-            </Card>
-          </div>
+                <div className="p-4 bg-slate-900 rounded-lg">
+                  <Label className="text-slate-300">Observações</Label>
+                  <Input value={formData.jornada_obs || ""} onChange={e => updateField("jornada_obs", e.target.value)} className="bg-slate-900 border-slate-600 text-white" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
 
         {/* Faltas */}
@@ -445,6 +717,7 @@ export default function HRConfig() {
           </Card>
         </TabsContent>
       </Tabs>
+      </TooltipProvider>
     </div>
   );
 }
