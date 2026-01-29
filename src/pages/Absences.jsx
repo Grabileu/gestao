@@ -53,24 +53,28 @@ export default function Absences() {
 
   // Expande registros de atestados/faltas para cada dia de afastamento
   const expandedAbsences = absences.flatMap(a => {
-    // Se for mais de um dia, cria um registro para cada dia
+    // Se for mais de um dia, cria um registro para cada dia, cada um com id único
     if (a.days_off && a.days_off > 1) {
       return Array.from({ length: a.days_off }, (_, i) => ({
         ...a,
         date: moment(a.date).add(i, 'days').format('YYYY-MM-DD'),
         original_date: a.date,
-        day_index: i + 1
+        day_index: i + 1,
+        id: `${a.id}_${i+1}` // id único para cada dia
       }));
     }
-    return [a];
+    return [{ ...a, id: `${a.id}_1` }]; // também garante id único para registros de 1 dia
   });
 
   const filteredAbsences = expandedAbsences.filter(a => {
     const searchMatch = !filters.search || 
       a.employee_name?.toLowerCase().includes(filters.search.toLowerCase());
     const typeMatch = filters.type === "all" || a.type === filters.type;
-    const monthMatch = !filters.month || a.month_reference === filters.month;
-    return searchMatch && typeMatch && monthMatch;
+    // Garante que ambos estejam no formato 'YYYY-MM' para comparação
+    const monthMatch = !filters.month || moment(a.date).format('YYYY-MM') === moment(filters.month, 'YYYY-MM').format('YYYY-MM');
+    const dateFromMatch = !filters.dateFrom || moment(a.date).isSameOrAfter(filters.dateFrom);
+    const dateToMatch = !filters.dateTo || moment(a.date).isSameOrBefore(filters.dateTo);
+    return searchMatch && typeMatch && monthMatch && dateFromMatch && dateToMatch;
   }).sort((a, b) => moment(b.date).valueOf() - moment(a.date).valueOf());
 
   // Stats
