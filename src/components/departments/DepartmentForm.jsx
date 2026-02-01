@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,6 +10,7 @@ import { base44 } from "@/api/base44SupabaseClient";
 import { Loader2, Plus, X } from "lucide-react";
 
 export default function DepartmentForm({ open, onClose, department, onSave }) {
+  const queryClient = useQueryClient();
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -84,6 +86,7 @@ export default function DepartmentForm({ open, onClose, department, onSave }) {
       }
 
       setSaving(false);
+      queryClient.invalidateQueries({ queryKey: ['departments'] });
       onSave();
     } catch (err) {
       console.error("Erro ao salvar departamento:", err);

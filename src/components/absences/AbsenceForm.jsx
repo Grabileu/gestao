@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "/
 import { Textarea } from "/src/components/ui/textarea";
 import { Checkbox } from "/src/components/ui/checkbox";
 import { base44 } from "/src/api/base44SupabaseClient";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, Search, X } from "lucide-react";
 
 const absenceTypes = [
   { value: "absence", label: "Falta" },
@@ -36,8 +36,19 @@ export default function AbsenceForm({ open, onClose, absence, employees, onSave 
     observations: ""
   });
   const [employeeSearch, setEmployeeSearch] = useState("");
+  const [showEmployeeList, setShowEmployeeList] = useState(false);
   const [loading, setLoading] = useState(false);
   const [validationError, setValidationError] = useState("");
+
+  // Ordenar funcionários alfabeticamente e filtrar ativos
+  const sortedEmployees = employees
+    .filter(e => e.status === "active")
+    .sort((a, b) => a.full_name.localeCompare(b.full_name));
+
+  // Filtrar por busca
+  const filteredEmployees = sortedEmployees.filter(emp =>
+    emp.full_name.toLowerCase().includes(employeeSearch.toLowerCase())
+  );
 
   useEffect(() => {
     if (absence) {
@@ -67,6 +78,8 @@ export default function AbsenceForm({ open, onClose, absence, employees, onSave 
         observations: ""
       });
     }
+    setEmployeeSearch("");
+    setShowEmployeeList(false);
     setValidationError("");
   }, [absence, open]);
   // Sempre que o tipo for medical_certificate, nunca desconta do salário
@@ -83,6 +96,8 @@ export default function AbsenceForm({ open, onClose, absence, employees, onSave 
       employee_id: employeeId,
       employee_name: employee?.full_name || ""
     }));
+    setShowEmployeeList(false);
+    setEmployeeSearch("");
   };
 
   const handleDateChange = (date) => {
@@ -148,34 +163,66 @@ export default function AbsenceForm({ open, onClose, absence, employees, onSave 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label className="text-slate-300">Funcionário *</Label>
-              <Select value={String(formData.employee_id)} onValueChange={handleEmployeeChange}>
-                <SelectTrigger className="bg-slate-800 border-slate-600 text-white">
-                  <SelectValue placeholder="Selecione" />
-                </SelectTrigger>
-                <SelectContent side="bottom" className="bg-slate-800 border-slate-600 text-white z-50">
-                  <div className="px-2 pb-2 sticky top-0 bg-slate-800 z-10" onClick={e => e.stopPropagation()} onMouseDown={e => e.stopPropagation()}>
-                    <input
-                      type="text"
-                      placeholder="Buscar funcionário..."
-                      value={employeeSearch}
-                      onChange={e => setEmployeeSearch(e.target.value)}
-                      className="w-full px-2 py-1 rounded bg-slate-700 text-white border border-slate-600 focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm"
-                      autoFocus
+              <Label className="text-slate-300 mb-2 block">Funcionário *</Label>
+              <div className="relative">
+                {/* Input que mostra selecionado */}
+                <button
+                  type="button"
+                  onClick={() => setShowEmployeeList(!showEmployeeList)}
+                  className="w-full px-3 py-2 rounded-md bg-slate-800 border border-slate-600 text-white text-left flex items-center justify-between hover:border-slate-500"
+                >
+                  <span className={formData.employee_name ? "text-white" : "text-slate-400"}>
+                    {formData.employee_name || "Selecione um funcionário"}
+                  </span>
+                  {formData.employee_name && (
+                    <X
+                      className="w-4 h-4 cursor-pointer"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setFormData(prev => ({ ...prev, employee_id: "", employee_name: "" }));
+                        setEmployeeSearch("");
+                      }}
                     />
+                  )}
+                </button>
+
+                {/* Dropdown com busca */}
+                {showEmployeeList && (
+                  <div className="absolute top-full left-0 right-0 mt-2 bg-slate-800 border border-slate-600 rounded-md z-50 shadow-lg">
+                    <div className="p-2 border-b border-slate-700">
+                      <div className="relative">
+                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-500" />
+                        <Input
+                          autoFocus
+                          type="text"
+                          placeholder="Pesquisar funcionário..."
+                          value={employeeSearch}
+                          onChange={(e) => setEmployeeSearch(e.target.value)}
+                          className="bg-slate-700 border-slate-600 text-white pl-10"
+                        />
+                      </div>
+                    </div>
+                    <div className="max-h-64 overflow-y-auto">
+                      {filteredEmployees.length > 0 ? (
+                        filteredEmployees.map(emp => (
+                          <button
+                            key={emp.id}
+                            type="button"
+                            onClick={() => handleEmployeeChange(String(emp.id))}
+                            className="w-full text-left px-3 py-2 hover:bg-slate-700 text-white text-sm"
+                          >
+                            {emp.full_name}
+                          </button>
+                        ))
+                      ) : (
+                        <div className="p-4 text-center text-slate-400 text-sm">
+                          Nenhum funcionário encontrado
+                        </div>
+                      )}
+                    </div>
                   </div>
-                  {employees
-                    .filter(e => e.status === "active")
-                    .filter(e =>
-                      !employeeSearch ||
-                      e.full_name.toLowerCase().includes(employeeSearch.toLowerCase())
-                    )
-                    .sort((a, b) => a.full_name.localeCompare(b.full_name, 'pt-BR'))
-                    .map(emp => (
-                      <SelectItem key={emp.id} value={String(emp.id)} className="text-white hover:bg-slate-700 cursor-pointer">{emp.full_name}</SelectItem>
-                    ))}
-                </SelectContent>
-              </Select>
+                )}
+              </div>
             </div>
             
             <div>

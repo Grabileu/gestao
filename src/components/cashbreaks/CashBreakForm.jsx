@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { base44 } from "@/api/base44SupabaseClient";
-import { Loader2 } from "lucide-react";
+import { Loader2, Search, X } from "lucide-react";
 
 const shiftOptions = [
   { value: "morning", label: "Manhã" },
@@ -47,6 +47,8 @@ export default function CashBreakForm({ open, onClose, cashBreak, stores, cashie
   const [saving, setSaving] = useState(false);
   const [filteredCashiers, setFilteredCashiers] = useState([]);
   const [loadingEmployees, setLoadingEmployees] = useState(false);
+  const [searchCashier, setSearchCashier] = useState("");
+  const [showCashierList, setShowCashierList] = useState(false);
 
   useEffect(() => {
     if (cashBreak) {
@@ -74,6 +76,8 @@ export default function CashBreakForm({ open, onClose, cashBreak, stores, cashie
         payment_method: "cash"
       });
     }
+    setSearchCashier("");
+    setShowCashierList(false);
   }, [cashBreak, open]);
 
   // Sempre que mudar o método de pagamento, já define voucher_status corretamente (apenas ao adicionar)
