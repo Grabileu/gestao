@@ -171,11 +171,11 @@
   ],
   "absences": [
     {
-      "id": 1768954885693,
-      "employee_id": "1768873440243",
-      "employee_name": "Gabriel Umbelino",
-      "date": "2026-01-20",
-      "type": "medical_certificate",
+      "id": 1769958353907,
+      "employee_id": "1768877780764",
+      "employee_name": "Angelina Ferreira",
+      "date": "2026-02-01",
+      "type": "absence",
       "hours": null,
       "full_day": true,
       "reason": "",
@@ -183,9 +183,9 @@
       "cid": "",
       "doctor_name": "",
       "crm": "",
-      "days_off": 2,
+      "days_off": 1,
       "discount_salary": true,
-      "month_reference": "2026-01",
+      "month_reference": "2026-02",
       "status": "pending",
       "observations": ""
     }

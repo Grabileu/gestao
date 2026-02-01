@@ -11,8 +11,9 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Search, Eye, Trash2, Umbrella, Calendar, AlertCircle, X } from "lucide-react";
+import { Plus, Search, Eye, Trash2, Umbrella, Calendar, AlertCircle, X, Edit } from "lucide-react";
 import moment from "moment";
+import DatePickerInput from "@/components/vacations/DatePickerInput";
 
 const statusLabels = {
   pending: { label: "Pendente", color: "bg-yellow-500/20 text-yellow-400" },
@@ -26,11 +27,27 @@ export default function Vacations() {
   const [showForm, setShowForm] = useState(false);
   const [viewVacation, setViewVacation] = useState(null);
   const [deleteVacation, setDeleteVacation] = useState(null);
-  const [search, setSearch] = useState("");
   const [searchEmployee, setSearchEmployee] = useState("");
   const [showEmployeeList, setShowEmployeeList] = useState(false);
   const employeeTriggerRef = useRef(null);
   const [dropdownMaxHeight, setDropdownMaxHeight] = useState(256);
+  const dateToRef = useRef(null);
+  const [filters, setFilters] = useState({
+    search: "",
+    status: "all",
+    date_from: "",
+    date_to: ""
+  });
+  const [pendingFilters, setPendingFilters] = useState({
+    search: "",
+    status: "all",
+    date_from: "",
+    date_to: ""
+  });
+  const [hasSearched, setHasSearched] = useState(false);
+  const [clearKey, setClearKey] = useState(0);
+  const [page, setPage] = useState(1);
+  const pageSize = 31;
 
   const queryClient = useQueryClient();
 
@@ -193,9 +210,30 @@ export default function Vacations() {
     }
   };
 
-  const filteredVacations = vacations.filter(v =>
-    v.employee_name?.toLowerCase().includes(search.toLowerCase())
+  const filteredVacations = hasSearched
+    ? vacations.filter(v => {
+      const matchesSearch = !filters.search || v.employee_name?.toLowerCase().includes(filters.search.toLowerCase());
+      const matchesStatus = filters.status === "all" || v.status === filters.status;
+      const matchesDateFrom = !filters.date_from || (v.start_date && new Date(v.start_date) >= new Date(filters.date_from));
+      const matchesDateTo = !filters.date_to || (v.start_date && new Date(v.start_date) <= new Date(filters.date_to));
+      return matchesSearch && matchesStatus && matchesDateFrom && matchesDateTo;
+    })
+    : [];
+
+  const totalPages = Math.max(1, Math.ceil(filteredVacations.length / pageSize));
+  const currentPage = Math.min(page, totalPages);
+  const paginatedVacations = filteredVacations.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
   );
+
+  useEffect(() => {
+    if (!hasSearched) {
+      setPage(1);
+      return;
+    }
+    setPage((p) => Math.min(p, totalPages));
+  }, [filteredVacations.length, hasSearched, totalPages]);
 
   const formatCurrency = (value) => new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value || 0);
 
@@ -278,25 +316,128 @@ export default function Vacations() {
         </Card>
       </div>
 
-      {/* Search + Limpar */}
+      {/* Filtros */}
       <Card className="bg-slate-800/50 border-slate-700">
-        <CardContent className="p-4 flex items-end justify-between gap-4">
-          <div className="relative max-w-md flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-            <Input
-              placeholder="Buscar funcionário..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pl-10 bg-slate-900 border-slate-600 text-white"
-            />
+        <CardContent className="p-4 space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+            {/* Busca por Funcionário */}
+            <div className="md:col-span-2 flex flex-col space-y-2">
+              <span className="text-slate-400 text-xs mb-1 ml-1">Funcionário</span>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                <Input
+                  placeholder="Buscar..."
+                  value={pendingFilters.search}
+                  onChange={(e) => setPendingFilters(p => ({ ...p, search: e.target.value }))}
+                  className="pl-10 bg-slate-900 border-slate-600 text-white"
+                />
+              </div>
+            </div>
+
+            {/* Data Início */}
+            <div className="flex flex-col space-y-2">
+              <span className="text-slate-400 text-xs mb-1 ml-1">Data Inicial</span>
+              <DatePickerInput
+                key={`date-from-${clearKey}`}
+                value={pendingFilters.date_from}
+                onChange={(val) => setPendingFilters(p => ({ ...p, date_from: val }))}
+                onEnter={() => {
+                  // Inserir data atual ao pressionar Enter
+                  const today = new Date();
+                  const year = today.getFullYear();
+                  const month = String(today.getMonth() + 1).padStart(2, "0");
+                  const day = String(today.getDate()).padStart(2, "0");
+                  setPendingFilters(p => ({ ...p, date_from: `${year}-${month}-${day}` }));
+                  // Focar no campo de data final após selecionar
+                  setTimeout(() => {
+                    dateToRef.current?.querySelector('input')?.focus();
+                  }, 100);
+                }}
+                onDateSelected={() => {
+                  // Focar no campo de data final após selecionar data inicial
+                  setTimeout(() => {
+                    dateToRef.current?.querySelector('input')?.focus();
+                  }, 100);
+                }}
+              />
+            </div>
+
+            {/* Data Fim */}
+            <div className="flex flex-col space-y-2" ref={dateToRef}>
+              <span className="text-slate-400 text-xs mb-1 ml-1">Data Final</span>
+              <DatePickerInput
+                key={`date-to-${clearKey}`}
+                value={pendingFilters.date_to}
+                onChange={(val) => setPendingFilters(p => ({ ...p, date_to: val }))}
+                onEnter={() => {
+                  // Inserir data atual ao pressionar Enter
+                  const today = new Date();
+                  const year = today.getFullYear();
+                  const month = String(today.getMonth() + 1).padStart(2, "0");
+                  const day = String(today.getDate()).padStart(2, "0");
+                  setPendingFilters(p => ({ ...p, date_to: `${year}-${month}-${day}` }));
+                  document.activeElement?.blur();
+                }}
+              />
+            </div>
+
+            {/* Status */}
+            <div className="flex flex-col space-y-2">
+              <span className="text-slate-400 text-xs mb-1 ml-1">Status</span>
+              <Select value={pendingFilters.status} onValueChange={(v) => setPendingFilters(p => ({ ...p, status: v }))}>
+                <SelectTrigger className="bg-slate-900 border-slate-600 text-white cursor-pointer">
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent className="bg-slate-800 border-slate-600 text-white z-50">
+                  <SelectItem value="all" className="focus:bg-slate-700">Todos os Status</SelectItem>
+                  <SelectItem value="scheduled" className="focus:bg-slate-700">Agendada</SelectItem>
+                  <SelectItem value="in_progress" className="focus:bg-slate-700">Em Gozo</SelectItem>
+                  <SelectItem value="completed" className="focus:bg-slate-700">Concluída</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
-          <div className="flex flex-col justify-end ml-auto">
-            <Button variant="ghost" onClick={() => setSearch("")} className="text-slate-400 hover:text-white hover:bg-slate-700">
-              <span className="flex items-center"><svg xmlns='http://www.w3.org/2000/svg' className='h-4 w-4 mr-1' fill='none' viewBox='0 0 24 24' stroke='currentColor'><path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M6 18L18 6M6 6l12 12' /></svg>Limpar</span>
+
+          {/* Botão Limpar */}
+          <div className="flex justify-end gap-2">
+            <Button
+              className="bg-blue-600 hover:bg-blue-700 text-white"
+              type="button"
+              onClick={() => {
+                setHasSearched(true);
+                setPage(1);
+                setFilters({
+                  search: pendingFilters.search,
+                  status: pendingFilters.status,
+                  date_from: pendingFilters.date_from,
+                  date_to: pendingFilters.date_to
+                });
+              }}
+            >
+              Pesquisar
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={() => {
+                const cleared = { search: "", status: "all", date_from: "", date_to: "" };
+                setPendingFilters(cleared);
+                setClearKey((k) => k + 1);
+              }}
+              className="text-slate-400 hover:text-white hover:bg-slate-700"
+            >
+              <svg xmlns='http://www.w3.org/2000/svg' className='h-4 w-4 mr-1' fill='none' viewBox='0 0 24 24' stroke='currentColor'><path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M6 18L18 6M6 6l12 12' /></svg>
+              Limpar Filtros
             </Button>
           </div>
         </CardContent>
       </Card>
+
+      {/* Resultados */}
+      {hasSearched && (
+        <div className="text-sm text-slate-400 mb-4">
+          {filteredVacations.length} férias {filteredVacations.length === 1 ? "encontrada" : "encontradas"}
+        </div>
+      )}
 
       {/* Table */}
       <div className="bg-slate-800/50 rounded-lg border border-slate-700 overflow-hidden">
@@ -313,10 +454,10 @@ export default function Vacations() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredVacations.length === 0 ? (
-              <TableRow><TableCell colSpan={7} className="text-center text-slate-400 py-8">Nenhuma férias registrada</TableCell></TableRow>
+            {paginatedVacations.length === 0 ? (
+              <TableRow><TableCell colSpan={7} className="text-center text-slate-400 py-8">{hasSearched ? "Nenhuma férias registrada" : ""}</TableCell></TableRow>
             ) : (
-              filteredVacations.map((vacation) => (
+              paginatedVacations.map((vacation) => (
                 <TableRow key={vacation.id} className="border-slate-700">
                   <TableCell className="text-white font-medium">{vacation.employee_name}</TableCell>
                   <TableCell className="text-slate-300">{vacation.days_entitled - (vacation.days_sold || 0)} dias</TableCell>
@@ -335,6 +476,18 @@ export default function Vacations() {
                       <Button size="icon" variant="ghost" onClick={() => setViewVacation(vacation)} className="text-slate-400 hover:text-white">
                         <Eye className="h-4 w-4" />
                       </Button>
+                      {vacation.status !== "completed" && (
+                        <Button size="icon" variant="ghost" onClick={() => {
+                          setForm({
+                            ...vacation,
+                            employee_id: vacation.employee_id || "",
+                            employee_name: vacation.employee_name || ""
+                          });
+                          setShowForm(true);
+                        }} className="text-slate-400 hover:text-blue-400">
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                      )}
                       <Button size="icon" variant="ghost" onClick={() => setDeleteVacation(vacation)} className="text-slate-400 hover:text-red-400">
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -346,6 +499,34 @@ export default function Vacations() {
           </TableBody>
         </Table>
       </div>
+
+      {hasSearched && filteredVacations.length > pageSize && (
+        <div className="flex items-center justify-between">
+          <p className="text-slate-400 text-sm">
+            Página {currentPage} de {totalPages} • {filteredVacations.length} ocorrências
+          </p>
+          <div className="flex gap-2">
+            <Button
+              variant="ghost"
+              className="text-slate-300 hover:text-white hover:bg-slate-700"
+              type="button"
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+            >
+              Anterior
+            </Button>
+            <Button
+              variant="ghost"
+              className="text-slate-300 hover:text-white hover:bg-slate-700"
+              type="button"
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+            >
+              Próxima
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* Form */}
       <Dialog open={showForm} onOpenChange={() => {
@@ -482,7 +663,17 @@ export default function Vacations() {
                 <div className="grid grid-cols-3 gap-4">
                   <div>
                     <Label className="text-slate-300">Data Início *</Label>
-                    <Input type="date" value={form.start_date} onChange={(e) => handleDatesChange("start_date", e.target.value)} className="bg-slate-800 border-slate-600 text-white" required />
+                    <DatePickerInput
+                      value={form.start_date || ""}
+                      onChange={(val) => handleDatesChange("start_date", val)}
+                      onEnter={() => {
+                        const today = new Date();
+                        const year = today.getFullYear();
+                        const month = String(today.getMonth() + 1).padStart(2, "0");
+                        const day = String(today.getDate()).padStart(2, "0");
+                        handleDatesChange("start_date", `${year}-${month}-${day}`);
+                      }}
+                    />
                   </div>
                   <div>
                     <Label className="text-slate-300">Data Fim</Label>

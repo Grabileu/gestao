@@ -93,13 +93,26 @@ export default function HRConfig() {
 
   const handleSave = async () => {
     setSaving(true);
-    if (configs.length > 0 && configs[0].id) {
-      await base44.entities.HRConfig.update(configs[0].id, formData);
-    } else {
-      await base44.entities.HRConfig.create(formData);
+    try {
+      const dataToSave = { ...formData, name: formData.name || "default" };
+
+      if (configs.length > 0 && configs[0].id) {
+        const saved = await base44.entities.HRConfig.update(configs[0].id, dataToSave);
+        if (saved) setFormData(prev => ({ ...prev, ...saved }));
+        alert("✅ Configurações salvas com sucesso!");
+      } else {
+        const created = await base44.entities.HRConfig.create(dataToSave);
+        if (created) setFormData(prev => ({ ...prev, ...created }));
+        alert("✅ Configurações criadas com sucesso!");
+      }
+
+      queryClient.invalidateQueries({ queryKey: ["hr-config"] });
+    } catch (error) {
+      console.error("Erro ao salvar configurações:", error);
+      alert("❌ Erro ao salvar: " + (error.message || JSON.stringify(error)));
+    } finally {
+      setSaving(false);
     }
-    queryClient.invalidateQueries({ queryKey: ["hr-config"] });
-    setSaving(false);
   };
 
   const updateField = (field, value) => {
@@ -223,29 +236,6 @@ export default function HRConfig() {
                 </label>
               </div>
             </div>
-
-            {/* Escalas de trabalho */}
-            <div className="p-4 rounded-lg bg-slate-800/50 border border-slate-700">
-              <div>
-                <Label className="text-slate-200 font-medium">Escalas de trabalho permitidas</Label>
-                <p className="text-xs text-slate-400">- CLT art. 67</p>
-                <p className="text-xs text-slate-500 mt-1 mb-3">Selecione as escalas aplicáveis na empresa.</p>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                <label className="flex items-center gap-2 text-white px-3 py-2 rounded-lg border border-slate-600 cursor-pointer hover:bg-slate-700 transition-colors">
-                  <Checkbox checked={!!formData.dsr_work_5x2} onCheckedChange={v => updateField('dsr_work_5x2', v)} className="w-4 h-4 accent-blue-500" />
-                  <span className="text-sm">5x2</span>
-                </label>
-                <label className="flex items-center gap-2 text-white px-3 py-2 rounded-lg border border-slate-600 cursor-pointer hover:bg-slate-700 transition-colors">
-                  <Checkbox checked={!!formData.dsr_work_6x1} onCheckedChange={v => updateField('dsr_work_6x1', v)} className="w-4 h-4 accent-blue-500" />
-                  <span className="text-sm">6x1</span>
-                </label>
-                <label className="flex items-center gap-2 text-white px-3 py-2 rounded-lg border border-slate-600 cursor-pointer hover:bg-slate-700 transition-colors">
-                  <Checkbox checked={!!formData.dsr_work_12x36} onCheckedChange={v => updateField('dsr_work_12x36', v)} className="w-4 h-4 accent-blue-500" />
-                  <span className="text-sm">12x36</span>
-                </label>
-              </div>
-            </div>
           </div>
         </TabsContent>
 
@@ -265,44 +255,6 @@ export default function HRConfig() {
                 <p className="text-xs text-slate-500 mt-1 mb-3">Informe a carga horária semanal padrão da empresa.</p>
               </div>
               <Input type="number" min={1} max={60} value={formData.carga_horaria_semanal || 44} onChange={e => updateField("carga_horaria_semanal", parseInt(e.target.value))} className="text-white bg-slate-900 border-slate-600" />
-            </div>
-
-            {/* Escalas de trabalho */}
-            <div className="p-4 rounded-lg bg-slate-800/50 border border-slate-700">
-              <div>
-                <Label className="text-slate-200 font-medium">Escalas de trabalho permitidas</Label>
-                <p className="text-xs text-slate-400">- CLT art. 67</p>
-                <p className="text-xs text-slate-500 mt-1 mb-3">Selecione as escalas aplicáveis na empresa.</p>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                <label className="flex items-center gap-2 text-white px-3 py-2 rounded-lg border border-slate-600 cursor-pointer hover:bg-slate-700 transition-colors">
-                  <Checkbox checked={formData.escala_tipo?.includes("5x2")} onCheckedChange={v => {
-                    let val = formData.escala_tipo || [];
-                    if (v) val = [...val, "5x2"];
-                    else val = val.filter(x => x !== "5x2");
-                    updateField("escala_tipo", val);
-                  }} className="w-4 h-4 accent-blue-500" />
-                  <span className="text-sm">5x2</span>
-                </label>
-                <label className="flex items-center gap-2 text-white px-3 py-2 rounded-lg border border-slate-600 cursor-pointer hover:bg-slate-700 transition-colors">
-                  <Checkbox checked={formData.escala_tipo?.includes("6x1")} onCheckedChange={v => {
-                    let val = formData.escala_tipo || [];
-                    if (v) val = [...val, "6x1"];
-                    else val = val.filter(x => x !== "6x1");
-                    updateField("escala_tipo", val);
-                  }} className="w-4 h-4 accent-blue-500" />
-                  <span className="text-sm">6x1</span>
-                </label>
-                <label className="flex items-center gap-2 text-white px-3 py-2 rounded-lg border border-slate-600 cursor-pointer hover:bg-slate-700 transition-colors">
-                  <Checkbox checked={formData.escala_tipo?.includes("12x36")} onCheckedChange={v => {
-                    let val = formData.escala_tipo || [];
-                    if (v) val = [...val, "12x36"];
-                    else val = val.filter(x => x !== "12x36");
-                    updateField("escala_tipo", val);
-                  }} className="w-4 h-4 accent-blue-500" />
-                  <span className="text-sm">12x36</span>
-                </label>
-              </div>
             </div>
 
             {/* Controle de ponto */}

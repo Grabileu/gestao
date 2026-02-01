@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { base44 } from "@/api/base44SupabaseClient";
 import { AlertCircle, Search, X } from "lucide-react";
+import DatePickerInput from "@/components/vacations/DatePickerInput";
 
 export default function OvertimeForm({ open, onClose, overtime, employees, onSave }) {
   const [formData, setFormData] = useState({
@@ -200,12 +201,16 @@ export default function OvertimeForm({ open, onClose, overtime, employees, onSav
             
             <div>
               <Label className="text-slate-300">Data *</Label>
-              <Input
-                type="date"
-                value={formData.date}
-                onChange={(e) => handleDateChange(e.target.value)}
-                className="bg-slate-800 border-slate-600 text-white"
-                required
+              <DatePickerInput
+                value={formData.date || ""}
+                onChange={(val) => handleDateChange(val)}
+                onEnter={() => {
+                  const today = new Date();
+                  const year = today.getFullYear();
+                  const month = String(today.getMonth() + 1).padStart(2, "0");
+                  const day = String(today.getDate()).padStart(2, "0");
+                  handleDateChange(`${year}-${month}-${day}`);
+                }}
               />
             </div>
             

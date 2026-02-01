@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Filter, X, Download } from "lucide-react";
 import { Printer } from "lucide-react";
+import DatePickerInput from "@/components/vacations/DatePickerInput";
 
 export default function CashBreakFilters({ filters, onChange, stores, cashiers, onClear, onExport, showExport = false }) {
   const handleChange = (field, value) => {
@@ -51,21 +52,17 @@ export default function CashBreakFilters({ filters, onChange, stores, cashiers, 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
           <div className="flex flex-col space-y-2">
             <span className="text-slate-400 text-xs mb-1 ml-1">Data De</span>
-            <Input
-              type="date"
+            <DatePickerInput
               value={filters.date_from || ""}
-              onChange={(e) => handleChange("date_from", e.target.value)}
-              className="bg-slate-800 border-slate-600 text-white"
+              onChange={(val) => handleChange("date_from", val)}
             />
           </div>
 
           <div className="flex flex-col space-y-2">
             <span className="text-slate-400 text-xs mb-1 ml-1">Data Até</span>
-            <Input
-              type="date"
+            <DatePickerInput
               value={filters.date_to || ""}
-              onChange={(e) => handleChange("date_to", e.target.value)}
-              className="bg-slate-800 border-slate-600 text-white"
+              onChange={(val) => handleChange("date_to", val)}
             />
           </div>
 

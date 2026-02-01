@@ -16,7 +16,7 @@ const statusLabels = {
   rejected: { label: "Rejeitado", color: "bg-red-500/20 text-red-400" }
 };
 
-export default function OvertimeTable({ overtimes, onEdit, onDelete }) {
+export default function OvertimeTable({ overtimes, onEdit, onDelete, hasSearched }) {
   return (
     <div className="bg-slate-800/50 rounded-lg border border-slate-700 overflow-hidden">
       <Table>
@@ -34,7 +34,7 @@ export default function OvertimeTable({ overtimes, onEdit, onDelete }) {
           {overtimes.length === 0 ? (
             <TableRow>
               <TableCell colSpan={7} className="text-center text-slate-400 py-8">
-                Nenhuma hora extra registrada
+                {hasSearched ? "Nenhuma hora extra registrada" : ""}
               </TableCell>
             </TableRow>
           ) : (

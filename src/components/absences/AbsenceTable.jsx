@@ -42,7 +42,7 @@ const statusLabels = {
   rejected: { label: "Rejeitado", color: "bg-red-500/20 text-red-400" }
 };
 
-export default function AbsenceTable({ absences, onEdit, onDelete }) {
+export default function AbsenceTable({ absences, onEdit, onDelete, hasSearched }) {
   const [viewAbsence, setViewAbsence] = React.useState(null);
 
   const InfoItem = ({ icon: Icon, label, value }) => (
@@ -76,7 +76,7 @@ export default function AbsenceTable({ absences, onEdit, onDelete }) {
             {absences.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={8} className="text-center text-slate-400 py-8">
-                  Nenhuma falta/atestado registrado
+                  {hasSearched ? "Nenhuma falta/atestado registrado" : ""}
                 </TableCell>
               </TableRow>
             ) : (
@@ -134,11 +134,14 @@ export default function AbsenceTable({ absences, onEdit, onDelete }) {
                 <InfoItem icon={User} label="Funcionário" value={viewAbsence.employee_name} />
                 <InfoItem icon={FileText} label="Tipo" value={typeLabels[viewAbsence.type]?.label} />
                 <InfoItem icon={BadgeDollarSign} label="Desconta do salário" value={viewAbsence.discount_salary ? "Sim" : "Não"} />
-                <InfoItem icon={FileText} label="Motivo" value={viewAbsence.reason} />
-                <InfoItem icon={StickyNote} label="Observações" value={viewAbsence.observations} />
                 {viewAbsence.type === 'delay' && (
                   <InfoItem icon={FileText} label="Horas ausente" value={formatHorasMinutos(viewAbsence.hours)} />
                 )}
+                {!viewAbsence.full_day && viewAbsence.hours && (
+                  <InfoItem icon={FileText} label="Horas ausente" value={formatHorasMinutos(viewAbsence.hours)} />
+                )}
+                <InfoItem icon={FileText} label="Motivo" value={viewAbsence.reason} />
+                <InfoItem icon={StickyNote} label="Observações" value={viewAbsence.observations} />
                 {viewAbsence.type === 'medical_certificate' && (
                   <>
                     <InfoItem icon={FileText} label="CID" value={viewAbsence.cid} />

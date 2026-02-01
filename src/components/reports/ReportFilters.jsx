@@ -4,6 +4,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Filter, X, Download } from "lucide-react";
+import DatePickerInput from "@/components/vacations/DatePickerInput";
 
 export default function ReportFilters({ filters, onChange, departments, stores = [], onClear, onExport }) {
   const handleChange = (field, value) => {
@@ -107,21 +108,17 @@ export default function ReportFilters({ filters, onChange, departments, stores =
 
           <div className="flex flex-col space-y-2">
             <span className="text-slate-400 text-xs mb-1 ml-1">Admissão De</span>
-            <Input
-              type="date"
+            <DatePickerInput
               value={filters.hire_date_from || ""}
-              onChange={(e) => handleChange("hire_date_from", e.target.value)}
-              className="bg-slate-800 border-slate-600 text-white"
+              onChange={(val) => handleChange("hire_date_from", val)}
             />
           </div>
 
           <div className="flex flex-col space-y-2">
             <span className="text-slate-400 text-xs mb-1 ml-1">Admissão Até</span>
-            <Input
-              type="date"
+            <DatePickerInput
               value={filters.hire_date_to || ""}
-              onChange={(e) => handleChange("hire_date_to", e.target.value)}
-              className="bg-slate-800 border-slate-600 text-white"
+              onChange={(val) => handleChange("hire_date_to", val)}
             />
           </div>
 

@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { AlertCircle, FileText, Calendar, Users, Printer, Filter, X } from "lucide-react";
 import moment from "moment";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from "recharts";
+import DatePickerInput from "@/components/vacations/DatePickerInput";
 
 const COLORS = ["#ef4444", "#f59e0b", "#f97316", "#3b82f6"];
 const typeLabels = { absence: "Falta", medical_certificate: "Atestado", justified: "Justificada" };
@@ -249,31 +250,37 @@ export default function AbsenceReports() {
             {/* Data Inicial */}
             <div>
               <label className="text-xs text-slate-500 mb-1 block">Data Inicial</label>
-              <Input
-                type="date"
-                value={filters.dateFrom}
-                onChange={(e) => setFilters(p => ({ ...p, dateFrom: e.target.value }))}
-                className="bg-slate-800 border-slate-600 text-white h-10"
+              <DatePickerInput
+                testId="date-inicial"
+                value={filters.dateFrom || ""}
+                onChange={(val) => setFilters(p => ({ ...p, dateFrom: val }))}
+                onEnter={() => {
+                  const today = new Date();
+                  const year = today.getFullYear();
+                  const month = String(today.getMonth() + 1).padStart(2, "0");
+                  const day = String(today.getDate()).padStart(2, "0");
+                  setFilters(p => ({ ...p, dateFrom: `${year}-${month}-${day}` }));
+                  setTimeout(() => {
+                    const dateToInput = document.querySelector('input[data-testid="date-final"]');
+                    if (dateToInput) dateToInput.focus();
+                  }, 50);
+                }}
               />
             </div>
             {/* Data Final */}
             <div>
               <label className="text-xs text-slate-500 mb-1 block">Data Final</label>
-              <Input
-                type="date"
-                value={filters.dateTo}
-                onChange={(e) => setFilters(p => ({ ...p, dateTo: e.target.value }))}
-                className="bg-slate-800 border-slate-600 text-white h-10"
-              />
-            </div>
-            {/* Mês Referência */}
-            <div>
-              <label className="text-xs text-slate-500 mb-1 block">Mês Referência</label>
-              <Input
-                type="month"
-                value={filters.month}
-                onChange={(e) => setFilters(p => ({ ...p, month: e.target.value }))}
-                className="bg-slate-800 border-slate-600 text-white h-10"
+              <DatePickerInput
+                testId="date-final"
+                value={filters.dateTo || ""}
+                onChange={(val) => setFilters(p => ({ ...p, dateTo: val }))}
+                onEnter={() => {
+                  const today = new Date();
+                  const year = today.getFullYear();
+                  const month = String(today.getMonth() + 1).padStart(2, "0");
+                  const day = String(today.getDate()).padStart(2, "0");
+                  setFilters(p => ({ ...p, dateTo: `${year}-${month}-${day}` }));
+                }}
               />
             </div>
             {/* Tipo */}

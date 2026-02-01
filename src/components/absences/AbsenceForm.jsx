@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "/
 import { Textarea } from "/src/components/ui/textarea";
 import { Checkbox } from "/src/components/ui/checkbox";
 import { base44 } from "/src/api/base44SupabaseClient";
+import DatePickerInput from "/src/components/vacations/DatePickerInput";
 import { AlertCircle, Search, X } from "lucide-react";
 
 const absenceTypes = [
@@ -16,6 +17,31 @@ const absenceTypes = [
   { value: "delay", label: "Atraso" }
 ];
 
+const shiftLabels = {
+  morning: "Manhã",
+  afternoon: "Tarde",
+  night: "Noite"
+};
+
+const shiftRegex = /(^|\n)Turno:\s*(Manhã|Tarde|Noite)\s*/i;
+
+function extractShift(observations = "") {
+  const match = observations.match(shiftRegex);
+  if (!match) return "";
+  const label = match[2]?.toLowerCase();
+  if (label === "manhã" || label === "manha") return "morning";
+  if (label === "tarde") return "afternoon";
+  if (label === "noite") return "night";
+  return "";
+}
+
+function normalizeObservations(observations = "", shift = "") {
+  const cleaned = observations.replace(shiftRegex, "\n").trim();
+  if (!shift) return cleaned;
+  const prefix = `Faltou pela ${shiftLabels[shift]}`;
+  return cleaned ? `${prefix}\n${cleaned}` : prefix;
+}
+
 export default function AbsenceForm({ open, onClose, absence, employees, onSave }) {
   const [formData, setFormData] = useState({
     employee_id: "",
@@ -23,6 +49,7 @@ export default function AbsenceForm({ open, onClose, absence, employees, onSave 
     date: "",
     type: "absence",
     hours: "",
+    shift: "",
     full_day: true,
     reason: "",
     document_url: "",
@@ -56,7 +83,8 @@ export default function AbsenceForm({ open, onClose, absence, employees, onSave 
         ...absence,
         hours: absence.hours || "",
         days_off: absence.days_off || 1,
-        discount_salary: absence.type === "medical_certificate" ? false : absence.discount_salary
+        discount_salary: absence.type === "medical_certificate" ? false : absence.discount_salary,
+        shift: extractShift(absence.observations)
       });
     } else {
       setFormData({
@@ -65,6 +93,7 @@ export default function AbsenceForm({ open, onClose, absence, employees, onSave 
         date: "",
         type: "absence",
         hours: "",
+        shift: "",
         full_day: true,
         reason: "",
         document_url: "",
@@ -125,21 +154,52 @@ export default function AbsenceForm({ open, onClose, absence, employees, onSave 
     setValidationError("");
     setLoading(true);
     
-    const dataToSave = {
-      ...formData,
-      hours: formData.hours ? parseFloat(formData.hours) : null,
-      days_off: parseInt(formData.days_off) || 1
-    };
+    try {
+      const { shift, ...rest } = formData;
+      const dataToSave = {
+        ...rest,
+        observations: normalizeObservations(formData.observations, shift),
+        hours: formData.hours ? parseFloat(formData.hours) : null,
+        days_off: parseInt(formData.days_off) || 1
+      };
 
-    if (absence?.id) {
-      await base44.entities.Absence.update(absence.id, dataToSave);
-    } else {
-      await base44.entities.Absence.create(dataToSave);
+      console.log("Dados a salvar:", dataToSave);
+
+      let result;
+      if (absence?.id) {
+        result = await base44.entities.Absence.update(absence.id, dataToSave);
+        console.log("Atualização bem-sucedida:", result);
+      } else {
+        result = await base44.entities.Absence.create(dataToSave);
+        console.log("Criação bem-sucedida:", result);
+      }
+
+      if (result?.error) {
+        throw new Error(result.message || "Erro ao salvar falta/atestado");
+      }
+
+      if (!result) {
+        console.warn("Nenhum registro retornado no save. Buscando lista para localizar o novo item...");
+        const all = await base44.entities.Absence.list();
+        const matches = all.filter(a => (
+          String(a.employee_id) === String(dataToSave.employee_id) &&
+          String(a.date) === String(dataToSave.date) &&
+          String(a.type) === String(dataToSave.type)
+        ));
+        result = matches.sort((a, b) => (Number(b.id) || 0) - (Number(a.id) || 0))[0] || null;
+        console.log("Registro encontrado após busca:", result);
+      }
+      
+      setLoading(false);
+      console.log("Chamando onSave...");
+      onSave(result);
+      onClose();
+    } catch (error) {
+      console.error("Erro ao salvar falta/atestado:", error);
+      console.error("Erro completo:", JSON.stringify(error, null, 2));
+      setValidationError(`Erro ao salvar: ${error.message || JSON.stringify(error)}`);
+      setLoading(false);
     }
-    
-    setLoading(false);
-    onSave();
-    onClose();
   };
 
   return (
@@ -227,12 +287,16 @@ export default function AbsenceForm({ open, onClose, absence, employees, onSave 
             
             <div>
               <Label className="text-slate-300">Data *</Label>
-              <Input
-                type="date"
-                value={formData.date}
-                onChange={(e) => handleDateChange(e.target.value)}
-                className="bg-slate-800 border-slate-600 text-white"
-                required
+              <DatePickerInput
+                value={formData.date || ""}
+                onChange={(val) => handleDateChange(val)}
+                onEnter={() => {
+                  const today = new Date();
+                  const year = today.getFullYear();
+                  const month = String(today.getMonth() + 1).padStart(2, "0");
+                  const day = String(today.getDate()).padStart(2, "0");
+                  handleDateChange(`${year}-${month}-${day}`);
+                }}
               />
             </div>
             
@@ -288,6 +352,7 @@ export default function AbsenceForm({ open, onClose, absence, employees, onSave 
                   id="discount_salary"
                   checked={formData.discount_salary}
                   onCheckedChange={(checked) => setFormData(prev => ({ ...prev, discount_salary: checked }))}
+                  className="border-slate-600 bg-slate-900 data-[state=checked]:bg-blue-600 data-[state=checked]:text-white"
                 />
                 <Label htmlFor="discount_salary" className="text-slate-300">Desconta do salário</Label>
               </div>
@@ -299,6 +364,7 @@ export default function AbsenceForm({ open, onClose, absence, employees, onSave 
                   id="full_day"
                   checked={formData.full_day}
                   onCheckedChange={(checked) => setFormData(prev => ({ ...prev, full_day: checked }))}
+                  className="border-slate-600 bg-slate-900 data-[state=checked]:bg-blue-600 data-[state=checked]:text-white"
                 />
                 <Label htmlFor="full_day" className="text-slate-300">Dia inteiro</Label>
               </div>
@@ -307,6 +373,7 @@ export default function AbsenceForm({ open, onClose, absence, employees, onSave 
                   id="discount_salary"
                   checked={formData.discount_salary}
                   onCheckedChange={(checked) => setFormData(prev => ({ ...prev, discount_salary: checked }))}
+                  className="border-slate-600 bg-slate-900 data-[state=checked]:bg-blue-600 data-[state=checked]:text-white"
                 />
                 <Label htmlFor="discount_salary" className="text-slate-300">Desconta do salário</Label>
               </div>
@@ -314,15 +381,33 @@ export default function AbsenceForm({ open, onClose, absence, employees, onSave 
           )}
           
           {!formData.full_day && (
-            <div className="w-1/2">
-              <Label className="text-slate-300">Horas de ausência</Label>
-              <Input
-                type="number"
-                step="0.5"
-                value={formData.hours}
-                onChange={(e) => setFormData(prev => ({ ...prev, hours: e.target.value }))}
-                className="bg-slate-800 border-slate-600 text-white"
-              />
+            <div className="flex gap-4 items-end">
+              <div className="w-1/2">
+                <Label className="text-slate-300">Horas de ausência</Label>
+                <Input
+                  type="number"
+                  step="0.5"
+                  value={formData.hours}
+                  onChange={(e) => setFormData(prev => ({ ...prev, hours: e.target.value }))}
+                  className="bg-slate-800 border-slate-600 text-white"
+                />
+              </div>
+              <div className="w-1/2">
+                <Label className="text-slate-300">Turno que faltou</Label>
+                <Select
+                  value={formData.shift || ""}
+                  onValueChange={(v) => setFormData(prev => ({ ...prev, shift: v }))}
+                >
+                  <SelectTrigger className="bg-slate-800 border-slate-600 text-white w-full">
+                    <SelectValue placeholder="Selecione" />
+                  </SelectTrigger>
+                  <SelectContent side="bottom" className="bg-slate-800 border-slate-600 text-white z-50">
+                    <SelectItem value="morning" className="text-white hover:bg-slate-700 cursor-pointer">Manhã</SelectItem>
+                    <SelectItem value="afternoon" className="text-white hover:bg-slate-700 cursor-pointer">Tarde</SelectItem>
+                    <SelectItem value="night" className="text-white hover:bg-slate-700 cursor-pointer">Noite</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           )}
           

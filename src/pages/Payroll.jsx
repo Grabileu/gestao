@@ -101,11 +101,17 @@ export default function Payroll() {
     const monthAbsences = absences.filter(a => a.month_reference === selectedMonth);
     const monthOvertimes = overtimes.filter(o => o.month_reference === selectedMonth && o.status === "approved");
     // Buscar quebras de caixa do mês
-    const { data: cashBreaks = [] } = await base44.entities.CashBreak.list();
-    const monthCashBreaks = cashBreaks.filter(b => {
-      const breakMonth = b.date ? b.date.slice(0, 7) : "";
-      return breakMonth === selectedMonth;
-    });
+    let monthCashBreaks = [];
+    try {
+      const cashBreaks = await base44.entities.CashBreak.list();
+      monthCashBreaks = cashBreaks.filter(b => {
+        const breakMonth = b.date ? b.date.slice(0, 7) : "";
+        return breakMonth === selectedMonth;
+      });
+    } catch (error) {
+      console.error("Erro ao buscar quebras de caixa:", error);
+      monthCashBreaks = [];
+    }
 
     const hourlyRate = (salary) => salary / (config.work_days_per_month * config.work_hours_per_day);
 
@@ -168,29 +174,35 @@ export default function Payroll() {
       const totalDiscounts = absencesDiscount + cashBreakDiscount + inss;
       const netSalary = grossSalary - inss;
 
-      await base44.entities.Payroll.create({
-        cashbreak_discount: cashBreakDiscount,
-        employee_id: employee.id,
-        employee_name: employee.full_name,
-        month_reference: selectedMonth,
-        base_salary: employee.salary,
-        work_days: config.work_days_per_month - absencesDays,
-        absences_days: absencesDays,
-        absences_discount: absencesDiscount,
-        medical_certificates_days: certificateDays,
-        overtime_50_hours: overtime50Hours,
-        overtime_50_value: overtime50Value,
-        overtime_100_hours: overtime100Hours,
-        overtime_100_value: overtime100Value,
-        total_overtime: totalOvertime,
-        inss_value: inss,
-        irrf_value: irrf,
-        vt_discount: vtDiscount,
-        gross_salary: grossSalary,
-        total_discounts: totalDiscounts,
-        net_salary: netSalary,
-        status: "a pagar"
-      });
+      try {
+        await base44.entities.Payroll.create({
+          cashbreak_discount: cashBreakDiscount || 0,
+          employee_id: employee.id,
+          employee_name: employee.full_name,
+          month: selectedMonth,
+          year: selectedMonth ? selectedMonth.split("-")[0] : "",
+          month_reference: selectedMonth,
+          base_salary: employee.salary || 0,
+          work_days: config.work_days_per_month - absencesDays,
+          absences_days: absencesDays || 0,
+          absences_discount: absencesDiscount || 0,
+          medical_certificates_days: certificateDays || 0,
+          overtime_50_hours: overtime50Hours || 0,
+          overtime_50_value: overtime50Value || 0,
+          overtime_100_hours: overtime100Hours || 0,
+          overtime_100_value: overtime100Value || 0,
+          total_overtime: totalOvertime || 0,
+          inss_value: inss || 0,
+          irrf_value: irrf || 0,
+          gross_salary: grossSalary || 0,
+          total_discounts: totalDiscounts || 0,
+          net_salary: netSalary || 0,
+          status: "a pagar"
+        });
+      } catch (error) {
+        console.error("Erro ao criar folha para", employee.full_name, error);
+        alert(`Erro ao gerar folha para ${employee.full_name}: ${error.message}`);
+      }
     }
 
     queryClient.invalidateQueries({ queryKey: ["payrolls"] });

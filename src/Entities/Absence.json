@@ -5,7 +5,7 @@
     "employee_id": { "type": "string", "description": "ID do funcionário" },
     "employee_name": { "type": "string", "description": "Nome do funcionário" },
     "date": { "type": "string", "format": "date", "description": "Data da falta/atestado" },
-    "type": { "type": "string", "enum": ["absence", "medical_certificate", "justified"], "default": "absence", "description": "Tipo: falta, atestado ou justificada" },
+    "type": { "type": "string", "enum": ["absence", "medical_certificate", "justified", "delay"], "default": "absence", "description": "Tipo: falta, atestado, justificada ou atraso" },
     "hours": { "type": "number", "description": "Horas de ausência (parcial)" },
     "full_day": { "type": "boolean", "default": true, "description": "Dia inteiro ou parcial" },
     "reason": { "type": "string", "description": "Motivo da falta" },

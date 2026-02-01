@@ -1,4 +1,3 @@
-const unitLabels = { kg: "Kg", unit: "Un", box: "Cx", dozen: "Dz", caixa: "CX", fardo: "FD" };
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44SupabaseClient";
@@ -10,6 +9,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { ShoppingCart, TrendingUp, Package, Users } from "lucide-react";
 import moment from "moment";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from "recharts";
+import DatePickerInput from "@/components/vacations/DatePickerInput";
+
+const unitLabels = { kg: "Kg", unit: "Un", box: "Cx", dozen: "Dz", caixa: "CX", fardo: "FD" };
 
 const COLORS = ["#10b981", "#3b82f6", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899"];
 
@@ -105,29 +107,43 @@ export default function CeasaReports() {
           <div className="flex gap-4 flex-wrap items-end justify-between">
             <div className="flex flex-col">
               <label className="text-xs text-slate-500 mb-1 block">Data Início</label>
-              <Input
-                type="date"
-                value={filters.date_start}
-                onChange={(e) => setFilters(p => ({ ...p, date_start: e.target.value }))}
-                className="bg-slate-800 border-slate-600 text-white h-10"
+              <DatePickerInput
+                value={filters.date_start || ""}
+                onChange={(val) => setFilters(p => ({ ...p, date_start: val }))}
+                onEnter={() => {
+                  const today = new Date();
+                  const year = today.getFullYear();
+                  const month = String(today.getMonth() + 1).padStart(2, "0");
+                  const day = String(today.getDate()).padStart(2, "0");
+                  setFilters(p => ({ ...p, date_start: `${year}-${month}-${day}` }));
+                }}
               />
             </div>
             <div className="flex flex-col">
               <label className="text-xs text-slate-500 mb-1 block">Data Fim</label>
-              <Input
-                type="date"
-                value={filters.date_end}
-                onChange={(e) => setFilters(p => ({ ...p, date_end: e.target.value }))}
-                className="bg-slate-800 border-slate-600 text-white h-10"
+              <DatePickerInput
+                value={filters.date_end || ""}
+                onChange={(val) => setFilters(p => ({ ...p, date_end: val }))}
+                onEnter={() => {
+                  const today = new Date();
+                  const year = today.getFullYear();
+                  const month = String(today.getMonth() + 1).padStart(2, "0");
+                  const day = String(today.getDate()).padStart(2, "0");
+                  setFilters(p => ({ ...p, date_end: `${year}-${month}-${day}` }));
+                }}
               />
             </div>
             <div className="flex flex-col">
               <label className="text-xs text-slate-500 mb-1 block">Mês</label>
-              <Input
-                type="month"
-                value={filters.month}
-                onChange={(e) => setFilters(p => ({ ...p, month: e.target.value }))}
-                className="bg-slate-800 border-slate-600 text-white h-10"
+              <DatePickerInput
+                value={filters.month ? `${filters.month}-01` : ""}
+                onChange={(val) => setFilters(p => ({ ...p, month: val ? val.slice(0, 7) : "" }))}
+                onEnter={() => {
+                  const today = new Date();
+                  const year = today.getFullYear();
+                  const month = String(today.getMonth() + 1).padStart(2, "0");
+                  setFilters(p => ({ ...p, month: `${year}-${month}` }));
+                }}
               />
             </div>
             <div className="flex flex-col">
