@@ -21,6 +21,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Search, Eye, Trash2, ShoppingCart, X } from "lucide-react";
 import moment from "moment";
+import DatePickerInput from "@/components/vacations/DatePickerInput";
 
 const unitLabels = { kg: "Kg", unit: "Un", box: "Cx", dozen: "Dz" };
 const paymentLabels = { cash: "Dinheiro", pix: "PIX", credit: "Crédito", debit: "Débito", invoice: "Boleto" };
@@ -31,7 +32,8 @@ export default function CeasaPurchases() {
   const [deletePurchase, setDeletePurchase] = useState(null);
   const [filters, setFilters] = useState({
     search: "",
-    month: moment().format("YYYY-MM"),
+    dateFrom: "",
+    dateTo: "",
     supplier: "all",
     store: "all"
   });
@@ -275,10 +277,13 @@ export default function CeasaPurchases() {
 
   const filteredPurchases = purchases.filter(p => {
     const searchMatch = !filters.search || p.supplier_name?.toLowerCase().includes(filters.search.toLowerCase());
-    const monthMatch = !filters.month || p.date?.startsWith(filters.month);
+    const hasDate = !!p.date;
+    const dateFromMatch = !filters.dateFrom || (hasDate && moment(p.date).isSameOrAfter(filters.dateFrom, "day"));
+    const dateToMatch = !filters.dateTo || (hasDate && moment(p.date).isSameOrBefore(filters.dateTo, "day"));
+    const dateMatch = dateFromMatch && dateToMatch;
     const supplierMatch = filters.supplier === "all" || p.supplier_id === filters.supplier;
     const storeMatch = !filters.store || filters.store === "all" || p.store_id === filters.store;
-    return searchMatch && monthMatch && supplierMatch && storeMatch;
+    return searchMatch && dateMatch && supplierMatch && storeMatch;
   });
 
   const supplierProducts = products.filter(p => String(p.supplier_id) === String(form.supplier_id) && p.status === "active");
@@ -351,36 +356,24 @@ export default function CeasaPurchases() {
       {/* Filters */}
       <Card className="bg-slate-800/50 border-slate-700">
         <CardContent className="p-4">
-          <div className="flex flex-wrap gap-2 items-end justify-between">
-            {/* Filtro de busca à esquerda */}
-            <div className="flex flex-col flex-1 min-w-0">
-              <span className="text-slate-400 text-xs mb-1 ml-1">Buscar</span>
-              <div className="relative w-full min-w-[180px]">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                <Input
-                  placeholder="Buscar..."
-                  value={filters.search}
-                  onChange={(e) => setFilters(p => ({ ...p, search: e.target.value }))}
-                  className="pl-10 bg-slate-800 border-slate-600 text-white h-10 w-full"
-                />
-              </div>
-            </div>
-            {/* Filtros agrupados à direita: mês, fornecedor, loja */}
-            <div className="flex gap-2 items-end">
-              <div className="flex flex-col">
-                <span className="text-slate-400 text-xs mb-1 ml-1">Mês</span>
-                <div className="w-40 min-w-[120px]">
+          <div className="flex flex-col gap-3">
+            {/* Linha 1: Busca + Fornecedor + Loja + Limpar */}
+            <div className="flex flex-wrap gap-3 items-end">
+              <div className="flex flex-col flex-1 min-w-[200px]">
+                <span className="text-slate-400 text-xs mb-1 ml-1">Buscar</span>
+                <div className="relative w-full min-w-[180px]">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                   <Input
-                    type="month"
-                    value={filters.month}
-                    onChange={(e) => setFilters(p => ({ ...p, month: e.target.value }))}
-                    className="bg-slate-800 border-slate-600 text-white h-10"
+                    placeholder="Buscar..."
+                    value={filters.search}
+                    onChange={(e) => setFilters(p => ({ ...p, search: e.target.value }))}
+                    className="pl-10 bg-slate-800 border-slate-600 text-white h-10 w-full"
                   />
                 </div>
               </div>
-              <div className="flex flex-col">
+              <div className="flex flex-col flex-1 min-w-[200px]">
                 <span className="text-slate-400 text-xs mb-1 ml-1">Fornecedor</span>
-                <div className="w-48 min-w-[160px]">
+                <div className="w-full">
                   <Select value={filters.supplier} onValueChange={(v) => setFilters(p => ({ ...p, supplier: v }))}>
                     <SelectTrigger className="bg-slate-800 border-slate-600 text-white w-full h-10"><SelectValue placeholder="Fornecedor" /></SelectTrigger>
                     <SelectContent side="bottom" className="bg-slate-800 border-slate-600 text-white z-50">
@@ -390,9 +383,9 @@ export default function CeasaPurchases() {
                   </Select>
                 </div>
               </div>
-              <div className="flex flex-col">
+              <div className="flex flex-col flex-1 min-w-[180px]">
                 <span className="text-slate-400 text-xs mb-1 ml-1">Loja</span>
-                <div className="w-48 min-w-[160px]">
+                <div className="w-full">
                   <Select value={filters.store || "all"} onValueChange={v => setFilters(p => ({ ...p, store: v }))}>
                     <SelectTrigger className="bg-slate-800 border-slate-600 text-white w-full h-10">
                       <SelectValue placeholder="Loja" />
@@ -406,12 +399,35 @@ export default function CeasaPurchases() {
                   </Select>
                 </div>
               </div>
+              <div className="flex flex-col justify-end">
+                <Button variant="ghost" onClick={() => setFilters({ search: '', dateFrom: '', dateTo: '', supplier: 'all', store: 'all' })} className="text-slate-400 hover:text-white hover:bg-slate-700">
+                  <span className="flex items-center"><svg xmlns='http://www.w3.org/2000/svg' className='h-4 w-4 mr-1' fill='none' viewBox='0 0 24 24' stroke='currentColor'><path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M6 18L18 6M6 6l12 12' /></svg>Limpar</span>
+                </Button>
+              </div>
             </div>
-            {/* Botão Limpar */}
-            <div className="flex flex-col justify-end ml-auto">
-              <Button variant="ghost" onClick={() => setFilters({ search: '', month: '', supplier: 'all', store: 'all' })} className="text-slate-400 hover:text-white hover:bg-slate-700">
-                <span className="flex items-center"><svg xmlns='http://www.w3.org/2000/svg' className='h-4 w-4 mr-1' fill='none' viewBox='0 0 24 24' stroke='currentColor'><path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M6 18L18 6M6 6l12 12' /></svg>Limpar</span>
-              </Button>
+
+            {/* Linha 2: Datas */}
+            <div className="flex flex-wrap gap-3 items-end">
+              <div className="flex flex-col flex-1 min-w-[180px]">
+                <span className="text-slate-400 text-xs mb-1 ml-1">Data Inicial</span>
+                <div className="w-full">
+                  <DatePickerInput
+                    value={filters.dateFrom}
+                    onChange={(value) => setFilters(p => ({ ...p, dateFrom: value }))}
+                    placeholder="DD/MM/AAAA"
+                  />
+                </div>
+              </div>
+              <div className="flex flex-col flex-1 min-w-[180px]">
+                <span className="text-slate-400 text-xs mb-1 ml-1">Data Final</span>
+                <div className="w-full">
+                  <DatePickerInput
+                    value={filters.dateTo}
+                    onChange={(value) => setFilters(p => ({ ...p, dateTo: value }))}
+                    placeholder="DD/MM/AAAA"
+                  />
+                </div>
+              </div>
             </div>
           </div>
         </CardContent>

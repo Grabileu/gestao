@@ -461,42 +461,17 @@ export default function HRConfig() {
               <div className="grid grid-cols-1 gap-6">
                 {/* Adicional Noturno */}
                 <div className="p-4 rounded-lg bg-slate-800/50 border border-slate-700">
-                  <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center justify-between">
                     <div>
                       <div className="flex items-center gap-2">
                         <Label className="text-slate-200 font-medium">Adicional Noturno</Label>
                         <span className="text-xs text-slate-400">- CLT art. 73</span>
                       </div>
+                      <p className="text-xs text-slate-500 mt-1">Percentual aplicado quando o funcionário trabalha à noite.</p>
                     </div>
                     <div className="w-28 relative">
                       <span className="absolute left-2 top-1/2 transform -translate-y-1/2 text-slate-400">%</span>
                       <Input type="number" placeholder="0" value={formData.night_shift_percent} onChange={(e) => updateField("night_shift_percent", parseFloat(e.target.value))} className="text-white bg-slate-900 border-slate-600 text-right pl-7" />
-                    </div>
-                  </div>
-                  <div>
-                    <Label className="text-xs text-slate-400 block mb-3">Selecione os cargos com direito:</Label>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 max-h-32 overflow-y-auto">
-                      {allRoles.length > 0 ? (
-                        allRoles.map(role => (
-                          <label key={role} className="flex items-center gap-2 cursor-pointer p-2 rounded hover:bg-slate-700/50">
-                            <input 
-                              type="checkbox" 
-                              checked={(formData.night_shift_roles || []).includes(role)}
-                              onChange={(e) => {
-                                const roles = formData.night_shift_roles || [];
-                                const updated = e.target.checked 
-                                  ? [...roles, role]
-                                  : roles.filter(r => r !== role);
-                                updateField('night_shift_roles', updated);
-                              }}
-                              className="w-4 h-4 rounded border-slate-600"
-                            />
-                            <span className="text-xs text-slate-300">{role}</span>
-                          </label>
-                        ))
-                      ) : (
-                        <p className="text-xs text-slate-500 col-span-full">Nenhum cargo cadastrado</p>
-                      )}
                     </div>
                   </div>
                 </div>

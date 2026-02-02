@@ -179,6 +179,7 @@ export default function Payroll() {
           cashbreak_discount: cashBreakDiscount || 0,
           employee_id: employee.id,
           employee_name: employee.full_name,
+          employee_position: employee.position || "",
           month: selectedMonth,
           year: selectedMonth ? selectedMonth.split("-")[0] : "",
           month_reference: selectedMonth,
@@ -397,12 +398,14 @@ export default function Payroll() {
                       {viewPayroll.absences_discount > 0 ? `-${formatCurrency(viewPayroll.absences_discount)}` : formatCurrency(0)}
                     </span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-300">Quebras de Caixa</span>
-                    <span className={viewPayroll.cashbreak_discount > 0 ? "text-red-400" : "text-white"}>
-                      {viewPayroll.cashbreak_discount > 0 ? `-${formatCurrency(viewPayroll.cashbreak_discount)}` : formatCurrency(0)}
-                    </span>
-                  </div>
+                  {viewPayroll.employee_position?.toLowerCase() === "operador(a) de caixa" && (
+                    <div className="flex justify-between">
+                      <span className="text-slate-300">Quebras de Caixa</span>
+                      <span className={viewPayroll.cashbreak_discount > 0 ? "text-red-400" : "text-white"}>
+                        {viewPayroll.cashbreak_discount > 0 ? `-${formatCurrency(viewPayroll.cashbreak_discount)}` : formatCurrency(0)}
+                      </span>
+                    </div>
+                  )}
                   {viewPayroll.inss_value > 0 && (
                     <div className="flex justify-between">
                       <span className="text-slate-300">INSS</span>
