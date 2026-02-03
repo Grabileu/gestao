@@ -17,7 +17,7 @@ const typeLabels = { absence: "Falta", medical_certificate: "Atestado", justifie
 
 export default function AbsenceReports() {
   const [filters, setFilters] = useState({
-    month: moment().format("YYYY-MM"),
+    month: "",
     type: "all",
     employee: "all",
     department: "all",

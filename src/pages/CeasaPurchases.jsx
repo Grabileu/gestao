@@ -105,6 +105,12 @@ export default function CeasaPurchases() {
   const handleProductChange = (productId) => {
     const product = products.find(p => String(p.id) === String(productId));
     if (product) {
+      console.log('🔍 DEBUG - Produto selecionado:', {
+        name: product.name,
+        price_type: product.price_type,
+        box_weight_kg: product.box_weight_kg,
+        unit_type: product.unit_type,
+      });
       const unitMap = { per_kg: "kg", per_box: "box", per_unit: "unit", per_dozen: "dozen" };
       let unit_custom = product.unit_custom || (product.unit_type === 'box' ? 'CX' : product.unit_type === 'fardo' ? 'FD' : null);
       // Se for caixa/fardo, sempre inicializa unit_custom corretamente
@@ -191,11 +197,10 @@ export default function CeasaPurchases() {
         total_kg: totalKg,
         price_per_box: pricePerBox,
         cost_per_kg: costPerKg,
-        unit_type: "box",
+        unit_type: product.unit_type,
         quantity: boxes,
         unit_price: pricePerBox,
-        total_price: itemTotal,
-        unit_custom: newItem.unit_custom || "CX"
+        total_price: itemTotal
       };
     }
     // Cenário 3: Preço por caixa SEM peso fixo
@@ -209,11 +214,10 @@ export default function CeasaPurchases() {
         product_name: newItem.product_name,
         price_type: "per_box",
         boxes: safeNumber(newItem.boxes),
-        unit_type: "box",
+        unit_type: product.unit_type,
         quantity: safeNumber(newItem.boxes),
         unit_price: safeNumber(newItem.price_per_box),
-        total_price: itemTotal,
-        unit_custom: newItem.unit_custom || "CX"
+        total_price: itemTotal
       };
     }
     // Outros tipos
@@ -228,10 +232,9 @@ export default function CeasaPurchases() {
         product_name: newItem.product_name,
         price_type: product.price_type,
         quantity: safeNumber(newItem.quantity),
-        unit_type: unitMap[product.price_type] || (newItem.unit_custom ? newItem.unit_custom : "unit"),
+        unit_type: product.unit_type,
         unit_price: safeNumber(newItem.unit_price),
-        total_price: itemTotal,
-        ...(newItem.unit_custom ? { unit_custom: newItem.unit_custom } : {})
+        total_price: itemTotal
       };
     }
     const newItems = [...form.items, itemData];
@@ -529,16 +532,17 @@ export default function CeasaPurchases() {
                                             <TableCell className="text-slate-300">
                                               {item.price_type === "per_box_fixed" || item.price_type === "per_box"
                                                 ? (() => {
-                                                    let n = item.boxes;
+                                                    let n = item.boxes || item.quantity;
                                                     if (typeof n === 'string') n = n.trim() === '' ? 0 : Number(n);
                                                     if (typeof n !== 'number' || isNaN(n)) n = 0;
-                                                    return `${n} ${n === 1 ? "caixa" : "caixas"}`;
+                                                    return `${n} CX`;
                                                   })()
                                                 : (() => {
                                                     let n = item.quantity;
                                                     if (typeof n === 'string') n = n.trim() === '' ? 0 : Number(n);
                                                     if (typeof n !== 'number' || isNaN(n)) n = 0;
-                                                    return `${n} kg`;
+                                                    const unitDisplay = item.unit_type === 'kg' ? 'KG' : item.unit_type === 'box' ? 'CX' : item.unit_type === 'fardo' ? 'FD' : item.unit_type === 'dozen' ? 'Dz' : item.unit_type === 'unit' ? 'Un' : item.unit_type;
+                                                    return `${n} ${unitDisplay}`;
                                                   })()
                                               }
                                             </TableCell>
@@ -548,13 +552,14 @@ export default function CeasaPurchases() {
                                                     let n = (item.price_per_box !== undefined && item.price_per_box !== null) ? item.price_per_box : item.unit_price;
                                                     if (typeof n === 'string') n = n.trim() === '' ? 0 : Number(n);
                                                     if (typeof n !== 'number' || isNaN(n)) n = 0;
-                                                    return formatCurrency(n) + "/caixa";
+                                                    return formatCurrency(n) + "/CX";
                                                   })()
                                                 : (() => {
                                                     let n = item.unit_price;
                                                     if (typeof n === 'string') n = n.trim() === '' ? 0 : Number(n);
                                                     if (typeof n !== 'number' || isNaN(n)) n = 0;
-                                                    return formatCurrency(n) + "/kg";
+                                                    const unitDisplay = item.unit_type === 'kg' ? 'KG' : item.unit_type === 'box' ? 'CX' : item.unit_type === 'fardo' ? 'FD' : item.unit_type === 'dozen' ? 'Dz' : item.unit_type === 'unit' ? 'Un' : item.unit_type;
+                                                    return formatCurrency(n) + "/" + unitDisplay;
                                                   })()
                                               }
                                             </TableCell>
@@ -562,8 +567,8 @@ export default function CeasaPurchases() {
                                               (() => {
                                                 if (item.price_type === "per_box_fixed" || item.price_type === "per_box") {
                                                   const safe = v => v === '' || v === undefined || v === null ? 0 : parseFloat(v);
-                                                  const pricePerBox = safe(item.price_per_box);
-                                                  const boxes = safe(item.boxes);
+                                                  const pricePerBox = safe(item.price_per_box || item.unit_price);
+                                                  const boxes = safe(item.boxes || item.quantity);
                                                   return formatCurrency(pricePerBox * boxes);
                                                 }
                                                 const v = item.total_price; if (v === '' || v === undefined || v === null) return formatCurrency(0); const n = parseFloat(v); return formatCurrency(isNaN(n) ? 0 : n);
@@ -616,7 +621,11 @@ export default function CeasaPurchases() {
             <div className="grid grid-cols-3 gap-4">
               <div>
                 <Label className="text-slate-300">Data *</Label>
-                <Input type="date" value={form.date} onChange={(e) => setForm(p => ({ ...p, date: e.target.value }))} className="bg-slate-800 border-slate-600 text-white" required />
+                <DatePickerInput
+                  value={form.date}
+                  onChange={(value) => setForm(p => ({ ...p, date: value }))}
+                  placeholder="DD/MM/AAAA"
+                />
               </div>
               <div>
                 <Label className="text-slate-300">Loja *</Label>
@@ -642,100 +651,116 @@ export default function CeasaPurchases() {
             {form.supplier_id && (
               <div className="p-4 bg-slate-800/50 rounded-lg border border-slate-700 space-y-3">
                 <Label className="text-slate-300">Adicionar Item</Label>
-                <div className="flex gap-2 items-end">
-                  <div className="flex-1">
-                    <Select value={newItem.product_id} onValueChange={handleProductChange}>
-                      <SelectTrigger className="bg-slate-800 border-slate-600 text-white"><SelectValue placeholder="Produto" /></SelectTrigger>
-                      <SelectContent side="bottom" className="bg-slate-800 border-slate-600 text-white z-50">
-                        {supplierProducts.map(p => {
-                          // Para categoria 'other', nunca mostrar costTypeLabel nem 'kg'
-                          if (p.category === 'other') {
-                            let unitLabel = '';
-                            if (p.price_type === 'per_box') unitLabel = 'Fardo/Caixa';
-                            else if (p.unit_type === 'box') unitLabel = 'Cx';
-                            else if (p.unit_type === 'unit') unitLabel = 'Un';
-                            else if (p.unit_type === 'dozen') unitLabel = 'Dz';
-                            else unitLabel = p.unit_type;
-                            return (
-                              <SelectItem key={p.id} value={String(p.id)} className="text-white hover:bg-slate-700 cursor-pointer flex items-center justify-between">
-                                <span>{p.name}</span>
-                                {unitLabel && <span className="ml-2 text-xs text-slate-400 whitespace-nowrap">{unitLabel}</span>}
-                              </SelectItem>
-                            );
-                          } else {
-                            let costTypeLabel = '';
-                            if (p.cost_type === 'per_kg') costTypeLabel = 'Kg';
-                            else if (p.cost_type === 'per_box') costTypeLabel = 'Caixa';
-                            else if (p.cost_type === 'fixed') costTypeLabel = 'Fixo';
-                            else costTypeLabel = p.cost_type;
-                            let unitLabel = '';
-                            if (p.unit_type === 'kg') unitLabel = 'Kg';
-                            else if (p.unit_type === 'box') unitLabel = 'Cx';
-                            else if (p.unit_type === 'unit') unitLabel = 'Un';
-                            else if (p.unit_type === 'dozen') unitLabel = 'Dz';
-                            else unitLabel = p.unit_type;
-                            return (
-                              <SelectItem key={p.id} value={String(p.id)} className="text-white hover:bg-slate-700 cursor-pointer flex items-center justify-between">
-                                <span>{p.name}</span>
-                                <span className="ml-2 text-xs text-slate-400 whitespace-nowrap">{costTypeLabel} | {unitLabel}</span>
-                              </SelectItem>
-                            );
-                          }
-                        })}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  {/* Campos dinâmicos para quantidade/unidade/preço */}
-                  {(() => {
-                    const product = products.find(p => String(p.id) === String(newItem.product_id));
-                    if (!product) return null;
-                    // Fruta: unidade cadastrada
-                    if (product.category === "fruit" || product.price_type === "per_kg") {
-                      return <>
-                        <Input type="number" step="0.01" placeholder={`Qtd (${unitLabels[product.unit_type] || product.unit_type})`} value={newItem.quantity} onChange={e => setNewItem(p => ({ ...p, quantity: e.target.value }))} className="bg-slate-800 border-slate-600 text-white w-28" />
-                        <Input type="number" step="0.01" placeholder={`R$/${unitLabels[product.unit_type] || product.unit_type}`} value={newItem.unit_price} onChange={e => setNewItem(p => ({ ...p, unit_price: e.target.value }))} className="bg-slate-800 border-slate-600 text-white w-28" />
-                      </>;
-                    }
-                    // Por caixa (quantidade fixa)
-                    if (product.price_type === "per_box" && product.box_weight_kg) {
-                      return <>
-                        <div className="flex items-center gap-2">
+                <div>
+                  <div className="flex gap-2 items-end">
+                    <div className="flex-1">
+                      <Select value={newItem.product_id} onValueChange={handleProductChange}>
+                        <SelectTrigger className="bg-slate-800 border-slate-600 text-white"><SelectValue placeholder="Produto" /></SelectTrigger>
+                        <SelectContent side="bottom" className="bg-slate-800 border-slate-600 text-white z-50">
+                          {supplierProducts.map(p => {
+                            // Para categoria 'other', nunca mostrar costTypeLabel nem 'kg'
+                            if (p.category === 'other') {
+                              let unitLabel = '';
+                              if (p.price_type === 'per_box') unitLabel = 'Fardo/Caixa';
+                              else if (p.unit_type === 'box') unitLabel = 'Cx';
+                              else if (p.unit_type === 'unit') unitLabel = 'Un';
+                              else if (p.unit_type === 'dozen') unitLabel = 'Dz';
+                              else unitLabel = p.unit_type;
+                              return (
+                                <SelectItem key={p.id} value={String(p.id)} className="text-white hover:bg-slate-700 cursor-pointer flex items-center justify-between">
+                                  <span>{p.name}</span>
+                                  {unitLabel && <span className="ml-2 text-xs text-slate-400 whitespace-nowrap">{unitLabel}</span>}
+                                </SelectItem>
+                              );
+                            } else {
+                              let costTypeLabel = '';
+                              if (p.cost_type === 'per_kg') costTypeLabel = 'Kg';
+                              else if (p.cost_type === 'per_box') costTypeLabel = 'Caixa';
+                              else if (p.cost_type === 'fixed') costTypeLabel = 'Fixo';
+                              else costTypeLabel = p.cost_type;
+                              let unitLabel = '';
+                              if (p.unit_type === 'kg') unitLabel = 'Kg';
+                              else if (p.unit_type === 'box') unitLabel = 'Cx';
+                              else if (p.unit_type === 'unit') unitLabel = 'Un';
+                              else if (p.unit_type === 'dozen') unitLabel = 'Dz';
+                              else unitLabel = p.unit_type;
+                              return (
+                                <SelectItem key={p.id} value={String(p.id)} className="text-white hover:bg-slate-700 cursor-pointer flex items-center justify-between">
+                                  <span>{p.name}</span>
+                                  <span className="ml-2 text-xs text-slate-400 whitespace-nowrap">{costTypeLabel}</span>
+                                </SelectItem>
+                              );
+                            }
+                          })}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    {/* Campos dinâmicos para quantidade/unidade/preço */}
+                    {(() => {
+                      const product = products.find(p => String(p.id) === String(newItem.product_id));
+                      if (!product) return null;
+                      
+                      // Por caixa (quantidade fixa) - VERIFICAR PRIMEIRO!
+                      if (product.price_type === "per_box") {
+                        return <>
                           <Input
                             type="number"
                             step="1"
                             min="1"
                             placeholder="Qtd (CX)"
-                            value={newItem.boxes === undefined ? '' : newItem.boxes}
-                            onChange={e => setNewItem(p => ({ ...p, boxes: e.target.value === '' ? '' : String(Math.max(0, safeNumber(e.target.value))) }))}
+                            value={newItem.boxes === undefined || newItem.boxes === '' ? '' : newItem.boxes}
+                            onChange={e => setNewItem(p => ({ ...p, boxes: e.target.value === '' ? '' : String(Math.max(1, safeNumber(e.target.value))) }))}
                             className="bg-slate-800 border-slate-600 text-white w-20"
                             disabled={false}
                           />
-                        </div>
-                        <Input
-                          type="number"
-                          step="0.01"
-                          min="0.01"
-                          placeholder="Preço Unit. (CX)"
-                          value={newItem.price_per_box === undefined ? '' : newItem.price_per_box}
-                          onChange={e => setNewItem(p => ({ ...p, price_per_box: e.target.value === '' ? '' : String(Math.max(0, safeNumber(e.target.value))) }))}
-                          className="bg-slate-800 border-slate-600 text-white w-28"
-                          disabled={false}
-                        />
-                        <span className="text-xs text-slate-400 ml-2">Peso caixa: {product.box_weight_kg} kg</span>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            min="0.01"
+                            placeholder="Preço Unit. (CX)"
+                            value={newItem.price_per_box === undefined || newItem.price_per_box === '' ? '' : newItem.price_per_box}
+                            onChange={e => setNewItem(p => ({ ...p, price_per_box: e.target.value === '' ? '' : String(Math.max(0, safeNumber(e.target.value))) }))}
+                            className="bg-slate-800 border-slate-600 text-white w-28"
+                            disabled={false}
+                          />
+                          <Button type="button" onClick={handleAddItem} className="bg-blue-600 hover:bg-blue-700 h-10 w-10 flex items-center justify-center">
+                            <Plus className="h-4 w-4" />
+                          </Button>
+                        </>;
+                      }
+                    
+                    // Fruta ou KG: unidade cadastrada
+                    if (product.category === "fruit" || product.price_type === "per_kg") {
+                      return <>
+                        <Input type="text" inputMode="decimal" placeholder={`Qtd (${unitLabels[product.unit_type] || product.unit_type})`} value={!newItem.quantity || newItem.quantity === '0' ? '' : newItem.quantity} onChange={e => setNewItem(p => ({ ...p, quantity: e.target.value }))} className="bg-slate-800 border-slate-600 text-white w-28" />
+                        <Input type="text" inputMode="decimal" placeholder={`R$/${unitLabels[product.unit_type] || product.unit_type}`} value={!newItem.unit_price || newItem.unit_price === '0' ? '' : newItem.unit_price} onChange={e => setNewItem(p => ({ ...p, unit_price: e.target.value }))} className="bg-slate-800 border-slate-600 text-white w-28" />
+                        <Button type="button" onClick={handleAddItem} className="bg-blue-600 hover:bg-blue-700 h-10 w-10 flex items-center justify-center">
+                          <Plus className="h-4 w-4" />
+                        </Button>
                       </>;
                     }
+                    
                     // Outros tipos (per_unit, per_dozen, etc)
                     if (newItem.price_type && newItem.price_type !== "per_kg" && newItem.price_type !== "per_box") {
                       return <>
-                        <Input type="number" step="0.01" placeholder="Qtd" value={newItem.quantity} onChange={e => setNewItem(p => ({ ...p, quantity: e.target.value }))} className="bg-slate-800 border-slate-600 text-white w-28" />
-                        <Input type="number" step="0.01" placeholder="Preço" value={newItem.unit_price} onChange={e => setNewItem(p => ({ ...p, unit_price: e.target.value }))} className="bg-slate-800 border-slate-600 text-white w-28" />
+                        <Input type="text" inputMode="decimal" placeholder="Qtd" value={!newItem.quantity || newItem.quantity === '0' ? '' : newItem.quantity} onChange={e => setNewItem(p => ({ ...p, quantity: e.target.value }))} className="bg-slate-800 border-slate-600 text-white w-28" />
+                        <Input type="text" inputMode="decimal" placeholder="Preço" value={!newItem.unit_price || newItem.unit_price === '0' ? '' : newItem.unit_price} onChange={e => setNewItem(p => ({ ...p, unit_price: e.target.value }))} className="bg-slate-800 border-slate-600 text-white w-28" />
+                        <Button type="button" onClick={handleAddItem} className="bg-blue-600 hover:bg-blue-700 h-10 w-10 flex items-center justify-center">
+                          <Plus className="h-4 w-4" />
+                        </Button>
                       </>;
                     }
                     return null;
                   })()}
-                  <Button type="button" onClick={handleAddItem} className="bg-blue-600 hover:bg-blue-700 ml-2 h-10 w-10 flex items-center justify-center">
-                    <Plus className="h-4 w-4" />
-                  </Button>
+                  </div>
+                  {/* Mostrar peso da caixa abaixo do produto */}
+                  {(() => {
+                    const product = products.find(p => String(p.id) === String(newItem.product_id));
+                    if (product && product.price_type === "per_box" && product.box_weight_kg) {
+                      return <p className="text-xs text-slate-400 mt-1">Peso caixa: {product.box_weight_kg} kg</p>;
+                    }
+                    return null;
+                  })()}
                 </div>
                 
                 {/* Mostrar informações calculadas para caixa com peso fixo */}
@@ -795,14 +820,18 @@ export default function CeasaPurchases() {
                           )}
                         </TableCell>
                         <TableCell className="text-slate-300">
-                          {item.price_type === "per_box_fixed" || item.price_type === "per_box" 
-                            ? `${Number(item.boxes)} ${item.unit_custom === "FD" ? "Fardo" : item.unit_custom === "CX" ? "Caixa" : (item.unit_custom ? item.unit_custom : "Caixa")}`
-                            : `${Number(item.quantity)} ${item.unit_custom === 'FD' ? 'Fardo' : item.unit_custom === 'CX' ? 'Caixa' : (item.unit_type === 'kg' ? 'kg' : item.unit_type === 'box' ? 'Caixa' : unitLabels[item.unit_type] || '')}`
-                          }
+                          {(() => {
+                            if (item.price_type === "per_box_fixed" || item.price_type === "per_box") {
+                              return `${Number(item.boxes)} CX`;
+                            } else {
+                              const unitDisplay = item.unit_type === 'kg' ? 'KG' : item.unit_type === 'box' ? 'CX' : item.unit_type === 'fardo' ? 'FD' : item.unit_type === 'dozen' ? 'Dz' : item.unit_type === 'unit' ? 'Un' : item.unit_type;
+                              return `${Number(item.quantity)} ${unitDisplay}`;
+                            }
+                          })()}
                         </TableCell>
                         <TableCell className="text-slate-300">
                           {item.price_type === "per_box_fixed" || item.price_type === "per_box"
-                            ? formatCurrency(Number(item.price_per_box)) + `/${item.unit_custom === 'FD' ? 'Fardo' : 'Caixa'}`
+                            ? formatCurrency(Number(item.price_per_box)) + `/CX`
                             : formatCurrency(Number(item.unit_price))
                           }
                         </TableCell>

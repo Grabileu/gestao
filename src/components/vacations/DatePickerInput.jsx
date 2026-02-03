@@ -110,11 +110,13 @@ export default function DatePickerInput({ value, onChange, placeholder = "DD/MM/
   };
 
   const handleKeyDown = (e) => {
-    // Se Enter, chamar callback
-    if (e.key === "Enter" && onEnter) {
+    // Se Enter, fechar calendário
+    if (e.key === "Enter") {
       e.preventDefault();
       setShowCalendar(false);
-      onEnter();
+      if (onEnter) {
+        onEnter();
+      }
       return;
     }
     
@@ -225,7 +227,7 @@ export default function DatePickerInput({ value, onChange, placeholder = "DD/MM/
         onChange={handleInputChange}
         onKeyDown={handleKeyDown}
         data-testid={testId}
-        onFocus={() => {
+        onClick={() => {
           // Se tiver valor, manter no mês da data selecionada
           if (value) {
             const [year, month, day] = value.split("-");
@@ -243,11 +245,12 @@ export default function DatePickerInput({ value, onChange, placeholder = "DD/MM/
         <div className="absolute top-full mt-2 bg-slate-800 border border-slate-600 rounded-lg p-4 z-50 shadow-lg w-80">
           {/* Header com navegação */}
           <div className="flex items-center justify-between mb-4">
-            <button onClick={handlePrevMonth} className="p-1 hover:bg-slate-700 rounded">
+            <button type="button" onClick={handlePrevMonth} className="p-1 hover:bg-slate-700 rounded">
               <ChevronLeft className="h-4 w-4 text-slate-400" />
             </button>
             <div className="flex gap-2">
               <button 
+                type="button"
                 onClick={() => {
                   setShowMonthPicker(!showMonthPicker);
                   setShowYearPicker(false);
@@ -257,6 +260,7 @@ export default function DatePickerInput({ value, onChange, placeholder = "DD/MM/
                 {months[currentDate.getMonth()].toLowerCase()}
               </button>
               <button 
+                type="button"
                 onClick={() => {
                   setShowYearPicker(!showYearPicker);
                   setShowMonthPicker(false);
@@ -266,7 +270,7 @@ export default function DatePickerInput({ value, onChange, placeholder = "DD/MM/
                 {currentDate.getFullYear()}
               </button>
             </div>
-            <button onClick={handleNextMonth} className="p-1 hover:bg-slate-700 rounded">
+            <button type="button" onClick={handleNextMonth} className="p-1 hover:bg-slate-700 rounded">
               <ChevronRight className="h-4 w-4 text-slate-400" />
             </button>
           </div>
@@ -276,6 +280,7 @@ export default function DatePickerInput({ value, onChange, placeholder = "DD/MM/
             <div className="grid grid-cols-3 gap-2 max-h-60 overflow-y-auto">
               {years.map((year) => (
                 <button
+                  type="button"
                   key={year}
                   onClick={() => handleYearSelect(year)}
                   className={`py-2 px-3 text-sm rounded ${
@@ -292,6 +297,7 @@ export default function DatePickerInput({ value, onChange, placeholder = "DD/MM/
             <div className="grid grid-cols-3 gap-2">
               {months.map((month, index) => (
                 <button
+                  type="button"
                   key={month}
                   onClick={() => handleMonthSelect(index)}
                   className={`py-2 px-3 text-sm rounded ${
@@ -335,6 +341,7 @@ export default function DatePickerInput({ value, onChange, placeholder = "DD/MM/
                   
                   return (
                     <button
+                      type="button"
                       key={idx}
                       onClick={() => day && handleDateClick(day)}
                       className={`py-2 text-sm rounded ${

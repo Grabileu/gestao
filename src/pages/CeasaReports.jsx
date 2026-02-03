@@ -19,7 +19,6 @@ export default function CeasaReports() {
   const [filters, setFilters] = useState({
     date_start: "",
     date_end: "",
-    month: moment().format("YYYY-MM"),
     supplier: "all"
   });
 
@@ -34,11 +33,10 @@ export default function CeasaReports() {
   });
 
   const filteredPurchases = purchases.filter(p => {
-    const monthMatch = !filters.month || p.date?.startsWith(filters.month);
     const supplierMatch = filters.supplier === "all" || p.supplier_id === filters.supplier;
     const startMatch = !filters.date_start || moment(p.date).isSameOrAfter(filters.date_start);
     const endMatch = !filters.date_end || moment(p.date).isSameOrBefore(filters.date_end);
-    return monthMatch && supplierMatch && startMatch && endMatch;
+    return supplierMatch && startMatch && endMatch;
   });
 
   // Stats
@@ -57,16 +55,20 @@ export default function CeasaReports() {
           total: 0,
           unit_custom: item.unit_custom,
           price_type: item.price_type,
+          unit_type: item.unit_type,
         };
       }
       productsSummary[item.product_name].quantity += item.quantity || 0;
       productsSummary[item.product_name].total += item.total_price || 0;
-      // Atualiza unit_custom e price_type se não estiverem definidos
+      // Atualiza unit_custom, price_type e unit_type se não estiverem definidos
       if (!productsSummary[item.product_name].unit_custom && item.unit_custom) {
         productsSummary[item.product_name].unit_custom = item.unit_custom;
       }
       if (!productsSummary[item.product_name].price_type && item.price_type) {
         productsSummary[item.product_name].price_type = item.price_type;
+      }
+      if (!productsSummary[item.product_name].unit_type && item.unit_type) {
+        productsSummary[item.product_name].unit_type = item.unit_type;
       }
     });
   });
@@ -130,19 +132,6 @@ export default function CeasaReports() {
                   const month = String(today.getMonth() + 1).padStart(2, "0");
                   const day = String(today.getDate()).padStart(2, "0");
                   setFilters(p => ({ ...p, date_end: `${year}-${month}-${day}` }));
-                }}
-              />
-            </div>
-            <div className="flex flex-col">
-              <label className="text-xs text-slate-500 mb-1 block">Mês</label>
-              <DatePickerInput
-                value={filters.month ? `${filters.month}-01` : ""}
-                onChange={(val) => setFilters(p => ({ ...p, month: val ? val.slice(0, 7) : "" }))}
-                onEnter={() => {
-                  const today = new Date();
-                  const year = today.getFullYear();
-                  const month = String(today.getMonth() + 1).padStart(2, "0");
-                  setFilters(p => ({ ...p, month: `${year}-${month}` }));
                 }}
               />
             </div>
@@ -272,15 +261,24 @@ export default function CeasaReports() {
               </TableHeader>
               <TableBody>
                 {productsData.slice(0, 10).map((product, index) => {
-                  let unidade = 'kg';
-                  if (product.unit_custom) {
+                  let unidade = 'Kg';
+                  // Prioridade: price_type per_box → unit_type → price_type per_kg
+                  if (product.price_type === 'per_box' || product.price_type === 'per_box_fixed') {
+                    unidade = 'CX';
+                  } else if (product.unit_type === 'kg') {
+                    unidade = 'KG';
+                  } else if (product.unit_type === 'box') {
+                    unidade = 'CX';
+                  } else if (product.unit_type === 'fardo') {
+                    unidade = 'FD';
+                  } else if (product.unit_type === 'dozen') {
+                    unidade = 'Dz';
+                  } else if (product.unit_type === 'unit') {
+                    unidade = 'Un';
+                  } else if (product.unit_custom) {
                     unidade = unitLabels[product.unit_custom] || product.unit_custom;
                   } else if (product.price_type === 'per_kg') {
-                    unidade = unitLabels.kg;
-                  } else if (product.price_type && product.price_type !== 'per_kg') {
-                    unidade = '';
-                  } else {
-                    unidade = unitLabels.kg;
+                    unidade = 'KG';
                   }
                   return (
                     <TableRow key={index} className="border-slate-700">
